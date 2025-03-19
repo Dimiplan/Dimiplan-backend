@@ -11,7 +11,7 @@ passport.use(new GoogleStrategy({
   clientSecret: process.env.GOOGLE_CLIENT_SECRET!!,
   callbackURL: '/auth/google/callback'
 }, (accessToken, refreshToken, profile, done) => {
-  console.log('새 유저다!')
+  console.log('유저다!')
   console.log(profile)
   const user: User = {
     id: profile.id,
@@ -26,7 +26,9 @@ passport.use(new GoogleStrategy({
 }))
 
 router.get('/google', passport.authenticate('google', {
-  scope: ['profile', 'email']
+  scope: ['profile', 'email'],
+  hd: 'dimigo.hs.kr',
+  prompt: 'select_account'
 }))
 router.get('/google/callback', passport.authenticate('google', { failureRedirect: '/login' }), (req, res) => {
   res.redirect('/')

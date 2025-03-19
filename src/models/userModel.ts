@@ -20,3 +20,10 @@ export const createUser = async (user: User): Promise<void> => {
       .insert(user)
   }
 }
+
+export const getUser = async (uid: string): Promise<User | null> => {
+  const user = await db('users')
+    .where('id', uid)
+    .select<User[]>('*')
+  return user[0] || null
+}

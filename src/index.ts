@@ -4,9 +4,11 @@ import cors from 'cors'
 import session from 'express-session'
 import { ConnectSessionKnexStore } from 'connect-session-knex'
 import db, { options as dbOptions } from './config/db'
+import { getUser } from './models/userModel'
 import '@/config/dotenv'
 // Routes
 import authRouter from './routes/auth'
+import apiRouter from './routes/api'
 
 const app = express()
 
@@ -32,11 +34,7 @@ app.use(
 app.use(express.urlencoded({ extended: true }))
 
 app.use('/auth', authRouter)
-
-app.get('/', (req, res) => {
-  // @ts-ignore
-  res.send(`니이름: ${req.session?.passport?.user.id}`)
-})
+app.use('/api', apiRouter)
 
 app.listen(3000, () => {
   console.log('Server is running on port 3000')
