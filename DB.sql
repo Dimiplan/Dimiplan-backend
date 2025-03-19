@@ -14,6 +14,11 @@
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
+
+-- dimiplan 데이터베이스 구조 내보내기
+CREATE DATABASE IF NOT EXISTS `dimiplan` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
+USE `dimiplan`;
+
 -- 테이블 dimiplan.sessions 구조 내보내기
 CREATE TABLE IF NOT EXISTS `sessions` (
   `sid` varchar(255) NOT NULL,
@@ -28,7 +33,9 @@ CREATE TABLE IF NOT EXISTS `sessions` (
 -- 테이블 dimiplan.users 구조 내보내기
 CREATE TABLE IF NOT EXISTS `users` (
   `id` text NOT NULL,
-  `nickname` text NOT NULL,
+  `name` text,
+  `grade` tinyint DEFAULT NULL,
+  `class` tinyint DEFAULT NULL,
   `email` text NOT NULL,
   `profile_image` text NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
