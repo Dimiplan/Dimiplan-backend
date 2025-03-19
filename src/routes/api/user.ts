@@ -3,7 +3,7 @@ import express from 'express'
 
 const router = express.Router()
 
-router.get('/updateme', async (req, res) => {
+router.post('/updateme', async (req, res) => {
   //@ts-ignore
   const uid = req.session?.passport?.user.id
   if (!uid)
