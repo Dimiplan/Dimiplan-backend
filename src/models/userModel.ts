@@ -30,6 +30,12 @@ export const getUser = async (uid: string): Promise<User | null> => {
   return user[0] || null
 }
 
+export const updateUser = async (uid: string, user: Partial<User>): Promise<void> => {
+  return await db('users')
+    .where('id', uid)
+    .update(user)
+}
+
 export const isRegistered = async (uid: string): Promise<boolean> => {
   const user = await getUser(uid)
   return user !== null && user.name !== null && user.grade !== null && user.class !== null

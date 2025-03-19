@@ -38,7 +38,10 @@ router.get('/google', passport.authenticate('google', {
 }))
 router.get('/google/callback', passport.authenticate('google', { failureRedirect: path.join(process.env.FRONT_HOST!!, 'login', 'fail') }), async (req, res) => {
   //@ts-ignore
-  const registeded = await isRegistered(req.session.passport.user.id)
+  const uid = req.session?.passport?.user.id
+  if (!uid)
+    return res.redirect(path.join(process.env.FRONT_HOST!!, 'login', 'fail'))
+  const registeded = await isRegistered(uid)
   if (!registeded) {
     res.redirect(`${process.env.FRONT_HOST!!}/signup`)
   } else {
@@ -46,12 +49,20 @@ router.get('/google/callback', passport.authenticate('google', { failureRedirect
   }
 })
 
+router.get('/logout', (req, res) => {
+  req.logout((err) => {
+    if (err)
+      return res.status(500).send(err)
+    return res.redirect(process.env.FRONT_HOST!!)
+  })
+})
+
 passport.serializeUser((user, done) => {
-  done(null, user);
-});
+  done(null, user)
+})
 
 passport.deserializeUser((user: unknown, done) => {
   return done(null, user as User)
-});
+})
 
 export default router

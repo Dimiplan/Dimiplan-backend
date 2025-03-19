@@ -9,6 +9,7 @@ import '@/config/dotenv'
 // Routes
 import authRouter from './routes/auth'
 import apiRouter from './routes/api'
+import passport from 'passport'
 
 const app = express()
 
@@ -32,6 +33,8 @@ app.use(cors({
   credentials: true
 }))
 app.use(express.urlencoded({ extended: true }))
+app.use(passport.initialize());
+app.use(passport.session());
 
 app.use('/auth', authRouter)
 app.use('/api', apiRouter)
