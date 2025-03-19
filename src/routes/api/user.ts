@@ -3,21 +3,6 @@ import express from 'express'
 
 const router = express.Router()
 
-// router.get('/register', async (req, res) => {
-//   //@ts-ignore
-//   const uid = req.session?.passport?.user.id
-//   if (!uid)
-//     res.status(401).json({ message: 'Not authenticated' })
-//   const name = !req.query.name ? null : req.query.name.toString()
-//   const grade = !req.query.grade ? null : parseInt(req.query.grade.toString())
-//   const class_ = !req.query.class ? null : parseInt(req.query.class.toString())
-//   if (!name || !grade || !class_)
-//     res.status(400).json({ message: 'Bad request' })
-//   else {
-//     await registerUser(uid, name, grade, class_)
-//     res.status(200).json({ message: 'Registered' })
-//   }
-// })
 router.get('/updateme', async (req, res) => {
   //@ts-ignore
   const uid = req.session?.passport?.user.id
