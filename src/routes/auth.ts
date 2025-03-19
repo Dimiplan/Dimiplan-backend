@@ -2,7 +2,8 @@ import express from 'express'
 import passport from 'passport'
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20'
 import '@/config/dotenv'
-import { createUser, User } from '@/models/userModel'
+import { createUser, getUser, isRegistered, isUserExists, User } from '@/models/userModel'
+import path from 'path'
 
 const router = express.Router()
 
@@ -10,17 +11,22 @@ passport.use(new GoogleStrategy({
   clientID: process.env.GOOGLE_CLIENT_ID!!,
   clientSecret: process.env.GOOGLE_CLIENT_SECRET!!,
   callbackURL: '/auth/google/callback'
-}, (accessToken, refreshToken, profile, done) => {
+}, async (accessToken, refreshToken, profile, done) => {
   console.log('유저다!')
   console.log(profile)
+  if (profile._json.hd !== 'dimigo.hs.kr') {
+    return done(null, false, { message: 'Not a Dimigo user' })
+  }
   const user: User = {
     id: profile.id,
-    nickname: profile.displayName,
+    name: null,
+    grade: null,
+    class: null,
     email: profile.emails![0].value,
     profile_image: profile.photos![0].value
   }
   createUser(user)
-  done(null, {
+  return done(null, {
     id: user.id
   })
 }))
@@ -30,8 +36,14 @@ router.get('/google', passport.authenticate('google', {
   hd: 'dimigo.hs.kr',
   prompt: 'select_account'
 }))
-router.get('/google/callback', passport.authenticate('google', { failureRedirect: '/login' }), (req, res) => {
-  res.redirect('/')
+router.get('/google/callback', passport.authenticate('google', { failureRedirect: path.join(process.env.FRONT_HOST!!, 'login', 'fail') }), async (req, res) => {
+  //@ts-ignore
+  const registeded = await isRegistered(req.session.passport.user.id)
+  if (!registeded) {
+    res.redirect(`${process.env.FRONT_HOST!!}/signup`)
+  } else {
+    res.redirect(`${process.env.FRONT_HOST!!}`)
+  }
 })
 
 passport.serializeUser((user, done) => {

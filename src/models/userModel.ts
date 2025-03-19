@@ -2,7 +2,9 @@ import db from '@/config/db'
 
 export interface User {
   id: string
-  nickname: string
+  name: string | null
+  grade: number | null
+  class: number | null
   email: string
   profile_image: string
 }
@@ -26,4 +28,9 @@ export const getUser = async (uid: string): Promise<User | null> => {
     .where('id', uid)
     .select<User[]>('*')
   return user[0] || null
+}
+
+export const isRegistered = async (uid: string): Promise<boolean> => {
+  const user = await getUser(uid)
+  return user !== null && user.name !== null && user.grade !== null && user.class !== null
 }

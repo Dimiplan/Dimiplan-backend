@@ -27,10 +27,10 @@ app.use(
 )
 // !!!!! dotenv 등 .gitignore 필수 !!!!!!
 // !!!!! CORS 주의 !!!!!
-// app.use(cors({
-//   origin: '-프론트 URL-',
-//   credentials: true
-// }))
+app.use(cors({
+  origin: 'https://dimigo.co.kr', // Allow CORS for this domain
+  credentials: true
+}))
 app.use(express.urlencoded({ extended: true }))
 
 app.use('/auth', authRouter)
