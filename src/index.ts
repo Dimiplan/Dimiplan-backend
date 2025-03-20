@@ -4,7 +4,6 @@ import cors from 'cors'
 import session from 'express-session'
 import { ConnectSessionKnexStore } from 'connect-session-knex'
 import db, { options as dbOptions } from './config/db'
-import { getUser } from './models/userModel'
 import '@/config/dotenv'
 // Routes
 import authRouter from './routes/auth'
@@ -18,6 +17,7 @@ const sessionStore = new ConnectSessionKnexStore({
   cleanupInterval: 0
 })
 
+app.set('trust proxy', true)
 app.use(
   session({
     secret: process.env.SESSION_SECRET!,
@@ -39,6 +39,6 @@ app.use(passport.session());
 app.use('/auth', authRouter)
 app.use('/api', apiRouter)
 
-app.listen(3000, () => {
-  console.log('Server is running on port 3000')
+app.listen(8080, () => {
+  console.log('Server is running on port 8080 (proxy 3000)')
 })
