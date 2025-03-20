@@ -36,7 +36,7 @@ router.get('/registered', async (req, res) => {
   if (!uid)
     res.status(401).json({ message: 'Not authenticated' })
   else
-    res.json({ registered: await isRegistered(uid) })
+    res.status(200).json({ registered: await isRegistered(uid) })
 })
 
 router.use(async (req, res, next) => {
@@ -57,7 +57,7 @@ router.get('/whoami', async (req, res) => {
   const uid = req.session?.passport?.user.id
   const user = await getUser(uid)
   if (user)
-    res.json(user)
+    res.status(200).json(user)
   else
     res.status(404).json({ message: 'User not found' })
 })
