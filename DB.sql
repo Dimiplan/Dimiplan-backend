@@ -40,6 +40,19 @@ CREATE TABLE IF NOT EXISTS `users` (
   `profile_image` text NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
+CREATE TABLE IF NOT EXISTS `tasks` (
+	`owner` TEXT NOT NULL COLLATE 'utf8mb4_0900_ai_ci',
+	`seq` INT NOT NULL DEFAULT '0',
+	`content` TEXT NOT NULL COLLATE 'utf8mb4_0900_ai_ci',
+	`date` DATE NULL DEFAULT NULL,
+	`priority` INT NOT NULL DEFAULT '0',
+	`isCompleted` TINYINT NULL DEFAULT '0'
+)
+COLLATE='utf8mb4_0900_ai_ci'
+ENGINE=InnoDB
+;
+
+
 -- 내보낼 데이터가 선택되어 있지 않습니다.
 
 /*!40103 SET TIME_ZONE=IFNULL(@OLD_TIME_ZONE, 'system') */;
