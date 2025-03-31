@@ -12,7 +12,7 @@ passport.use(new GoogleStrategy({
   clientSecret: process.env.GOOGLE_CLIENT_SECRET,
   callbackURL: 'https://dimigo.co.kr:3000/auth/google/callback'
 }, async (accessToken, refreshToken, profile, done) => {
-  console.log('유저다!');
+  console.log('User joined');
   console.log(profile);
   if (profile._json.hd !== 'dimigo.hs.kr') {
     return done(null, false, { message: 'Not a Dimigo user' });
