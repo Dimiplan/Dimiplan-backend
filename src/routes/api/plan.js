@@ -141,6 +141,29 @@ router.post('/addFolder', async (req, res) => {
 
 
 
+router.get('/getEveryPlan', async (req, res) => {
+    const uid = 
+        req.session &&
+        req.session.passport &&
+        req.session.passport.user &&
+        req.session.passport.user.id;
+    if (!uid) {
+        res.status(401).json({ message: 'Not authenticated' });
+        return;
+    }
+    
+    const plans = await db('plan')
+    .where({ owner: uid })
+    .select('*')
+
+    if (plans.length === 0) {
+        res.status(404).json({ message: 'Plan not found' });
+    } else {
+        res.status(200).json(plans);
+    }
+});
+
+
 router.get('/getPlanner', async (req, res) => {
     const uid = 
         req.session &&
