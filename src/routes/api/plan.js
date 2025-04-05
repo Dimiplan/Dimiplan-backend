@@ -78,7 +78,7 @@ router.post('/createRootFolder', async(req, res) => {
     .where({ owner: uid, id: 0 })
     .select('*')
     .first();
-    
+
     if (isRootFolderExist) {
         res.status(409).json({ message: 'Root folder already exists' });
         return;
@@ -113,10 +113,11 @@ router.post('/addPlanner', async (req, res) => {
         return;
     }
 
-    const plannerId = await db('userid')
-    .where({ owner: uid })
-    .select('plannerId')
-    .first()
+    const plannerData = await db('userid')
+        .where({ owner: uid })
+        .select('plannerId')
+        .first()
+    const plannerId = plannerData.plannerId
 
     await db('userid')
         .where({ owner: uid })
