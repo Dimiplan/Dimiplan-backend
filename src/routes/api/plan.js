@@ -85,6 +85,7 @@ router.post('/createRootFolder', async(req, res) => {
     }
 
     await db('folders').insert({ owner: uid, name: 'Root', id: 0, from: -1 });
+    res.status(201).json({ message: 'Root folder created' });
 });
 
 
