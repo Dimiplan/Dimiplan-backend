@@ -50,11 +50,18 @@ router.post('/addPlan', async (req, res) => {
         return;
     }
 
-    const planId = await db('userid')
-    .where({ owner: uid })
-    .select('planId')
-    .first()
-
+    let planData = await db('userid')
+        .where({ owner: uid })
+        .select('planId')
+        .first();
+    if (!planData) {
+        await db('userid').insert({ owner: uid, folderId: 1, plannerId: 1, planId: 1 });
+        planData = await db('userid')
+        .where({ owner: uid })
+        .select('planId')
+        .first();
+    }
+    const planId = planData.planId;
     await db('userid')
         .where({ owner: uid })
         .update({ planId: planId + 1 })
@@ -113,11 +120,18 @@ router.post('/addPlanner', async (req, res) => {
         return;
     }
 
-    const plannerData = await db('userid')
+    let plannerData = await db('userid')
         .where({ owner: uid })
         .select('plannerId')
-        .first()
-    const plannerId = plannerData.plannerId
+        .first();
+    if (!plannerData) {
+        await db('userid').insert({ owner: uid, plannerId: 1, folderId: 1, planId: 1 });
+        plannerData = await db('userid')
+        .where({ owner: uid })
+        .select('plannerId')
+        .first();
+    }
+    const plannerId = plannerData.plannerId;
 
     await db('userid')
         .where({ owner: uid })
@@ -153,15 +167,21 @@ router.post('/addFolder', async (req, res) => {
         }
     }
 
-    const folderId = await db('userid')
-    .where({ owner: uid })
-    .select('folderId')
-    .first()
-
+    let folderData = await db('userid')
+        .where({ owner: uid })
+        .select('folderId')
+        .first();
+    if (!folderData) {
+        await db('userid').insert({ owner: uid, folderId: 1, plannerId: 1, planId: 1 });
+        folderData = await db('userid')
+        .where({ owner: uid })
+        .select('folderId')
+        .first();
+    }
+    const folderId = folderData.folderId;
     await db('userid')
         .where({ owner: uid })
         .update({ folderId: folderId + 1 })
-
     await db('folders').insert({ owner: uid, name: name, id: folderId, from: from });
 })
 
