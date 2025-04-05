@@ -63,6 +63,30 @@ router.post('/addPlan', async (req, res) => {
         contents: contents, id: planId, from: planner.id, priority: priority, isCompleted: 0});
 })
 
+router.post('/createRootFolder', async(req, res) => {
+    const uid = 
+        req.session &&
+        req.session.passport &&
+        req.session.passport.user &&
+        req.session.passport.user.id;
+    if (!uid) {
+        res.status(401).json({ message: 'Not authenticated' });
+        return;
+    }
+
+    const isRootFolderExist = await db('folders')
+    .where({ owner: uid, id: 0 })
+    .select('*')
+    .first();
+    
+    if (isRootFolderExist) {
+        res.status(409).json({ message: 'Root folder already exists' });
+        return;
+    }
+
+    await db('folders').insert({ owner: uid, name: 'Root', id: 0, from: -1 });
+});
+
 
 router.post('/addPlanner', async (req, res) => {
     const { name, isDaily, from } = req.body;
