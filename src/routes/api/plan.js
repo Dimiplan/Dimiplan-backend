@@ -3,6 +3,8 @@ const express = require('express');
 const db = require('../../config/db');
 const router = express.Router();
 
+const folderNameBlacklist = ["Root", "root", "new", "all"]
+
 
 router.post('/addPlan', async (req, res) => {
     const { contents, priority, from } = req.body;
@@ -148,12 +150,25 @@ router.post('/addPlanner', async (req, res) => {
         .update({ plannerId: plannerId + 1 })
 
     await db('planner').insert({ owner: uid, name: name, id: plannerId, from: folder.id, isDaily: isDaily});
+    res.status(201).json({ message: 'Planner added successfully' });
 })
 
 
 router.post('/addFolder', async (req, res) => {
     const { name, from } = req.body;
-    console.log(name, from);
+    if (!name || !from) {
+        res.status(400).json({ message: 'Name and from are required' });
+        return;
+    }
+    if (folderNameBlacklist.includes(name)) {
+        res.status(400).json({ message: 'Invalid folder name' });
+        return;
+    }
+
+    if (name.endsWith('.pn')) {
+        res.status(400).json({ message: 'Invalid folder name' });
+        return;
+    }
 
     const uid = 
         req.session &&
@@ -193,6 +208,7 @@ router.post('/addFolder', async (req, res) => {
         .where({ owner: uid })
         .update({ folderId: folderId + 1 })
     await db('folders').insert({ owner: uid, name: name, id: folderId, from: from });
+
 })
 
 
@@ -232,6 +248,7 @@ router.get('/getPlanner', async (req, res) => {
     }
 
     const id = req.query.id;
+    let planner;
     
     if (!id) {
         const from = req.query.from;
@@ -242,14 +259,14 @@ router.get('/getPlanner', async (req, res) => {
             return;
         }
 
-        const planner = await db('planner')
+        planner = await db('planner')
         .where({ owner: uid, from: from, name: name })
         .select('*')
         .first()
     }
 
     else {
-        const planner = await db('planner')
+        planner = await db('planner')
         .where({ owner: uid, id: id })
         .select('*')
         .first()
@@ -268,7 +285,7 @@ router.get('/getPlanner', async (req, res) => {
 });
 
 
-router.get('/getFolder', async (req, res) => {
+router.get('/getPlannersInFolder', async (req, res) => {
     const uid = 
         req.session &&
         req.session.passport &&
@@ -280,6 +297,63 @@ router.get('/getFolder', async (req, res) => {
     }
 
     const id = req.query.id;
+    let folder;
+    
+    if (!id) {
+        const from = req.query.from;
+        const name = req.query.name;
+
+        if (!name || !from) {
+            res.status(400).json({ message: 'Id or (from + name) is required' });
+            return;
+        }
+        
+        try {
+            folder = await db('folders')
+            .where({ owner: uid, from: from, name: name })
+            .select('*')
+            .first()
+        } catch (error) {
+            res.status(500).json({ message: 'Error retrieving folder', error: error.message });
+            return;
+        }
+    } else {
+        try {
+            folder = await db('folders')
+            .where({ owner: uid, id: id })
+            .select('*')
+            .first()
+        } catch (error) {
+            res.status(500).json({ message: 'Error retrieving folder', error: error.message });
+            return;
+        }
+    }
+
+    const planners = await db('planner')
+    .where({ owner: uid, from: folder.id })
+    .orderByRaw('isDaily ASC, id ASC')
+    .select('*')
+
+    if (planners.length === 0) {
+        res.status(404).json({ message: 'Planner not found' });
+    } else {
+        res.status(200).json(planners);
+    }
+});
+
+router.get('/getFoldersInFolder', async (req, res) => {
+    const uid = 
+        req.session &&
+        req.session.passport &&
+        req.session.passport.user &&
+        req.session.passport.user.id;
+    if (!uid) {
+        res.status(401).json({ message: 'Not authenticated' });
+        return;
+    }
+
+    const id = req.query.id;
+    let folder;
     
     if (!id) {
         const from = req.query.from;
@@ -290,28 +364,26 @@ router.get('/getFolder', async (req, res) => {
             return;
         }
 
-        const folder = await db('folders')
+        folder = await db('folders')
         .where({ owner: uid, from: from, name: name })
         .select('*')
         .first()
-    }
-
-    else {
-        const folder = await db('folders')
+    } else {
+        folder = await db('folders')
         .where({ owner: uid, id: id })
         .select('*')
         .first()
     }
 
-    const planners = await db('planner')
+    const folders = await db('folders')
     .where({ owner: uid, from: folder.id })
-    .orderByRaw('isDaily ASC, id ASC')
+    .orderByRaw('id ASC')
     .select('*')
 
-    if (plans.length === 0) {
-        res.status(404).json({ message: 'Planner not found' });
+    if (folders.length === 0) {
+        res.status(404).json({ message: 'Folders not found' });
     } else {
-        res.status(200).json(plans);
+        res.status(200).json(folders);
     }
 });
 

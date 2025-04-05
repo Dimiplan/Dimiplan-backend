@@ -14,9 +14,7 @@ passport.use(new GoogleStrategy({
 }, async (accessToken, refreshToken, profile, done) => {
   console.log('User joined');
   console.log(profile);
-  if (profile._json.hd !== 'dimigo.hs.kr') {
-    return done(null, false, { message: 'Not a Dimigo user' });
-  }
+  
   const user = {
     id: profile.id,
     name: null,
@@ -31,7 +29,6 @@ passport.use(new GoogleStrategy({
 
 router.get('/google', passport.authenticate('google', {
   scope: ['profile', 'email'],
-  hd: 'dimigo.hs.kr',
   prompt: 'select_account'
 }));
 
