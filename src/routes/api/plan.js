@@ -120,6 +120,16 @@ router.post('/addPlanner', async (req, res) => {
         return;
     }
 
+    // 같은 from 내에 같은 이름의 planner가 있는지 확인
+    const samePlanner = await db('planner')
+    .where({ owner: uid, from: from, name: name })
+    .select('*')
+    .first();
+    if (samePlanner) {
+        res.status(409).json({ message: 'Same planner already exists' });
+        return;
+    }
+
     let plannerData = await db('userid')
         .where({ owner: uid })
         .select('plannerId')
