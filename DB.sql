@@ -19,6 +19,41 @@
 CREATE DATABASE IF NOT EXISTS `dimiplan` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
 USE `dimiplan`;
 
+-- 테이블 dimiplan.folders 구조 내보내기
+CREATE TABLE IF NOT EXISTS `folders` (
+  `owner` text NOT NULL,
+  `id` int DEFAULT (0),
+  `from` int DEFAULT NULL,
+  `name` varchar(20) NOT NULL DEFAULT ''
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- 내보낼 데이터가 선택되어 있지 않습니다.
+
+-- 테이블 dimiplan.plan 구조 내보내기
+CREATE TABLE IF NOT EXISTS `plan` (
+  `owner` text NOT NULL,
+  `startDate` date DEFAULT NULL,
+  `dueDate` date DEFAULT NULL,
+  `contents` text,
+  `from` int NOT NULL DEFAULT (0),
+  `isCompleted` tinyint NOT NULL DEFAULT (0),
+  `id` int NOT NULL,
+  `priority` int NOT NULL DEFAULT (1)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- 내보낼 데이터가 선택되어 있지 않습니다.
+
+-- 테이블 dimiplan.planner 구조 내보내기
+CREATE TABLE IF NOT EXISTS `planner` (
+  `owner` text NOT NULL,
+  `id` int NOT NULL,
+  `from` int NOT NULL DEFAULT (0),
+  `isDaily` tinyint NOT NULL DEFAULT (0),
+  `name` text NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- 내보낼 데이터가 선택되어 있지 않습니다.
+
 -- 테이블 dimiplan.sessions 구조 내보내기
 CREATE TABLE IF NOT EXISTS `sessions` (
   `sid` varchar(255) NOT NULL,
@@ -30,6 +65,16 @@ CREATE TABLE IF NOT EXISTS `sessions` (
 
 -- 내보낼 데이터가 선택되어 있지 않습니다.
 
+-- 테이블 dimiplan.userid 구조 내보내기
+CREATE TABLE IF NOT EXISTS `userid` (
+  `owner` text NOT NULL,
+  `planId` int NOT NULL DEFAULT (1),
+  `folderId` int NOT NULL DEFAULT (1),
+  `plannerId` int NOT NULL DEFAULT '1'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- 내보낼 데이터가 선택되어 있지 않습니다.
+
 -- 테이블 dimiplan.users 구조 내보내기
 CREATE TABLE IF NOT EXISTS `users` (
   `id` text NOT NULL,
@@ -37,21 +82,9 @@ CREATE TABLE IF NOT EXISTS `users` (
   `grade` tinyint DEFAULT NULL,
   `class` tinyint DEFAULT NULL,
   `email` text NOT NULL,
-  `profile_image` text NOT NULL
+  `profile_image` text NOT NULL,
+  PRIMARY KEY (`id`(100))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
-CREATE TABLE IF NOT EXISTS `tasks` (
-	`owner` TEXT NOT NULL COLLATE 'utf8mb4_0900_ai_ci',
-	`seq` INT NOT NULL DEFAULT '0',
-	`content` TEXT NOT NULL COLLATE 'utf8mb4_0900_ai_ci',
-	`date` DATE NULL DEFAULT NULL,
-	`priority` INT NOT NULL DEFAULT '0',
-	`isCompleted` TINYINT NULL DEFAULT '0'
-)
-COLLATE='utf8mb4_0900_ai_ci'
-ENGINE=InnoDB
-;
-
 
 -- 내보낼 데이터가 선택되어 있지 않습니다.
 
