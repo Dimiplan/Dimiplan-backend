@@ -29,12 +29,21 @@ app.use(
   })
 );
 
-// !!!!! dotenv 등 .gitignore 필수 !!!!!!
-// !!!!! CORS 주의 !!!!!
-app.use(cors({
-  origin: ['https://dimigo.co.kr', 'https://m.dimigo.co.kr', 'http://localhost:3000'], 
+const whitelist = ['https://dimigo.co.kr', 'https://m.dimigo.co.kr', 'http://localhost:3000'];
+
+const corsOptions = {
+  origin: function (origin, callback) { 
+    if (whitelist.indexOf(origin) !== -1) { // 만일 whitelist 배열에 origin인자가 있을 경우
+      callback(null, true); // cors 허용
+    } else {
+      callback(new Error("Not Allowed Origin!")); // cors 비허용
+    }
+  },
   credentials: true
-}));
+};
+
+app.use(cors(corsOptions)); // 옵션을 추가한 CORS 미들웨어 추가
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(passport.initialize());
