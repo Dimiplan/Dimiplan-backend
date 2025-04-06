@@ -32,7 +32,7 @@ app.use(
 // !!!!! dotenv 등 .gitignore 필수 !!!!!!
 // !!!!! CORS 주의 !!!!!
 app.use(cors({
-  origin: 'https://dimigo.co.kr', 
+  origin: ['https://dimigo.co.kr', 'https://m.dimigo.co.kr', 'http://localhost:3000'], 
   credentials: true
 }));
 app.use(express.json());
