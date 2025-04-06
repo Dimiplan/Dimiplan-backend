@@ -47,11 +47,11 @@ router.get('/google/callback', passport.authenticate('google', {
   }
 });
 
-router.get('/logout', (req, res) => {
-  req.logout((err) => {
-    if (err)
-      return res.status(500).send(err);
-    return res.redirect(process.env.FRONT_HOST);
+router.get('/logout', (req, res, next) => {
+  req.session.destroy(err => {
+    if (err) return next(err);
+    res.clearCookie('connect.sid', { path: '/' });
+    res.status(200).json({ message: 'Logged out' });
   });
 });
 

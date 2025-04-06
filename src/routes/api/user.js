@@ -94,21 +94,21 @@ router.get('/registered', async (req, res) => {
 });
 
 // 미들웨어: 인증 및 등록 여부 검사
-router.use(async (req, res, next) => {
-    const uid =
-        req.session &&
-        req.session.passport &&
-        req.session.passport.user &&
-        req.session.passport.user.id;
-    if (!uid)
-        res.status(401).json({ message: 'Not authenticated' });
-    else {
-        if (await isRegistered(uid))
-        next();
-        else
-        res.status(403).json({ message: 'Not registered' });
-    }
-});
+// router.use(async (req, res, next) => {
+//     const uid =
+//         req.session &&
+//         req.session.passport &&
+//         req.session.passport.user &&
+//         req.session.passport.user.id;
+//     if (!uid)
+//         res.status(401).json({ message: 'Not authenticated' });
+//     else {
+//         if (await isRegistered(uid))
+//         next();
+//         else
+//         res.status(403).json({ message: 'Not registered' });
+//     }
+// });
 
 router.get('/whoami', async (req, res) => {
     const uid =
@@ -116,11 +116,18 @@ router.get('/whoami', async (req, res) => {
         req.session.passport &&
         req.session.passport.user &&
         req.session.passport.user.id;
+    if (!uid) {
+        res.status(401).json({ message: 'Not authenticated' });
+        return;
+    }
     const user = await getUser(uid);
-    if (user)
+    if (user) {
+        console.log(user);
         res.status(200).json(user);
-    else
+    } else {
         res.status(404).json({ message: 'User not found' });
+        
+    }
 });
 
 module.exports = router;
