@@ -329,10 +329,16 @@ router.get('/getPlannersInFolder', async (req, res) => {
         }
     }
 
-    const planners = await db('planner')
-    .where({ owner: uid, from: folder.id })
-    .orderByRaw('isDaily ASC, id ASC')
-    .select('*')
+    let planners;
+    try {
+        planners = await db('planner')
+            .where({ owner: uid, from: folder.id })
+            .orderByRaw('isDaily ASC, id ASC')
+            .select('*');
+    } catch (error) {
+        res.status(500).json({ message: 'Error retrieving planners', error: error.message });
+        return;
+    }
 
     if (planners.length === 0) {
         res.status(404).json({ message: 'Planner not found' });
@@ -375,10 +381,16 @@ router.get('/getFoldersInFolder', async (req, res) => {
         .first()
     }
 
-    const folders = await db('folders')
-    .where({ owner: uid, from: folder.id })
-    .orderByRaw('id ASC')
-    .select('*')
+    let folders;
+    try {
+        folders = await db('folders')
+            .where({ owner: uid, from: folder.id })
+            .orderByRaw('id ASC')
+            .select('*');
+    } catch (error) {
+        res.status(500).json({ message: 'Error retrieving folders', error: error.message });
+        return;
+    }
 
     if (folders.length === 0) {
         res.status(404).json({ message: 'Folders not found' });

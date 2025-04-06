@@ -37,7 +37,7 @@ const updateUser = async (uid, user) => {
 
 const isRegistered = async (uid) => {
     const user = await getUser(uid);
-    return user !== null && user.name !== null && user.grade !== null && user.class !== null;
+    return user !== null && user.name !== null;
 };
 
 module.exports = {
