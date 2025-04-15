@@ -1,4 +1,4 @@
-name: ESLint
+name: ESLint Check
 
 on:
   push:
@@ -9,7 +9,7 @@ on:
 
 jobs:
   eslint:
-    name: Validate linting
+    name: Validate Linting
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -21,12 +21,10 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
-          node-version-file: package.json
           cache: npm
 
       - name: Install ESLint
-        run: |
-          npm ci
+        run: npm ci
           
       - name: Run ESLint
         run: npx eslint . --config eslint.config.mjs

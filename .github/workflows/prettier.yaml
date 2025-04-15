@@ -1,4 +1,4 @@
-name: Prettier
+name: Make Code Prettier
 
 # This action works with pull requests and pushes
 on:
@@ -8,7 +8,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  Prettier:
+  prettier:
+    name: Prettify code
     runs-on: ubuntu-latest
 
     steps:
