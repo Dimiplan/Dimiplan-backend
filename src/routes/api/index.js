@@ -1,4 +1,4 @@
-const { getUser, isRegistered, updateUser } = require("../../models/userModel");
+const { isRegistered } = require("../../models/userModel");
 const express = require("express");
 const userRouter = require("./user");
 const planRouter = require("./plan");

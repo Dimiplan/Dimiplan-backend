@@ -4,9 +4,7 @@ const { Strategy: GoogleStrategy } = require("passport-google-oauth20");
 require("../config/dotenv");
 const {
   createUser,
-  getUser,
   isRegistered,
-  isUserExists,
 } = require("../models/userModel");
 const path = require("path");
 

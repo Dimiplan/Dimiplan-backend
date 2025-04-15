@@ -1,4 +1,4 @@
-dotenv = require("dotenv");
+const dotenv = require("dotenv");
 
 const node_env = "production";
 dotenv.config();
