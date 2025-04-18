@@ -1,4 +1,3 @@
-const { getUser, isRegistered, updateUser } = require("../../models/userModel");
 const express = require("express");
 const db = require("../../config/db");
 const router = express.Router();
