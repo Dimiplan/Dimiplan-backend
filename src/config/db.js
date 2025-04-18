@@ -1,5 +1,5 @@
 const knex = require("knex");
-require("../config/dotenv"); // Load environment variables
+require("./dotenv"); // Load environment variables
 
 const options = {
   host: process.env.DB_HOST,

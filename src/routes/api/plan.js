@@ -8,6 +8,11 @@ router.post("/addPlan", async (req, res) => {
   const { contents, priority, from } = req.body;
   console.log(contents, priority, from);
 
+  if (!contents || !from) {
+    res.status(400).json({ message: "Contents and from are required" });
+    return;
+  }
+
   const uid =
     req.session &&
     req.session.passport &&
@@ -37,16 +42,6 @@ router.post("/addPlan", async (req, res) => {
 
   if (!planner) {
     res.status(404).json({ message: "Planner not found" });
-    return;
-  }
-
-  const samePlan = await db("plan")
-    .where({ owner: uid, from: from, contents: contents })
-    .select("*")
-    .first();
-
-  if (samePlan) {
-    res.status(409).json({ message: "Same plan already exists" });
     return;
   }
 
@@ -81,6 +76,51 @@ router.post("/addPlan", async (req, res) => {
     priority: priority,
     isCompleted: 0,
   });
+  res.status(201).json({ message: "Plan added successfully" });
+});
+
+router.post("/deletePlan", async (req, res) => {
+  const { id } = req.body;
+  if (!id) {
+    res.status(400).json({ message: "Id is required" });
+    return;
+  }
+
+  const uid =
+    req.session &&
+    req.session.passport &&
+    req.session.passport.user &&
+    req.session.passport.user.id;
+  if (!uid) {
+    res.status(401).json({ message: "Not authenticated" });
+    return;
+  }
+
+  await db("plan").where({ owner: uid, id: id }).del();
+
+  res.status(200).json({ message: "Plan deleted successfully" });
+});
+
+router.post("/completePlan", async (req, res) => {
+  const { id } = req.body;
+  if (!id) {
+    res.status(400).json({ message: "Id is required" });
+    return;
+  }
+
+  const uid =
+    req.session &&
+    req.session.passport &&
+    req.session.passport.user &&
+    req.session.passport.user.id;
+  if (!uid) {
+    res.status(401).json({ message: "Not authenticated" });
+    return;
+  }
+
+  await db("plan").where({ owner: uid, id: id }).update({ isCompleted: 1 });
+
+  res.status(200).json({ message: "Plan completed successfully" });
 });
 
 router.post("/createRootFolder", async (req, res) => {
@@ -260,7 +300,7 @@ router.get("/getEveryPlan", async (req, res) => {
   }
 });
 
-router.get("/getPlanner", async (req, res) => {
+router.get("/getPlanInPlanner", async (req, res) => {
   const uid =
     req.session &&
     req.session.passport &&
@@ -275,34 +315,64 @@ router.get("/getPlanner", async (req, res) => {
   let planner;
 
   if (!id) {
-    const from = req.query.from;
-    const name = req.query.name;
+    res.status(400).json({ message: "Id is required" });
+    return;
+  }
 
-    if (!name || !from) {
-      res.status(400).json({ message: "Id or (from + name) is required" });
-      return;
-    }
+  planner = await db("planner")
+    .where({ owner: uid, id: id })
+    .select("*")
+    .first();
 
-    planner = await db("planner")
-      .where({ owner: uid, from: from, name: name })
-      .select("*")
-      .first();
-  } else {
-    planner = await db("planner")
-      .where({ owner: uid, id: id })
-      .select("*")
-      .first();
+  if (!planner) {
+    res.status(404).json({ message: "Planner not found" });
+    return;
   }
 
   const plans = await db("plan")
-    .where({ owner: uid, from: planner.id })
-    .orderByRaw("isCompleted ASC, priority ASC, id ASC")
+    .where({ owner: uid, from: planner.id, isCompleted: 0 })
+    .orderByRaw("priority ASC, id ASC")
     .select("*");
 
-  if (plans.length === 0) {
-    res.status(404).json({ message: "Plan not found" });
+  res.status(200).json(plans);
+});
+
+router.get("/getPlannerInfoByID", async (req, res) => {
+  const uid =
+    req.session &&
+    req.session.passport &&
+    req.session.passport.user &&
+    req.session.passport.user.id;
+  if (!uid) {
+    res.status(401).json({ message: "Not authenticated" });
+    return;
+  }
+
+  const id = req.query.id;
+  if (!id) {
+    res.status(400).json({ message: "Bad Request" });
+    return;
+  }
+
+  let planner;
+  try {
+    planner = await db("planner")
+      .where({ owner: uid, id: id })
+      .orderByRaw("isDaily ASC, id ASC")
+      .select("*")
+      .first();
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .json({ message: "Error retrieving planner", error: error.message });
+    return;
+  }
+
+  if (!planner) {
+    res.status(404).json({ message: "Planner not found" });
   } else {
-    res.status(200).json(plans);
+    res.status(200).json(planner);
   }
 });
 

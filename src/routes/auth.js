@@ -34,37 +34,6 @@ passport.use(
   ),
 );
 
-// POST 로그인 요청 처리
-router.post("/login", async (req, res) => {
-  try {
-    const { userId } = req.body;
-
-    if (!userId) {
-      return res.status(400).json({ message: "사용자 ID가 필요합니다." });
-    }
-
-    // 사용자 존재 여부 확인
-    const exists = await isRegistered(userId);
-    if (!exists) {
-      return res.status(404).json({ message: "사용자를 찾을 수 없습니다." });
-    }
-
-    // 세션에 사용자 정보 저장
-    req.login({ id: userId }, (err) => {
-      if (err) {
-        return res
-          .status(500)
-          .json({ message: "로그인 처리 중 오류가 발생했습니다." });
-      }
-
-      return res.status(200).json({ message: "로그인 성공" });
-    });
-  } catch (error) {
-    console.error("로그인 오류:", error);
-    res.status(500).json({ message: "서버 오류가 발생했습니다." });
-  }
-});
-
 router.get(
   "/google",
   passport.authenticate("google", {
