@@ -1,6 +1,6 @@
 # Table of contents
 
-* ```yaml
+- ```yaml
   props:
     models: true
   type: builtin:openapi
@@ -10,4 +10,4 @@
         kind: openapi
         spec: dimiplan-api
   ```
-* [README](README.md)
+- [README](README.md)
