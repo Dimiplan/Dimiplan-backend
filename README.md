@@ -1,8 +1,6 @@
----
-hidden: true
----
-
 # Dimiplan API Documentation
+
+# https://dimiplan-1.gitbook.io/dimiplan - 상세 정보는 링크 참조
 
 ## 인증 API
 
