@@ -1,5 +1,5 @@
 const express = require("express");
-require("../config/dotenv");
+require("../../config/dotenv");
 const router = express.Router();
 const OpenAI = require("openai");
 
