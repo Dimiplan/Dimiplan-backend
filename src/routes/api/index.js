@@ -2,11 +2,13 @@ const { isRegistered } = require("../../models/userModel");
 const express = require("express");
 const userRouter = require("./user");
 const planRouter = require("./plan");
+const aiRouter = require("./ai");
 
 const router = express.Router();
 
 router.use("/user", userRouter);
 router.use("/plan", planRouter);
+router.use("/ai", aiRouter);
 
 router.use(async (req, res, next) => {
   const uid =
