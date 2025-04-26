@@ -1,9 +1,9 @@
 # Table of contents
 
 - ```yaml
+  type: builtin:openapi
   props:
     models: true
-  type: builtin:openapi
   dependencies:
     spec:
       ref:
