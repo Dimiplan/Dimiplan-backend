@@ -22,4 +22,6 @@ jobs:
         run: npm install -g @gitbook/cli
 
       - name: Publish API Docs
-        run: gitbook openapi publish --spec dimiplan-api --organization A58hNej5H4tTdBySSS1M openapi.yaml
+        run: |
+          gitbook auth --token=$GITBOOK_TOKEN
+          gitbook openapi publish --spec dimiplan-api --organization A58hNej5H4tTdBySSS1M openapi.yaml
