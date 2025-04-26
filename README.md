@@ -1,3 +1,7 @@
+---
+hidden: true
+---
+
 # Dimiplan API Documentation
 
 ## 인증 API
