@@ -10,4 +10,3 @@
         kind: openapi
         spec: dimiplan-api
   ```
-* [Dimiplan API Documentation](README.md)
