@@ -1,6 +1,5 @@
 # Table of contents
 
-* [Dimiplan API Documentation](README.md)
 * ```yaml
   type: builtin:openapi
   props:
@@ -11,3 +10,4 @@
         kind: openapi
         spec: dimiplan-api
   ```
+* [Dimiplan API Documentation](README.md)
