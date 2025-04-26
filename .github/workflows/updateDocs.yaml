@@ -1,0 +1,25 @@
+name: Update API Docs
+on:
+  push:
+    branches: [main]
+    paths:
+      - "openapi.yaml"
+  workflow_dispatch:
+
+jobs:
+  updateDocs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          cache: npm
+
+      - name: Install Gitbook CLI
+        run: npm install -g @gitbook/cli
+
+      - name: Publish API Docs
+        run: gitbook openapi publish --spec dimiplan-api --organization A58hNej5H4tTdBySSS1M openapi.yaml
