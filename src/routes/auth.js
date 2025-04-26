@@ -57,7 +57,11 @@ router.post("/login", async (req, res) => {
           .json({ message: "로그인 처리 중 오류가 발생했습니다." });
       }
 
-      return res.status(200).json({ message: "로그인 성공" });
+      // Include the session ID in the response body
+      return res.status(200).json({
+        message: "로그인 성공",
+        sessionId: req.sessionID, // Include the session ID
+      });
     });
   } catch (error) {
     console.error("로그인 오류:", error);
