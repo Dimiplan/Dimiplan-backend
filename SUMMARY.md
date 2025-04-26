@@ -1,6 +1,6 @@
 # Table of contents
 
-* ```yaml
+- ```yaml
   type: builtin:openapi
   props:
     models: true
