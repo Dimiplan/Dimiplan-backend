@@ -7,21 +7,16 @@ on:
   workflow_dispatch:
 
 jobs:
-  updateDocs:
+  publish:
+    name: Publish to GitBook
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Use Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
         with:
-          cache: npm
-
-      - name: Install Gitbook CLI
-        run: npm install -g @gitbook/cli
-
-      - name: Publish API Docs
-        run: |
-          gitbook auth --token=$GITBOOK_TOKEN
-          gitbook openapi publish --spec dimiplan-api --organization A58hNej5H4tTdBySSS1M openapi.yaml
+          node-version: 18.x
+      - run: npm ci
+      - run: npm install -g @gitbook/cli
+      - run: gitbook openapi publish --spec dimiplan-api --organization A58hNej5H4tTdBySSS1M openapi.yaml
+        env:
+          GITBOOK_TOKEN: ${{ secrets.GITBOOK_TOKEN }}
