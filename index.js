@@ -20,12 +20,48 @@ const sessionStore = new ConnectSessionKnexStore({
 });
 
 app.set("trust proxy", true);
+// Add this middleware to your Express app before your routes
+app.use((req, res, next) => {
+  // First check session authentication (existing cookie method)
+  if (req.session && req.session.passport && req.session.passport.user) {
+    return next();
+  }
+
+  // Check for session ID in custom header
+  const sessionId = req.headers["x-session-id"];
+  if (sessionId) {
+    // Use your session store to retrieve the session with this ID
+    sessionStore.get(sessionId, (err, session) => {
+      if (err) {
+        console.error("Error retrieving session:", err);
+        return next();
+      }
+
+      if (session && session.passport && session.passport.user) {
+        // Reconstruct the session
+        req.session = session;
+        return next();
+      } else {
+        return next();
+      }
+    });
+  } else {
+    // No authentication found
+    next();
+  }
+});
 app.use(
   session({
     secret: process.env.SESSION_SECRET,
     store: sessionStore,
     resave: false,
     saveUninitialized: false,
+    cookie: {
+      secure: false, // Set to true in production with HTTPS
+      httpOnly: true,
+      sameSite: "none", // Allows cross-site cookies
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    },
   }),
 );
 
@@ -37,14 +73,18 @@ const whitelist = [
 
 const corsOptions = {
   origin: function (origin, callback) {
-    console.log("CORS origin:", origin);
-    if (!origin || whitelist.includes(origin)) {
+    // Allow requests with no origin (like mobile apps)
+    if (!origin) return callback(null, true);
+
+    if (whitelist.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
-      callback(new Error("Not Allowed Origin!"));
+      callback(new Error("Not allowed by CORS"));
     }
   },
   credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization", "X-Session-ID", "Cookie"],
 };
 
 app.use(cors(corsOptions));
