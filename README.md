@@ -3,6 +3,7 @@
 ## 인증 API
 
 ### 구글 로그인
+
 - **Endpoint**: `/auth/google`
 - **Method**: GET
 - **Description**: 구글 로그인 페이지로 리다이렉트됩니다.
@@ -11,6 +12,7 @@
   - 로그인 성공 후 사용자가 가입되어 있지 않으면 회원가입 페이지(`FRONT_HOST/signup`)로 리다이렉트
 
 ### 구글 로그인 콜백
+
 - **Endpoint**: `/auth/google/callback`
 - **Method**: GET
 - **Description**: 구글 로그인 후 콜백 처리를 담당합니다.
@@ -20,6 +22,7 @@
   - 로그인 성공 & 미가입 사용자면 회원가입 페이지(`FRONT_HOST/signup`)로 리다이렉트
 
 ### 로그아웃
+
 - **Endpoint**: `/auth/logout`
 - **Method**: GET
 - **Description**: 로그아웃을 처리합니다.
@@ -27,6 +30,7 @@
   - 200 OK: `{ "message": "Logged out" }`
 
 ### 사용자 로그인(테스트용)
+
 - **Endpoint**: `/auth/login`
 - **Method**: POST
 - **Description**: 사용자 ID로 직접 로그인 (테스트용)
@@ -45,6 +49,7 @@
 ## 사용자 API
 
 ### 사용자 정보 업데이트
+
 - **Endpoint**: `/api/user/updateme`
 - **Method**: POST
 - **Description**: 현재 로그인된 사용자의 정보를 업데이트합니다.
@@ -68,6 +73,7 @@
   - 500 Internal Server Error: `{ "message": "Internal server error" }`
 
 ### 사용자 등록 여부 확인
+
 - **Endpoint**: `/api/user/registered`
 - **Method**: GET
 - **Description**: 현재 로그인된 사용자의 등록 여부를 확인합니다.
@@ -77,6 +83,7 @@
   - 401 Unauthorized: `{ "message": "Not authenticated" }`
 
 ### 사용자 정보 조회
+
 - **Endpoint**: `/api/user/whoami`
 - **Method**: GET
 - **Description**: 현재 로그인된 사용자의 정보를 조회합니다.
@@ -99,6 +106,7 @@
 ## 플랜 API
 
 ### 루트 폴더 생성
+
 - **Endpoint**: `/api/plan/createRootFolder`
 - **Method**: POST
 - **Description**: 사용자의 루트 폴더를 생성합니다.
@@ -110,6 +118,7 @@
   - 409 Conflict: `{ "message": "Root folder already exists" }`
 
 ### 폴더 추가
+
 - **Endpoint**: `/api/plan/addFolder`
 - **Method**: POST
 - **Description**: 새 폴더를 추가합니다.
@@ -130,6 +139,7 @@
   - 404 Not Found: `{ "message": "Folder not found" }` - 상위 폴더가 존재하지 않을 경우
 
 ### 플래너 추가
+
 - **Endpoint**: `/api/plan/addPlanner`
 - **Method**: POST
 - **Description**: 새 플래너를 추가합니다.
@@ -150,6 +160,7 @@
   - 409 Conflict: `{ "message": "Same planner already exists" }`
 
 ### 계획 추가
+
 - **Endpoint**: `/api/plan/addPlan`
 - **Method**: POST
 - **Description**: 새 계획을 추가합니다.
@@ -172,6 +183,7 @@
   - 404 Not Found: `{ "message": "Planner not found" }`
 
 ### 계획 삭제
+
 - **Endpoint**: `/api/plan/deletePlan`
 - **Method**: POST
 - **Description**: 계획을 삭제합니다.
@@ -189,6 +201,7 @@
   - 403 Forbidden: `{ "message": "Not registered" }`
 
 ### 계획 완료 처리
+
 - **Endpoint**: `/api/plan/completePlan`
 - **Method**: POST
 - **Description**: 계획을 완료 처리합니다.
@@ -206,6 +219,7 @@
   - 403 Forbidden: `{ "message": "Not registered" }`
 
 ### 모든 계획 조회
+
 - **Endpoint**: `/api/plan/getEveryPlan`
 - **Method**: GET
 - **Description**: 사용자의 모든 계획을 조회합니다.
@@ -217,6 +231,7 @@
   - 404 Not Found: `{ "message": "Plan not found" }`
 
 ### 플래너 내 계획 조회
+
 - **Endpoint**: `/api/plan/getPlanInPlanner`
 - **Method**: GET
 - **Description**: 특정 플래너 내의 계획을 조회합니다.
@@ -231,6 +246,7 @@
   - 404 Not Found: `{ "message": "Planner not found" }`
 
 ### 플래너 정보 조회
+
 - **Endpoint**: `/api/plan/getPlannerInfoByID`
 - **Method**: GET
 - **Description**: 특정 플래너의 정보를 조회합니다.
@@ -246,13 +262,14 @@
   - 500 Internal Server Error: `{ "message": "Error retrieving planner", "error": "오류 메시지" }`
 
 ### 폴더 내 플래너 조회
+
 - **Endpoint**: `/api/plan/getPlannersInFolder`
 - **Method**: GET
 - **Description**: 특정 폴더 내의 플래너 목록을 조회합니다.
 - **Authentication**: 필요 & 등록된 사용자만 가능
 - **Query Parameters**:
   - `id`: 폴더 ID
-  또는
+    또는
   - `from`: 상위 폴더 ID
   - `name`: 폴더 이름
 - **Response**:
@@ -264,13 +281,14 @@
   - 500 Internal Server Error: `{ "message": "Error retrieving folder", "error": "오류 메시지" }` 또는 `{ "message": "Error retrieving planners", "error": "오류 메시지" }`
 
 ### 폴더 내 하위 폴더 조회
+
 - **Endpoint**: `/api/plan/getFoldersInFolder`
 - **Method**: GET
 - **Description**: 특정 폴더 내의 하위 폴더 목록을 조회합니다.
 - **Authentication**: 필요 & 등록된 사용자만 가능
 - **Query Parameters**:
   - `id`: 폴더 ID
-  또는
+    또는
   - `from`: 상위 폴더 ID
   - `name`: 폴더 이름
 - **Response**:
@@ -284,6 +302,7 @@
 ## 데이터 스키마
 
 ### User 스키마
+
 ```
 {
   id: string,           // 구글 계정 ID
@@ -296,6 +315,7 @@
 ```
 
 ### Folder 스키마
+
 ```
 {
   owner: string, // 사용자 ID
@@ -306,6 +326,7 @@
 ```
 
 ### Planner 스키마
+
 ```
 {
   owner: string,  // 사용자 ID
@@ -317,6 +338,7 @@
 ```
 
 ### Plan 스키마
+
 ```
 {
   owner: string,     // 사용자 ID
@@ -333,6 +355,7 @@
 ## 개발 정보
 
 ### 환경 변수
+
 프로젝트를 실행하려면 다음 환경 변수가 필요합니다:
 
 - `DB_HOST`: 데이터베이스 호스트
@@ -346,6 +369,7 @@
 - `FRONT_HOST`: 프론트엔드 호스트 URL
 
 ### 실행 방법
+
 ```bash
 # 의존성 설치
 npm install
