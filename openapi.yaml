@@ -727,19 +727,18 @@ paths:
                   message:
                     type: string
                     example: "(Data/ID) is required"
-    
-          "401":
-            description: 인증되지 않음
-            content:
-              application/json:
-                schema:
-                  type: object
-                  required:
-                    - message
-                  properties:
-                    message:
-                      type: string
-                      example: "Not authenticated"
+        "401":
+          description: 인증되지 않음
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - message
+                properties:
+                  message:
+                    type: string
+                    example: "Not authenticated"
 
   /api/plan/deletePlan:
     post:
