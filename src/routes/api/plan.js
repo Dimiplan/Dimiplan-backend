@@ -79,6 +79,50 @@ router.post("/addPlan", async (req, res) => {
   res.status(201).json({ message: "Plan added successfully" });
 });
 
+router.post("/updatePlan", async (req, res) => {
+  const { id, startDate, dueDate, contents, priority, from, isCompleted } =
+    req.body;
+
+  const uid =
+    req.session &&
+    req.session.passport &&
+    req.session.passport.user &&
+    req.session.passport.user.id;
+
+  if (!id) {
+    res.status(400).json({ message: "Id is required" });
+    return;
+  }
+
+  if (!uid) {
+    res.status(401).json({ message: "Not authenticated" });
+    return;
+  }
+
+  if (
+    startDate === undefined &&
+    dueDate === undefined &&
+    contents === undefined &&
+    priority === undefined &&
+    from === undefined &&
+    isCompleted === undefined
+  ) {
+    res.status(400).json({ message: "Data is required" });
+    return;
+  }
+
+  await db("plan").where({ owner: uid, id: id }).update({
+    startDate: startDate,
+    dueDate: dueDate,
+    contents: contents,
+    priority: priority,
+    from: from,
+    isCompleted: isCompleted,
+  });
+
+  res.status(200).json({ message: "Plan updated successfully" });
+});
+
 router.post("/deletePlan", async (req, res) => {
   const { id } = req.body;
   if (!id) {
