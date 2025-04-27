@@ -374,7 +374,7 @@ router.get("/getPlanInPlanner", async (req, res) => {
   }
 
   const plans = await db("plan")
-    .where({ owner: uid, from: planner.id, isCompleted: 0 })
+    .where({ owner: uid, from: planner.id })
     .orderByRaw("priority ASC, id ASC")
     .select("*");
 
