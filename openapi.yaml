@@ -659,6 +659,90 @@ paths:
                   message:
                     type: string
                     example: "Planner not found"
+  /api/plan/updatePlan:
+    post:
+      tags:
+        - 플랜
+      summary: 계획 수정
+      description: 계획을 수정합니다.
+      security:
+        - cookieAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - id
+              properties:
+                id:
+                  type: integer
+                  description: 계획 ID
+                  example: 1
+                contents:
+                  type: string
+                  description: 계획 내용
+                  example: "수학 문제집 P.45-50 풀기"
+                priority:
+                  type: integer
+                  description: 우선순위
+                  default: 1
+                  example: 2
+                from:
+                  type: integer
+                  description: 플래너 ID
+                  example: 10
+                startDate:
+                  type: string
+                  format: date
+                  description: 시작일 (YYYY-MM-DD)
+                  example: "2025-04-27"
+                dueDate:
+                  type: string
+                  format: date
+                  description: 마감일 (YYYY-MM-DD)
+                  example: "2025-05-01"
+      responses:
+        "200":
+          description: 계획 수정 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - message
+                properties:
+                  message:
+                    type: string
+                    example: "Plan updated successfully"
+        "400":
+          description: 잘못된 요청
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - message
+                properties:
+                  message:
+                    type: string
+                    examples:
+                      data_required:
+                        value: "Data is required"
+                      id_required:
+                        value: "Id is required"
+          "401":
+            description: 인증되지 않음
+            content:
+              application/json:
+                schema:
+                  type: object
+                  required:
+                    - message
+                  properties:
+                    message:
+                      type: string
+                      example: "Not authenticated"
 
   /api/plan/deletePlan:
     post:
