@@ -33,7 +33,6 @@ app.use((req, res, next) => {
     // Use your session store to retrieve the session with this ID
     sessionStore.get(sessionId, (err, session) => {
       if (err) {
-        console.error("Error retrieving session:", err);
         return next();
       }
 
@@ -56,12 +55,6 @@ app.use(
     store: sessionStore,
     resave: false,
     saveUninitialized: false,
-    cookie: {
-      secure: false, // Set to true in production with HTTPS
-      httpOnly: true,
-      sameSite: "none", // Allows cross-site cookies
-      maxAge: 24 * 60 * 60 * 1000, // 24 hours
-    },
   }),
 );
 
@@ -73,18 +66,14 @@ const whitelist = [
 
 const corsOptions = {
   origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps)
-    if (!origin) return callback(null, true);
-
-    if (whitelist.indexOf(origin) !== -1) {
+    console.log("CORS origin:", origin);
+    if (!origin || whitelist.includes(origin)) {
       callback(null, true);
     } else {
       callback(new Error("Not allowed by CORS"));
     }
   },
   credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization", "X-Session-ID", "Cookie"],
 };
 
 app.use(cors(corsOptions));
