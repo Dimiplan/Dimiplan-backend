@@ -325,7 +325,7 @@ paths:
       tags:
         - 플랜
       summary: 루트 폴더 생성
-      description: 사용자의 루트 폴더를 생성합니다.
+      description: 사용자의 루트 폴더를 생성합니다. [TODO] 프론트에서는 폴더를 조회할 때마다 호출하는 거는 고쳐야 할 부분임. 
       security:
         - cookieAuth: []
       responses:
