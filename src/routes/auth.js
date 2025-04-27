@@ -46,7 +46,17 @@ router.post("/login", async (req, res) => {
     // 사용자 존재 여부 확인
     const exists = await isRegistered(userId);
     if (!exists) {
-      return res.status(404).json({ message: "사용자를 찾을 수 없습니다." });
+      console.log("User joined");
+      console.log(userId);
+      const user = {
+        id: userId,
+        name: null,
+        grade: null,
+        class: null,
+        email: null,
+        profile_image: null,
+      };
+      createUser(user);
     }
 
     // 세션에 사용자 정보 저장
