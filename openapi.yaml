@@ -726,11 +726,8 @@ paths:
                 properties:
                   message:
                     type: string
-                    examples:
-                      data_required:
-                        value: "Data is required"
-                      id_required:
-                        value: "Id is required"
+                    example: "(Data/ID) is required"
+    
           "401":
             description: 인증되지 않음
             content:
