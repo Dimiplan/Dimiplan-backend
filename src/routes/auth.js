@@ -37,7 +37,7 @@ passport.use(
 // POST 로그인 요청 처리
 router.post("/login", async (req, res) => {
   try {
-    const { userId, email, photo } = req.body;
+    const { userId, email, photo, name } = req.body;
 
     if (!userId) {
       return res.status(400).json({ message: "사용자 ID가 필요합니다." });
@@ -50,7 +50,7 @@ router.post("/login", async (req, res) => {
       console.log(userId);
       const user = {
         id: userId,
-        name: null,
+        name: name,
         grade: null,
         class: null,
         email: email,
