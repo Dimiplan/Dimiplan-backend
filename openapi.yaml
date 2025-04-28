@@ -325,7 +325,7 @@ paths:
       tags:
         - 플랜
       summary: 루트 폴더 생성
-      description: 사용자의 루트 폴더를 생성합니다. [TODO] 프론트에서는 폴더를 조회할 때마다 호출하는 거는 고쳐야 할 부분임. 
+      description: 사용자의 루트 폴더를 생성합니다. [TODO] 프론트에서는 폴더를 조회할 때마다 호출하는 거는 고쳐야 할 부분임.
       security:
         - cookieAuth: []
       responses:
@@ -1107,12 +1107,150 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
+
+  /api/ai/get-room-list:
+    get:
+      tags:
+        - 인공지능
+      summary: 채팅방 목록 조회
+      description: 사용자의 채팅방 목록을 조회합니다.
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: 채팅방 목록 조회 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - roomData
+                properties:
+                  roomData:
+                    type: array
+                    description: 채팅방 목록
+                    items:
+                      $ref: "#/components/schemas/ChatRoom"
+        "401":
+          description: 인증되지 않음
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: 서버 오류
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /api/ai/add-room:
+    post:
+      tags:
+        - 인공지능
+      summary: 채팅방 추가
+      description: 새로운 채팅방을 추가합니다.
+      security:
+        - cookieAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+              properties:
+                name:
+                  type: string
+                  description: 채팅방 이름
+                  example: "수학 과제 도움방"
+      responses:
+        "200":
+          description: 채팅방 추가 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - message
+                properties:
+                  message:
+                    type: string
+                    example: "Room added successfully"
+        "400":
+          description: 잘못된 요청
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: 인증되지 않음
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: 서버 오류
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /api/ai/get-chat-in-room:
+    get:
+      tags:
+        - 인공지능
+      summary: 채팅방 대화 내용 조회
+      description: 특정 채팅방의 대화 내용을 조회합니다.
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: from
+          in: query
+          description: 채팅방 ID
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: 채팅 내용 조회 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - chatData
+                properties:
+                  chatData:
+                    type: array
+                    description: 채팅 내용 목록
+                    items:
+                      $ref: "#/components/schemas/ChatMessage"
+        "400":
+          description: 잘못된 요청
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: 인증되지 않음
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: 서버 오류
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
   /api/ai/gpt4o-mini:
     post:
       tags:
         - 인공지능
       summary: GPT-4o Mini 모델을 사용한 AI 응답 생성
-      description: 사용자가 제공한 프롬프트에 대한 GPT-4o Mini 모델의 응답을 반환합니다.
+      description: 사용자가 제공한 프롬프트에 대한 GPT-4o Mini 모델의 응답을 반환하고, 채팅 내역에 저장합니다.
       security:
         - cookieAuth: []
       requestBody:
@@ -1122,11 +1260,16 @@ paths:
               type: object
               required:
                 - prompt
+                - room
               properties:
                 prompt:
                   type: string
                   description: AI에게 전달할 프롬프트
                   example: "내일 할 일에 대한 계획을 세워줄래?"
+                room:
+                  type: integer
+                  description: 채팅방 ID
+                  example: 1
       responses:
         "200":
           description: AI 응답 생성 성공
@@ -1158,49 +1301,253 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                required:
-                  - message
-                properties:
-                  message:
-                    type: string
-                    example: "Prompt is required"
+                $ref: "#/components/schemas/Error"
         "401":
           description: 인증되지 않음
           content:
             application/json:
               schema:
-                type: object
-                required:
-                  - message
-                properties:
-                  message:
-                    type: string
-                    example: "Not authenticated"
+                $ref: "#/components/schemas/Error"
         "403":
           description: 권한 없음
           content:
             application/json:
               schema:
-                type: object
-                required:
-                  - message
-                properties:
-                  message:
-                    type: string
-                    example: "Not registered"
+                $ref: "#/components/schemas/Error"
         "500":
           description: 서버 오류
           content:
             application/json:
               schema:
+                $ref: "#/components/schemas/Error"
+
+  /api/ai/gpt4o:
+    post:
+      tags:
+        - 인공지능
+      summary: GPT-4o 모델을 사용한 AI 응답 생성
+      description: 사용자가 제공한 프롬프트에 대한 GPT-4o 모델의 응답을 반환하고, 채팅 내역에 저장합니다.
+      security:
+        - cookieAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - prompt
+                - room
+              properties:
+                prompt:
+                  type: string
+                  description: AI에게 전달할 프롬프트
+                  example: "복잡한 수학 문제에 대해 설명해줄래?"
+                room:
+                  type: integer
+                  description: 채팅방 ID
+                  example: 1
+      responses:
+        "200":
+          description: AI 응답 생성 성공
+          content:
+            application/json:
+              schema:
                 type: object
                 required:
-                  - message
+                  - response
                 properties:
-                  message:
-                    type: string
-                    example: "Error generating AI response"
+                  response:
+                    type: object
+                    description: OpenAI의 응답 객체
+                    example:
+                      {
+                        "id": "resp_def456",
+                        "model": "gpt-4o",
+                        "choices":
+                          [
+                            {
+                              "text": "복잡한 수학 문제에 대한 상세한 설명...",
+                              "index": 0,
+                              "finish_reason": "stop",
+                            },
+                          ],
+                      }
+        "400":
+          description: 잘못된 요청
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: 인증되지 않음
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: 권한 없음
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: 서버 오류
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /api/ai/gpt41:
+    post:
+      tags:
+        - 인공지능
+      summary: GPT-4.1 모델을 사용한 AI 응답 생성
+      description: 사용자가 제공한 프롬프트에 대한 GPT-4.1 모델의 응답을 반환하고, 채팅 내역에 저장합니다.
+      security:
+        - cookieAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - prompt
+                - room
+              properties:
+                prompt:
+                  type: string
+                  description: AI에게 전달할 프롬프트
+                  example: "고급 논문 초안을 작성해줄래?"
+                room:
+                  type: integer
+                  description: 채팅방 ID
+                  example: 1
+      responses:
+        "200":
+          description: AI 응답 생성 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - response
+                properties:
+                  response:
+                    type: object
+                    description: OpenAI의 응답 객체
+                    example:
+                      {
+                        "id": "resp_ghi789",
+                        "model": "gpt-4.1",
+                        "choices":
+                          [
+                            {
+                              "text": "논문 초안 내용...",
+                              "index": 0,
+                              "finish_reason": "stop",
+                            },
+                          ],
+                      }
+        "400":
+          description: 잘못된 요청
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: 인증되지 않음
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: 권한 없음
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: 서버 오류
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /api/ai/o4-mini:
+    post:
+      tags:
+        - 인공지능
+      summary: o4-mini 모델을 사용한 AI 응답 생성
+      description: 사용자가 제공한 프롬프트에 대한 o4-mini 모델의 응답을 반환하고, 채팅 내역에 저장합니다.
+      security:
+        - cookieAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - prompt
+                - room
+              properties:
+                prompt:
+                  type: string
+                  description: AI에게 전달할 프롬프트
+                  example: "간단한 질문에 답변해줄래?"
+                room:
+                  type: integer
+                  description: 채팅방 ID
+                  example: 1
+      responses:
+        "200":
+          description: AI 응답 생성 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - response
+                properties:
+                  response:
+                    type: object
+                    description: OpenAI의 응답 객체
+                    example:
+                      {
+                        "id": "resp_jkl012",
+                        "model": "o4-mini",
+                        "choices":
+                          [
+                            {
+                              "text": "간단한 질문에 대한 답변...",
+                              "index": 0,
+                              "finish_reason": "stop",
+                            },
+                          ],
+                      }
+        "400":
+          description: 잘못된 요청
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: 인증되지 않음
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: 권한 없음
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: 서버 오류
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
 
 components:
   schemas:
@@ -1363,6 +1710,57 @@ components:
           description: 상세 오류 정보
           nullable: true
           example: "Error retrieving data: database connection failed"
+
+    ChatRoom:
+      type: object
+      required:
+        - owner
+        - id
+        - name
+      properties:
+        owner:
+          type: string
+          description: 사용자 ID
+          example: "123456789012345678901"
+        id:
+          type: integer
+          description: 채팅방 ID
+          example: 1
+        name:
+          type: string
+          description: 채팅방 이름
+          example: "수학 과제 도움방"
+
+    ChatMessage:
+      type: object
+      required:
+        - owner
+        - from
+        - id
+        - message
+        - sender
+      properties:
+        owner:
+          type: string
+          description: 사용자 ID
+          example: "123456789012345678901"
+        from:
+          type: integer
+          description: 채팅방 ID
+          example: 1
+        id:
+          type: integer
+          description: 메시지 ID
+          example: 10
+        message:
+          type: string
+          description: 메시지 내용
+          example: "안녕하세요, 수학 문제 질문이 있습니다."
+        sender:
+          type: string
+          description: 메시지 발신자(user 또는 ai)
+          enum: ["user", "ai"]
+          example: "user"
 
   securitySchemes:
     cookieAuth:
