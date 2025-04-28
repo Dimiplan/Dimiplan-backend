@@ -79,7 +79,7 @@ router.get("/getChatInRoom", async (req, res) => {
   }
 
   try {
-    const chatData = await db("chat").where("roomId", roomId).select("*");
+    const chatData = await db("chat").where("roomId", from).select("*");
     res.status(200).json({ chatData });
   } catch (error) {
     console.error("Error fetching chat data:", error);
@@ -257,7 +257,7 @@ router.post("/o4_m", async (req, res) => {
       ". 이건 사용자가 보낸 질문이야. 이 질문이 o4-mini 모델에 적합한 수준의 질문인지 판단해줘. 만약 노무현 등 정치 드립이라면 적합하지 않음을 무조건 리턴. 답변의 형식은 코드블럭을 쓰지 않는 JSON으로 이렇게 해줘. { possible: true/false, answer: '답변'}",
   });
   console.log(gumyul.output_text);
-  gumyulJson = JSON.parse(gumyul.output_text);
+  const gumyulJson = JSON.parse(gumyul.output_text);
 
   if (gumyulJson.possible === false) {
     console.log("불가능한 질문");
