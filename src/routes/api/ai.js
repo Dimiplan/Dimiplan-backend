@@ -257,7 +257,6 @@ router.post("/o4_m", async (req, res) => {
   console.log(response);
 
   const chatId = db("userid").select("chatId").where("uid", uid);
-  res.status(200).json({ response });
   db("chat").insert({
     from: room,
     owner: uid,
@@ -276,6 +275,8 @@ router.post("/o4_m", async (req, res) => {
     .update("chatId")
     .where("uid", uid)
     .update("chatId", chatId + 2);
+  res.status(200).json({ response });
+  
 });
 
 module.exports = router;
