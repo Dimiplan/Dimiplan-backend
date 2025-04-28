@@ -330,11 +330,9 @@ router.post("/renamePlanner", async (req, res) => {
     .first();
 
   if (samePlanner) {
-    res
-      .status(409)
-      .json({
-        message: "Planner with same name already exists in this folder",
-      });
+    res.status(409).json({
+      message: "Planner with same name already exists in this folder",
+    });
     return;
   }
 
@@ -381,11 +379,9 @@ router.post("/deletePlanner", async (req, res) => {
       await trx("planner").where({ owner: uid, id: id }).del();
     });
 
-    res
-      .status(200)
-      .json({
-        message: "Planner and all associated plans deleted successfully",
-      });
+    res.status(200).json({
+      message: "Planner and all associated plans deleted successfully",
+    });
   } catch (error) {
     console.error(error);
     res
