@@ -4,6 +4,8 @@ const router = express.Router();
 
 const folderNameBlacklist = ["Root", "root", "new", "all"];
 
+//---------------- Plan Related Routes ----------------//
+
 router.post("/addPlan", async (req, res) => {
   const { contents, priority, from } = req.body;
   console.log(contents, priority, from);
@@ -167,7 +169,7 @@ router.post("/completePlan", async (req, res) => {
   res.status(200).json({ message: "Plan completed successfully" });
 });
 
-router.post("/createRootFolder", async (req, res) => {
+router.get("/getEveryPlan", async (req, res) => {
   const uid =
     req.session &&
     req.session.passport &&
@@ -178,19 +180,53 @@ router.post("/createRootFolder", async (req, res) => {
     return;
   }
 
-  const isRootFolderExist = await db("folders")
-    .where({ owner: uid, id: 0 })
-    .select("*")
-    .first();
+  const plans = await db("plan").where({ owner: uid }).select("*");
 
-  if (isRootFolderExist) {
-    res.status(409).json({ message: "Root folder already exists" });
+  if (plans.length === 0) {
+    res.status(404).json({ message: "Plan not found" });
+  } else {
+    res.status(200).json(plans);
+  }
+});
+
+router.get("/getPlanInPlanner", async (req, res) => {
+  const uid =
+    req.session &&
+    req.session.passport &&
+    req.session.passport.user &&
+    req.session.passport.user.id;
+  if (!uid) {
+    res.status(401).json({ message: "Not authenticated" });
     return;
   }
 
-  await db("folders").insert({ owner: uid, name: "Root", id: 0, from: -1 });
-  res.status(201).json({ message: "Root folder created" });
+  const id = req.query.id;
+  let planner;
+
+  if (!id) {
+    res.status(400).json({ message: "Id is required" });
+    return;
+  }
+
+  planner = await db("planner")
+    .where({ owner: uid, id: id })
+    .select("*")
+    .first();
+
+  if (!planner) {
+    res.status(404).json({ message: "Planner not found" });
+    return;
+  }
+
+  const plans = await db("plan")
+    .where({ owner: uid, from: planner.id })
+    .orderByRaw("isCompleted ASC, priority DESC, id ASC")
+    .select("*");
+
+  res.status(200).json(plans);
 });
+
+//---------------- Planner Related Routes ----------------//
 
 router.post("/addPlanner", async (req, res) => {
   const { name, isDaily, from } = req.body;
@@ -258,19 +294,11 @@ router.post("/addPlanner", async (req, res) => {
   res.status(201).json({ message: "Planner added successfully" });
 });
 
-router.post("/addFolder", async (req, res) => {
-  const { name, from } = req.body;
-  if (!name || !from) {
-    res.status(400).json({ message: "Name and from are required" });
-    return;
-  }
-  if (folderNameBlacklist.includes(name)) {
-    res.status(400).json({ message: "Invalid folder name" });
-    return;
-  }
+router.post("/renamePlanner", async (req, res) => {
+  const { id, name } = req.body;
 
-  if (name.endsWith(".pn")) {
-    res.status(400).json({ message: "Invalid folder name" });
+  if (!id || !name) {
+    res.status(400).json({ message: "Id and name are required" });
     return;
   }
 
@@ -284,86 +312,7 @@ router.post("/addFolder", async (req, res) => {
     return;
   }
 
-  if (from !== -1) {
-    const folder = await db("folders") //from 값을 받아서 그에 맞는 folder 테이블을 조회
-      .where({ owner: uid, id: from })
-      .select("*")
-      .first();
-
-    if (!folder) {
-      res.status(404).json({ message: "Folder not found" });
-      return;
-    }
-  }
-
-  let folderData = await db("userid")
-    .where({ owner: uid })
-    .select("folderId")
-    .first();
-  if (!folderData) {
-    await db("userid").insert({
-      owner: uid,
-      folderId: 1,
-      plannerId: 1,
-      planId: 1,
-    });
-    folderData = await db("userid")
-      .where({ owner: uid })
-      .select("folderId")
-      .first();
-  }
-  const folderId = folderData.folderId;
-  await db("userid")
-    .where({ owner: uid })
-    .update({ folderId: folderId + 1 });
-  await db("folders").insert({
-    owner: uid,
-    name: name,
-    id: folderId,
-    from: from,
-  });
-});
-
-router.get("/getEveryPlan", async (req, res) => {
-  const uid =
-    req.session &&
-    req.session.passport &&
-    req.session.passport.user &&
-    req.session.passport.user.id;
-  if (!uid) {
-    res.status(401).json({ message: "Not authenticated" });
-    return;
-  }
-
-  const plans = await db("plan").where({ owner: uid }).select("*");
-
-  if (plans.length === 0) {
-    res.status(404).json({ message: "Plan not found" });
-  } else {
-    res.status(200).json(plans);
-  }
-});
-
-router.get("/getPlanInPlanner", async (req, res) => {
-  const uid =
-    req.session &&
-    req.session.passport &&
-    req.session.passport.user &&
-    req.session.passport.user.id;
-  if (!uid) {
-    res.status(401).json({ message: "Not authenticated" });
-    return;
-  }
-
-  const id = req.query.id;
-  let planner;
-
-  if (!id) {
-    res.status(400).json({ message: "Id is required" });
-    return;
-  }
-
-  planner = await db("planner")
+  const planner = await db("planner")
     .where({ owner: uid, id: id })
     .select("*")
     .first();
@@ -373,12 +322,76 @@ router.get("/getPlanInPlanner", async (req, res) => {
     return;
   }
 
-  const plans = await db("plan")
-    .where({ owner: uid, from: planner.id })
-    .orderByRaw("isCompleted ASC, priority DESC, id ASC")
-    .select("*");
+  // 같은 폴더에 같은 이름의 플래너가 있는지 확인
+  const samePlanner = await db("planner")
+    .where({ owner: uid, from: planner.from, name: name })
+    .whereNot({ id: id })
+    .select("*")
+    .first();
 
-  res.status(200).json(plans);
+  if (samePlanner) {
+    res
+      .status(409)
+      .json({
+        message: "Planner with same name already exists in this folder",
+      });
+    return;
+  }
+
+  await db("planner").where({ owner: uid, id: id }).update({ name: name });
+
+  res.status(200).json({ message: "Planner renamed successfully" });
+});
+
+router.post("/deletePlanner", async (req, res) => {
+  const { id } = req.body;
+
+  if (!id) {
+    res.status(400).json({ message: "Id is required" });
+    return;
+  }
+
+  const uid =
+    req.session &&
+    req.session.passport &&
+    req.session.passport.user &&
+    req.session.passport.user.id;
+  if (!uid) {
+    res.status(401).json({ message: "Not authenticated" });
+    return;
+  }
+
+  const planner = await db("planner")
+    .where({ owner: uid, id: id })
+    .select("*")
+    .first();
+
+  if (!planner) {
+    res.status(404).json({ message: "Planner not found" });
+    return;
+  }
+
+  // 트랜잭션 시작: 플래너와 관련된 모든
+  try {
+    await db.transaction(async (trx) => {
+      // 해당 플래너에 속한 모든 플랜 삭제
+      await trx("plan").where({ owner: uid, from: id }).del();
+
+      // 플래너 삭제
+      await trx("planner").where({ owner: uid, id: id }).del();
+    });
+
+    res
+      .status(200)
+      .json({
+        message: "Planner and all associated plans deleted successfully",
+      });
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .json({ message: "Error deleting planner", error: error.message });
+  }
 });
 
 router.get("/getPlannerInfoByID", async (req, res) => {
@@ -486,6 +499,99 @@ router.get("/getPlannersInFolder", async (req, res) => {
   } else {
     res.status(200).json(planners);
   }
+});
+
+//---------------- Folder Related Routes ----------------//
+
+router.post("/createRootFolder", async (req, res) => {
+  const uid =
+    req.session &&
+    req.session.passport &&
+    req.session.passport.user &&
+    req.session.passport.user.id;
+  if (!uid) {
+    res.status(401).json({ message: "Not authenticated" });
+    return;
+  }
+
+  const isRootFolderExist = await db("folders")
+    .where({ owner: uid, id: 0 })
+    .select("*")
+    .first();
+
+  if (isRootFolderExist) {
+    res.status(409).json({ message: "Root folder already exists" });
+    return;
+  }
+
+  await db("folders").insert({ owner: uid, name: "Root", id: 0, from: -1 });
+  res.status(201).json({ message: "Root folder created" });
+});
+
+router.post("/addFolder", async (req, res) => {
+  const { name, from } = req.body;
+  if (!name || !from) {
+    res.status(400).json({ message: "Name and from are required" });
+    return;
+  }
+  if (folderNameBlacklist.includes(name)) {
+    res.status(400).json({ message: "Invalid folder name" });
+    return;
+  }
+
+  if (name.endsWith(".pn")) {
+    res.status(400).json({ message: "Invalid folder name" });
+    return;
+  }
+
+  const uid =
+    req.session &&
+    req.session.passport &&
+    req.session.passport.user &&
+    req.session.passport.user.id;
+  if (!uid) {
+    res.status(401).json({ message: "Not authenticated" });
+    return;
+  }
+
+  if (from !== -1) {
+    const folder = await db("folders") //from 값을 받아서 그에 맞는 folder 테이블을 조회
+      .where({ owner: uid, id: from })
+      .select("*")
+      .first();
+
+    if (!folder) {
+      res.status(404).json({ message: "Folder not found" });
+      return;
+    }
+  }
+
+  let folderData = await db("userid")
+    .where({ owner: uid })
+    .select("folderId")
+    .first();
+  if (!folderData) {
+    await db("userid").insert({
+      owner: uid,
+      folderId: 1,
+      plannerId: 1,
+      planId: 1,
+    });
+    folderData = await db("userid")
+      .where({ owner: uid })
+      .select("folderId")
+      .first();
+  }
+  const folderId = folderData.folderId;
+  await db("userid")
+    .where({ owner: uid })
+    .update({ folderId: folderId + 1 });
+  await db("folders").insert({
+    owner: uid,
+    name: name,
+    id: folderId,
+    from: from,
+  });
 });
 
 router.get("/getFoldersInFolder", async (req, res) => {
