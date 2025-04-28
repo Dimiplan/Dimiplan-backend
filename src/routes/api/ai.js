@@ -276,7 +276,6 @@ router.post("/o4_m", async (req, res) => {
     .where("uid", uid)
     .update("chatId", chatId + 2);
   res.status(200).json({ response });
-  
 });
 
 module.exports = router;
