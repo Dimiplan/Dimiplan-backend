@@ -198,7 +198,6 @@ router.post("/deletePlanner", async (req, res) => {
     res.status(200).json({
       message: "Planner and all associated plans deleted successfully",
     });
-    
   } catch (error) {
     if (error.message === "Planner not found") {
       return res.status(404).json({ message: "Planner not found" });
