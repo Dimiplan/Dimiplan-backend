@@ -99,7 +99,7 @@ router.get(
       const uid = req.session?.passport?.user?.id;
 
       // Get the stored origin domain or fallback to default FRONT_HOST
-      const originDomain = req.session.originDomain || process.env.FRONT_HOST;
+      const originDomain = req.session.originDomain;
       console.log("Redirecting to origin domain:", originDomain);
 
       if (!uid) {
@@ -117,7 +117,7 @@ router.get(
       }
     } catch (error) {
       console.error("Error in Google callback route:", error);
-      const fallbackDomain = req.session.originDomain || process.env.FRONT_HOST;
+      const fallbackDomain = req.session.originDomain;
       console.log("Redirecting to fallback domain on failure:", fallbackDomain);
       return res.redirect(`${fallbackDomain}/login/fail`);
     }
@@ -129,7 +129,7 @@ router.get(
  * @desc Handle Google OAuth failure
  */
 router.get("/google/callback/failure", (req, res) => {
-  const fallbackDomain = req.session.originDomain || process.env.FRONT_HOST;
+  const fallbackDomain = req.session.originDomain;
   console.log("Redirecting to fallback domain on failure:", fallbackDomain);
   return res.redirect(`${fallbackDomain}/login/fail`);
 });
