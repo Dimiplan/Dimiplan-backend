@@ -1,84 +1,69 @@
+/**
+ * Authentication routes
+ */
 const express = require("express");
 const passport = require("passport");
 const { Strategy: GoogleStrategy } = require("passport-google-oauth20");
+const path = require("path");
 require("../config/dotenv");
 const { createUser, isRegistered } = require("../models/userModel");
-const path = require("path");
 
 const router = express.Router();
 
+// Configure Google OAuth Strategy
 passport.use(
   new GoogleStrategy(
     {
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: "https://dimigo.co.kr:3000/auth/google/callback",
+      callbackURL:
+        process.env.GOOGLE_CALLBACK_URL ||
+        "https://dimigo.co.kr:3000/auth/google/callback",
     },
     async (accessToken, refreshToken, profile, done) => {
-      console.log("User joined");
-      console.log(profile);
+      try {
+        // Create user object from profile
+        const user = {
+          id: profile.id,
+          name: null, // User will set this during registration
+          grade: null,
+          class: null,
+          email:
+            profile.emails && profile.emails[0]
+              ? profile.emails[0].value
+              : null,
+          profile_image:
+            profile.photos && profile.photos[0]
+              ? profile.photos[0].value
+              : null,
+        };
 
-      const user = {
-        id: profile.id,
-        name: null,
-        grade: null,
-        class: null,
-        email:
-          profile.emails && profile.emails[0] ? profile.emails[0].value : null,
-        profile_image:
-          profile.photos && profile.photos[0] ? profile.photos[0].value : null,
-      };
-      createUser(user);
-      return done(null, { id: user.id });
+        // Create user in database
+        await createUser(user);
+
+        // Return user ID for serialization
+        return done(null, { id: user.id });
+      } catch (error) {
+        console.error("Error in Google OAuth callback:", error);
+        return done(error);
+      }
     },
   ),
 );
 
-// POST 로그인 요청 처리
-router.post("/login", async (req, res) => {
-  try {
-    const { userId, email, photo, name } = req.body;
-
-    if (!userId) {
-      return res.status(400).json({ message: "사용자 ID가 필요합니다." });
-    }
-
-    // 사용자 존재 여부 확인
-    const exists = await isRegistered(userId);
-    if (!exists) {
-      console.log("User joined");
-      console.log(userId);
-      const user = {
-        id: userId,
-        name: name,
-        grade: null,
-        class: null,
-        email: email,
-        profile_image: photo,
-      };
-      createUser(user);
-    }
-
-    // 세션에 사용자 정보 저장
-    req.login({ id: userId }, (err) => {
-      if (err) {
-        return res
-          .status(500)
-          .json({ message: "로그인 처리 중 오류가 발생했습니다." });
-      }
-
-      // Include the session ID in the response body
-      return res.status(200).json({
-        message: "로그인 성공",
-        sessionId: req.sessionID, // Include the session ID
-      });
-    });
-  } catch (error) {
-    console.error("로그인 오류:", error);
-    res.status(500).json({ message: "서버 오류가 발생했습니다." });
-  }
+// Serialize and deserialize user
+passport.serializeUser((user, done) => {
+  done(null, user);
 });
 
+passport.deserializeUser((user, done) => {
+  done(null, user);
+});
+
+/**
+ * @route GET /auth/google
+ * @desc Initiate Google OAuth login
+ */
 router.get(
   "/google",
   passport.authenticate("google", {
@@ -87,43 +72,94 @@ router.get(
   }),
 );
 
+/**
+ * @route GET /auth/google/callback
+ * @desc Google OAuth callback
+ */
 router.get(
   "/google/callback",
   passport.authenticate("google", {
     failureRedirect: path.join(process.env.FRONT_HOST, "login", "fail"),
   }),
   async (req, res) => {
-    const uid =
-      req.session &&
-      req.session.passport &&
-      req.session.passport.user &&
-      req.session.passport.user.id;
-    if (!uid) {
+    try {
+      const uid = req.session?.passport?.user?.id;
+
+      if (!uid) {
+        return res.redirect(path.join(process.env.FRONT_HOST, "login", "fail"));
+      }
+
+      // Check if user is registered (has set name)
+      const registered = await isRegistered(uid);
+
+      // Redirect based on registration status
+      if (!registered) {
+        return res.redirect(`${process.env.FRONT_HOST}/signup`);
+      } else {
+        return res.redirect(`${process.env.FRONT_HOST}`);
+      }
+    } catch (error) {
+      console.error("Error in Google callback route:", error);
       return res.redirect(path.join(process.env.FRONT_HOST, "login", "fail"));
-    }
-    const registeded = await isRegistered(uid);
-    if (!registeded) {
-      res.redirect(`${process.env.FRONT_HOST}/signup`);
-    } else {
-      res.redirect(`${process.env.FRONT_HOST}`);
     }
   },
 );
 
-router.get("/logout", (req, res, next) => {
+/**
+ * @route POST /auth/login
+ * @desc Login with user ID (for mobile)
+ */
+router.post("/login", async (req, res) => {
+  try {
+    const { userId, email, photo, name } = req.body;
+
+    if (!userId) {
+      return res.status(400).json({ message: "User ID is required" });
+    }
+
+    // Create user if not exists
+    await createUser({
+      id: userId,
+      name: name,
+      grade: null,
+      class: null,
+      email: email,
+      profile_image: photo,
+    });
+
+    // Login the user
+    req.login({ id: userId }, (err) => {
+      if (err) {
+        console.error("Login error:", err);
+        return res.status(500).json({ message: "Login processing error" });
+      }
+
+      // Return success with session ID
+      return res.status(200).json({
+        message: "Login successful",
+        sessionId: req.sessionID,
+      });
+    });
+  } catch (error) {
+    console.error("Login error:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+/**
+ * @route GET /auth/logout
+ * @desc Logout user
+ */
+router.get("/logout", (req, res) => {
   req.session.destroy((err) => {
-    if (err) return next(err);
+    if (err) {
+      console.error("Logout error:", err);
+      return res.status(500).json({ message: "Logout error" });
+    }
+
     res.clearCookie("connect.sid", { path: "/" });
     res.status(200).json({ message: "Logged out" });
   });
-});
-
-passport.serializeUser((user, done) => {
-  done(null, user);
-});
-
-passport.deserializeUser((user, done) => {
-  done(null, user);
 });
 
 module.exports = router;

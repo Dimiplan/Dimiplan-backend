@@ -1,119 +1,123 @@
-const { getUser, isRegistered, updateUser } = require("../../models/userModel");
+/**
+ * User routes
+ */
 const express = require("express");
+const { getUser, isRegistered, updateUser } = require("../../models/userModel");
+const { isAuthenticated } = require("../../middleware/auth");
 
 const router = express.Router();
 
-router.post("/updateme", async (req, res, next) => {
-  // 세션 정보에서 사용자 id 추출
-  const {
-    name: nameInput,
-    grade: gradeInput,
-    class: classInput,
-    email: emailInput,
-    profile_image: profile_imageInput,
-  } = req.body;
-  const uid =
-    req.session &&
-    req.session.passport &&
-    req.session.passport.user &&
-    req.session.passport.user.id;
-  if (!uid) {
-    res.status(401).json({ message: "Not authenticated" });
-    return;
-  } else {
-    // 이름: 15글자 이하, 학년: 1~3, 반: 1~6
-    let isValid = true;
-    if (nameInput && nameInput.toString().length > 15) isValid = false;
-    if (
-      gradeInput &&
-      (isNaN(parseInt(gradeInput.toString())) ||
-        parseInt(gradeInput.toString()) > 3 ||
-        parseInt(gradeInput.toString()) < 1)
-    )
-      isValid = false;
+/**
+ * Validate user data
+ * @param {Object} userData - User data to validate
+ * @returns {boolean} - Whether the data is valid
+ */
+const validateUserData = (userData) => {
+  let isValid = true;
 
-    if (
-      classInput &&
-      (isNaN(parseInt(classInput.toString())) ||
-        parseInt(classInput.toString()) > 6 ||
-        parseInt(classInput.toString()) < 1)
-    )
-      isValid = false;
-    if (!isValid) {
-      res.status(400).json({ message: "Bad request" });
-      return;
-    } else {
-      const name = !nameInput ? undefined : nameInput.toString();
-      const grade = !gradeInput ? undefined : parseInt(gradeInput.toString());
-      const class_ = !classInput ? undefined : parseInt(classInput.toString());
-      const email = !emailInput ? undefined : emailInput.toString();
-      const profile_image = !profile_imageInput
-        ? undefined
-        : profile_imageInput.toString();
+  // Validate name (15 characters max)
+  if (userData.name && userData.name.toString().length > 15) {
+    isValid = false;
+  }
 
-      const userData = {
-        name: name && name.trim() !== "" ? name : undefined,
-        grade: grade !== undefined && !isNaN(grade) ? grade : undefined,
-        class: class_ !== undefined && !isNaN(class_) ? class_ : undefined,
-        email: email !== undefined ? email : undefined,
-        profile_image: profile_image !== undefined ? profile_image : undefined,
-      };
+  // Validate grade (1-3)
+  if (
+    userData.grade &&
+    (isNaN(parseInt(userData.grade.toString())) ||
+      parseInt(userData.grade.toString()) > 3 ||
+      parseInt(userData.grade.toString()) < 1)
+  ) {
+    isValid = false;
+  }
 
-      // 모든 업데이트 필드가 undefined 인 경우
-      if (
-        userData.name === undefined &&
-        userData.grade === undefined &&
-        userData.class === undefined &&
-        userData.email === undefined &&
-        userData.profile_image === undefined
-      ) {
-        res.status(400).json({ message: "Bad request" });
-        return;
-      }
+  // Validate class (1-6)
+  if (
+    userData.class &&
+    (isNaN(parseInt(userData.class.toString())) ||
+      parseInt(userData.class.toString()) > 6 ||
+      parseInt(userData.class.toString()) < 1)
+  ) {
+    isValid = false;
+  }
 
-      console.log(userData);
-      try {
-        await updateUser(uid, userData);
-        res.status(200).json({ message: "Updated" });
-        return;
-      } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "Internal server error" });
-        next(error);
-      }
+  return isValid;
+};
+
+/**
+ * @route POST /api/user/updateme
+ * @desc Update user information
+ */
+router.post("/updateme", isAuthenticated, async (req, res) => {
+  try {
+    const { name, grade, class: classInput, email, profile_image } = req.body;
+
+    // Process input data
+    const userData = {
+      name: name ? name.toString() : undefined,
+      grade: grade ? parseInt(grade.toString()) : undefined,
+      class: classInput ? parseInt(classInput.toString()) : undefined,
+      email: email ? email.toString() : undefined,
+      profile_image: profile_image ? profile_image.toString() : undefined,
+    };
+
+    // Validate data
+    if (!validateUserData(userData)) {
+      return res.status(400).json({ message: "Bad request" });
     }
+
+    // Filter out undefined fields
+    const cleanedData = Object.keys(userData).reduce((acc, key) => {
+      if (userData[key] !== undefined) {
+        acc[key] = userData[key];
+      }
+      return acc;
+    }, {});
+
+    // Check if there's anything to update
+    if (Object.keys(cleanedData).length === 0) {
+      return res.status(400).json({ message: "No fields to update" });
+    }
+
+    // Update user
+    await updateUser(req.userId, cleanedData);
+
+    res.status(200).json({ message: "Updated" });
+  } catch (error) {
+    console.error("Error updating user:", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 });
 
-router.get("/registered", async (req, res) => {
-  const uid =
-    req.session &&
-    req.session.passport &&
-    req.session.passport.user &&
-    req.session.passport.user.id;
-  if (!uid) res.status(401).json({ message: "Not authenticated" });
-  else {
-    const registered = await isRegistered(uid);
-    res.status(200).json({ registered: registered });
+/**
+ * @route GET /api/user/registered
+ * @desc Check if user is registered
+ */
+router.get("/registered", isAuthenticated, async (req, res) => {
+  try {
+    const registered = await isRegistered(req.userId);
+    res.status(200).json({ registered });
+  } catch (error) {
+    console.error("Error checking registration:", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 });
 
-router.get("/whoami", async (req, res) => {
-  const uid =
-    req.session &&
-    req.session.passport &&
-    req.session.passport.user &&
-    req.session.passport.user.id;
-  if (!uid) {
-    res.status(401).json({ message: "Not authenticated" });
-    return;
-  }
-  const user = await getUser(uid);
-  if (user) {
-    console.log(user);
+/**
+ * @route GET /api/user/whoami
+ * @desc Get current user information
+ */
+router.get("/whoami", isAuthenticated, async (req, res) => {
+  try {
+    const user = await getUser(req.userId);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
     res.status(200).json(user);
-  } else {
-    res.status(404).json({ message: "User not found" });
+  } catch (error) {
+    console.error("Error getting user info:", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 });
 

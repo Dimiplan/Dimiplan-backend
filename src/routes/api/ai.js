@@ -1,25 +1,28 @@
+/**
+ * AI routes
+ */
 const express = require("express");
-const db = require("../../config/db");
+const { isAuthenticated, isUserRegistered } = require("../../middleware/auth");
+const {
+  createChatRoom,
+  getChatRooms,
+  addChatMessages,
+  getChatMessages,
+} = require("../../models/chatModel");
+const { AI_MODELS, generateResponse } = require("../../services/aiService");
+
 const router = express.Router();
-const OpenAI = require("openai");
 
-const client = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+// Apply authentication and registration check to all routes
+router.use(isAuthenticated, isUserRegistered);
 
-router.get("/getRoomList", async (req, res) => {
-  const uid =
-    req.session &&
-    req.session.passport &&
-    req.session.passport.user &&
-    req.session.passport.user.id;
-  if (!uid) {
-    res.status(401).json({ message: "Not authenticated" });
-    return;
-  }
-
+/**
+ * @route GET /api/ai/get-room-list
+ * @desc Get all chat rooms for a user
+ */
+router.get("/get-room-list", async (req, res) => {
   try {
-    const roomData = await db("chat_rooms").where("uid", uid).select("*");
+    const roomData = await getChatRooms(req.userId);
     res.status(200).json({ roomData });
   } catch (error) {
     console.error("Error fetching room list:", error);
@@ -27,34 +30,20 @@ router.get("/getRoomList", async (req, res) => {
   }
 });
 
-router.post("/addRoom", async (req, res) => {
-  const uid =
-    req.session &&
-    req.session.passport &&
-    req.session.passport.user &&
-    req.session.passport.user.id;
-  if (!uid) {
-    res.status(401).json({ message: "Not authenticated" });
-    return;
-  }
-  const { name } = req.body;
-  if (!name) {
-    res.status(400).json({ message: "Room name is required" });
-    return;
-  }
-
-  const roomId = db("userid").select("roomId").where("uid", uid);
-
+/**
+ * @route POST /api/ai/add-room
+ * @desc Create a new chat room
+ */
+router.post("/add-room", async (req, res) => {
   try {
-    await db("chat_rooms").insert({
-      owner: uid,
-      id: roomId,
-      name,
-    });
-    db("userid")
-      .update("roomId")
-      .where("uid", uid)
-      .update("roomId", roomId + 1);
+    const { name } = req.body;
+
+    if (!name) {
+      return res.status(400).json({ message: "Room name is required" });
+    }
+
+    await createChatRoom(req.userId, name);
+
     res.status(200).json({ message: "Room added successfully" });
   } catch (error) {
     console.error("Error adding room:", error);
@@ -62,24 +51,20 @@ router.post("/addRoom", async (req, res) => {
   }
 });
 
-router.get("/getChatInRoom", async (req, res) => {
-  const uid =
-    req.session &&
-    req.session.passport &&
-    req.session.passport.user &&
-    req.session.passport.user.id;
-  if (!uid) {
-    res.status(401).json({ message: "Not authenticated" });
-    return;
-  }
-  const { from } = req.query;
-  if (!from) {
-    res.status(400).json({ message: "Room ID is required" });
-    return;
-  }
-
+/**
+ * @route GET /api/ai/get-chat-in-room
+ * @desc Get all chat messages in a room
+ */
+router.get("/get-chat-in-room", async (req, res) => {
   try {
-    const chatData = await db("chat").where("roomId", from).select("*");
+    const { from } = req.query;
+
+    if (!from) {
+      return res.status(400).json({ message: "Room ID is required" });
+    }
+
+    const chatData = await getChatMessages(req.userId, from);
+
     res.status(200).json({ chatData });
   } catch (error) {
     console.error("Error fetching chat data:", error);
@@ -87,195 +72,68 @@ router.get("/getChatInRoom", async (req, res) => {
   }
 });
 
-router.post("/GPT4o_m", async (req, res) => {
-  const uid =
-    req.session &&
-    req.session.passport &&
-    req.session.passport.user &&
-    req.session.passport.user.id;
-  if (!uid) {
-    res.status(401).json({ message: "Not authenticated" });
-    return;
-  }
-  const { prompt, room } = req.body;
-  if (!prompt) {
-    res.status(400).json({ message: "Prompt is required" });
-    return;
-  }
-  if (!room) {
-    res.status(400).json({ message: "Room ID is required" });
-    return;
-  }
+/**
+ * Helper function to handle AI response generation
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @param {string} model - AI model to use
+ */
+const handleAiRequest = async (req, res, model) => {
+  try {
+    const { prompt, room } = req.body;
 
-  const response = await client.responses.create({
-    model: "gpt-4o-mini",
-    input: prompt,
-  });
+    if (!prompt) {
+      return res.status(400).json({ message: "Prompt is required" });
+    }
 
-  const chatId = db("userid").select("chatId").where("uid", uid);
-  res.status(200).json({ response });
-  db("chat").insert({
-    from: room,
-    owner: uid,
-    id: chatId,
-    message: prompt,
-    sender: "user",
-  });
-  db("chat").insert({
-    from: room,
-    owner: uid,
-    id: chatId + 1,
-    message: prompt,
-    sender: "ai",
-  });
-  db("userid")
-    .update("chatId")
-    .where("uid", uid)
-    .update("chatId", chatId + 2);
+    if (!room) {
+      return res.status(400).json({ message: "Room ID is required" });
+    }
+
+    // Generate AI response
+    const response = await generateResponse(model, prompt);
+
+    // Save messages to database
+    const aiResponseText = response.choices[0].text || "";
+    await addChatMessages(req.userId, room, prompt, aiResponseText);
+
+    res.status(200).json({ response });
+  } catch (error) {
+    console.error(`Error generating ${model} response:`, error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+/**
+ * @route POST /api/ai/gpt4o-mini
+ * @desc Generate response using GPT-4o Mini model
+ */
+router.post("/gpt4o-mini", async (req, res) => {
+  await handleAiRequest(req, res, AI_MODELS.GPT4O_MINI);
 });
 
-router.post("/GPT4o", async (req, res) => {
-  const uid =
-    req.session &&
-    req.session.passport &&
-    req.session.passport.user &&
-    req.session.passport.user.id;
-  if (!uid) {
-    res.status(401).json({ message: "Not authenticated" });
-    return;
-  }
-  const { prompt, room } = req.body;
-  if (!prompt) {
-    res.status(400).json({ message: "Prompt is required" });
-    return;
-  }
-  if (!room) {
-    res.status(400).json({ message: "Room ID is required" });
-    return;
-  }
-
-  const response = await client.responses.create({
-    model: "gpt-4o",
-    input: prompt,
-  });
-
-  const chatId = db("userid").select("chatId").where("uid", uid);
-  res.status(200).json({ response });
-  db("chat").insert({
-    from: room,
-    owner: uid,
-    id: chatId,
-    message: prompt,
-    sender: "user",
-  });
-  db("chat").insert({
-    from: room,
-    owner: uid,
-    id: chatId + 1,
-    message: prompt,
-    sender: "ai",
-  });
-  db("userid")
-    .update("chatId")
-    .where("uid", uid)
-    .update("chatId", chatId + 2);
+/**
+ * @route POST /api/ai/gpt4o
+ * @desc Generate response using GPT-4o model
+ */
+router.post("/gpt4o", async (req, res) => {
+  await handleAiRequest(req, res, AI_MODELS.GPT4O);
 });
 
-router.post("/GPT41", async (req, res) => {
-  const uid =
-    req.session &&
-    req.session.passport &&
-    req.session.passport.user &&
-    req.session.passport.user.id;
-  if (!uid) {
-    res.status(401).json({ message: "Not authenticated" });
-    return;
-  }
-  const { prompt, room } = req.body;
-  if (!prompt) {
-    res.status(400).json({ message: "Prompt is required" });
-    return;
-  }
-  if (!room) {
-    res.status(400).json({ message: "Room ID is required" });
-    return;
-  }
-
-  const response = await client.responses.create({
-    model: "gpt-4.1",
-    input: prompt,
-  });
-
-  const chatId = db("userid").select("chatId").where("uid", uid);
-  res.status(200).json({ response });
-  db("chat").insert({
-    from: room,
-    owner: uid,
-    id: chatId,
-    message: prompt,
-    sender: "user",
-  });
-  db("chat").insert({
-    from: room,
-    owner: uid,
-    id: chatId + 1,
-    message: prompt,
-    sender: "ai",
-  });
-  db("userid")
-    .update("chatId")
-    .where("uid", uid)
-    .update("chatId", chatId + 2);
+/**
+ * @route POST /api/ai/gpt41
+ * @desc Generate response using GPT-4.1 model
+ */
+router.post("/gpt41", async (req, res) => {
+  await handleAiRequest(req, res, AI_MODELS.GPT41);
 });
 
-router.post("/o4_m", async (req, res) => {
-  const uid =
-    req.session &&
-    req.session.passport &&
-    req.session.passport.user &&
-    req.session.passport.user.id;
-  if (!uid) {
-    res.status(401).json({ message: "Not authenticated" });
-    return;
-  }
-  const { prompt, room } = req.body;
-  console.log(prompt, room);
-  if (!prompt) {
-    res.status(400).json({ message: "Prompt is required" });
-    return;
-  }
-  if (!room) {
-    res.status(400).json({ message: "Room ID is required" });
-    return;
-  }
-  console.log("APPROVED!");
-
-  const response = await client.responses.create({
-    model: "o4-mini",
-    input: prompt,
-  });
-  console.log(response);
-
-  const chatId = db("userid").select("chatId").where("uid", uid);
-  db("chat").insert({
-    from: room,
-    owner: uid,
-    id: chatId,
-    message: prompt,
-    sender: "user",
-  });
-  db("chat").insert({
-    from: room,
-    owner: uid,
-    id: chatId + 1,
-    message: prompt,
-    sender: "ai",
-  });
-  db("userid")
-    .update("chatId")
-    .where("uid", uid)
-    .update("chatId", chatId + 2);
-  res.status(200).json({ response });
+/**
+ * @route POST /api/ai/o4-mini
+ * @desc Generate response using o4-mini model
+ */
+router.post("/o4-mini", async (req, res) => {
+  await handleAiRequest(req, res, AI_MODELS.O4_MINI);
 });
 
 module.exports = router;
