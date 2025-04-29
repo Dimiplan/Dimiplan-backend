@@ -107,10 +107,10 @@ const handleAiRequest = async (req, res, model) => {
 };
 
 /**
- * @route POST /api/ai/gpt4o-mini
+ * @route POST /api/ai/gpt4o_m
  * @desc Generate response using GPT-4o Mini model
  */
-router.post("/gpt4o-mini", async (req, res) => {
+router.post("/gpt4o_m", async (req, res) => {
   await handleAiRequest(req, res, AI_MODELS.GPT4O_MINI);
 });
 
