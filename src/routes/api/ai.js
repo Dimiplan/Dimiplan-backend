@@ -93,6 +93,8 @@ const handleAiRequest = async (req, res, model) => {
     // Generate AI response
     const response = await generateResponse(model, prompt);
 
+    console.log(response);
+
     // Save messages to database
     const aiResponseText = response.choices[0].text || "";
     await addChatMessages(req.userId, room, prompt, aiResponseText);
