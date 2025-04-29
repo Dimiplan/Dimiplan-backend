@@ -176,158 +176,6 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-  /api/ai/gpt41:
-    post:
-      tags:
-        - 인공지능
-      summary: GPT-4.1 모델을 사용한 AI 응답 생성
-      description: 사용자가 제공한 프롬프트에 대한 GPT-4.1 모델의 응답을 반환하고, 채팅 내역에 저장합니다.
-      security:
-        - cookieAuth: []
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - prompt
-                - room
-              properties:
-                prompt:
-                  type: string
-                  description: AI에게 전달할 프롬프트
-                  example: "고급 논문 초안을 작성해줄래?"
-                room:
-                  type: integer
-                  description: 채팅방 ID
-                  example: 1
-      responses:
-        "200":
-          description: AI 응답 생성 성공
-          content:
-            application/json:
-              schema:
-                type: object
-                required:
-                  - response
-                properties:
-                  response:
-                    type: object
-                    description: OpenAI의 응답 객체
-                    example:
-                      {
-                        "id": "resp_ghi789",
-                        "model": "gpt-4.1",
-                        "choices":
-                          [
-                            {
-                              "text": "논문 초안 내용...",
-                              "index": 0,
-                              "finish_reason": "stop",
-                            },
-                          ],
-                      }
-        "400":
-          description: 잘못된 요청
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-        "401":
-          description: 인증되지 않음
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-        "403":
-          description: 권한 없음
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-        "500":
-          description: 서버 오류
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-
-  /api/ai/o4-mini:
-    post:
-      tags:
-        - 인공지능
-      summary: o4-mini 모델을 사용한 AI 응답 생성
-      description: 사용자가 제공한 프롬프트에 대한 o4-mini 모델의 응답을 반환하고, 채팅 내역에 저장합니다.
-      security:
-        - cookieAuth: []
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - prompt
-                - room
-              properties:
-                prompt:
-                  type: string
-                  description: AI에게 전달할 프롬프트
-                  example: "간단한 질문에 답변해줄래?"
-                room:
-                  type: integer
-                  description: 채팅방 ID
-                  example: 1
-      responses:
-        "200":
-          description: AI 응답 생성 성공
-          content:
-            application/json:
-              schema:
-                type: object
-                required:
-                  - response
-                properties:
-                  response:
-                    type: object
-                    description: OpenAI의 응답 객체
-                    example:
-                      {
-                        "id": "resp_jkl012",
-                        "model": "o4-mini",
-                        "choices":
-                          [
-                            {
-                              "text": "간단한 질문에 대한 답변...",
-                              "index": 0,
-                              "finish_reason": "stop",
-                            },
-                          ],
-                      }
-        "400":
-          description: 잘못된 요청
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-        "401":
-          description: 인증되지 않음
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-        "403":
-          description: 권한 없음
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-        "500":
-          description: 서버 오류
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-
   # GitHub Webhook
   /update:
     post:
@@ -1445,7 +1293,7 @@ paths:
                 $ref: "#/components/schemas/Error"
 
   # AI API
-  /api/ai/get-room-list:
+  /api/ai/getRoomList:
     get:
       tags:
         - 인공지능
@@ -1481,7 +1329,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-  /api/ai/add-room:
+  /api/ai/addRoom:
     post:
       tags:
         - 인공지능
@@ -1533,7 +1381,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-  /api/ai/get-chat-in-room:
+  /api/ai/getChatInRoom:
     get:
       tags:
         - 인공지능
@@ -1582,7 +1430,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-  /api/ai/gpt4o-mini:
+  /api/ai/gpt4o_m:
     post:
       tags:
         - 인공지능
@@ -1734,374 +1582,374 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-/api/ai/gpt41:
-  post:
-    tags:
-      - 인공지능
-    summary: GPT-4.1 모델을 사용한 AI 응답 생성
-    description: 사용자가 제공한 프롬프트에 대한 GPT-4.1 모델의 응답을 반환하고, 채팅 내역에 저장합니다.
-    security:
-      - cookieAuth: []
-    requestBody:
-      content:
-        application/json:
-          schema:
-            type: object
-            required:
-              - prompt
-              - room
-            properties:
-              prompt:
-                type: string
-                description: AI에게 전달할 프롬프트
-                example: "고급 논문 초안을 작성해줄래?"
-              room:
-                type: integer
-                description: 채팅방 ID
-                example: 1
-    responses:
-      "200":
-        description: AI 응답 생성 성공
+  /api/ai/gpt41:
+    post:
+      tags:
+        - 인공지능
+      summary: GPT-4.1 모델을 사용한 AI 응답 생성
+      description: 사용자가 제공한 프롬프트에 대한 GPT-4.1 모델의 응답을 반환하고, 채팅 내역에 저장합니다.
+      security:
+        - cookieAuth: []
+      requestBody:
         content:
           application/json:
             schema:
               type: object
               required:
-                - response
+                - prompt
+                - room
               properties:
-                response:
-                  type: object
-                  description: OpenAI의 응답 객체
-                  example:
-                    {
-                      "id": "resp_ghi789",
-                      "model": "gpt-4.1",
-                      "choices":
-                        [
-                          {
-                            "text": "논문 초안 내용...",
-                            "index": 0,
-                            "finish_reason": "stop",
-                          },
-                        ],
-                    }
-      "400":
-        description: 잘못된 요청
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/Error"
-      "401":
-        description: 인증되지 않음
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/Error"
-      "403":
-        description: 권한 없음
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/Error"
-      "500":
-        description: 서버 오류
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/Error"
+                prompt:
+                  type: string
+                  description: AI에게 전달할 프롬프트
+                  example: "고급 논문 초안을 작성해줄래?"
+                room:
+                  type: integer
+                  description: 채팅방 ID
+                  example: 1
+      responses:
+        "200":
+          description: AI 응답 생성 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - response
+                properties:
+                  response:
+                    type: object
+                    description: OpenAI의 응답 객체
+                    example:
+                      {
+                        "id": "resp_ghi789",
+                        "model": "gpt-4.1",
+                        "choices":
+                          [
+                            {
+                              "text": "논문 초안 내용...",
+                              "index": 0,
+                              "finish_reason": "stop",
+                            },
+                          ],
+                      }
+        "400":
+          description: 잘못된 요청
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: 인증되지 않음
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: 권한 없음
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: 서버 오류
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
 
-/api/ai/o4-mini:
-  post:
-    tags:
-      - 인공지능
-    summary: o4-mini 모델을 사용한 AI 응답 생성
-    description: 사용자가 제공한 프롬프트에 대한 o4-mini 모델의 응답을 반환하고, 채팅 내역에 저장합니다.
-    security:
-      - cookieAuth: []
-    requestBody:
-      content:
-        application/json:
-          schema:
-            type: object
-            required:
-              - prompt
-              - room
-            properties:
-              prompt:
-                type: string
-                description: AI에게 전달할 프롬프트
-                example: "간단한 질문에 답변해줄래?"
-              room:
-                type: integer
-                description: 채팅방 ID
-                example: 1
-    responses:
-      "200":
-        description: AI 응답 생성 성공
+  /api/ai/o4-mini:
+    post:
+      tags:
+        - 인공지능
+      summary: o4-mini 모델을 사용한 AI 응답 생성
+      description: 사용자가 제공한 프롬프트에 대한 o4-mini 모델의 응답을 반환하고, 채팅 내역에 저장합니다.
+      security:
+        - cookieAuth: []
+      requestBody:
         content:
           application/json:
             schema:
               type: object
               required:
-                - response
+                - prompt
+                - room
               properties:
-                response:
-                  type: object
-                  description: OpenAI의 응답 객체
-                  example:
-                    {
-                      "id": "resp_jkl012",
-                      "model": "o4-mini",
-                      "choices":
-                        [
-                          {
-                            "text": "간단한 질문에 대한 답변...",
-                            "index": 0,
-                            "finish_reason": "stop",
-                          },
-                        ],
-                    }
-      "400":
-        description: 잘못된 요청
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/Error"
-      "401":
-        description: 인증되지 않음
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/Error"
-      "403":
-        description: 권한 없음
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/Error"
-      "500":
-        description: 서버 오류
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/Error"
+                prompt:
+                  type: string
+                  description: AI에게 전달할 프롬프트
+                  example: "간단한 질문에 답변해줄래?"
+                room:
+                  type: integer
+                  description: 채팅방 ID
+                  example: 1
+      responses:
+        "200":
+          description: AI 응답 생성 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - response
+                properties:
+                  response:
+                    type: object
+                    description: OpenAI의 응답 객체
+                    example:
+                      {
+                        "id": "resp_jkl012",
+                        "model": "o4-mini",
+                        "choices":
+                          [
+                            {
+                              "text": "간단한 질문에 대한 답변...",
+                              "index": 0,
+                              "finish_reason": "stop",
+                            },
+                          ],
+                      }
+        "400":
+          description: 잘못된 요청
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: 인증되지 않음
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: 권한 없음
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: 서버 오류
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
 
 components:
-schemas:
-  User:
-    type: object
-    required:
-      - id
-      - email
-      - profile_image
-    properties:
-      id:
-        type: string
-        description: 구글 계정 ID
-        example: "123456789012345678901"
-      name:
-        type: string
-        nullable: true
-        description: 사용자 이름
-        example: "홍길동"
-      grade:
-        type: integer
-        nullable: true
-        minimum: 1
-        maximum: 3
-        description: 학년 (1-3)
-        example: 2
-      class:
-        type: integer
-        nullable: true
-        minimum: 1
-        maximum: 6
-        description: 반 (1-6)
-        example: 3
-      email:
-        type: string
-        format: email
-        description: 이메일
-        example: "user@example.com"
-      profile_image:
-        type: string
-        format: uri
-        description: 프로필 이미지 URL
-        example: "https://lh3.googleusercontent.com/a/profile_image"
+  schemas:
+    User:
+      type: object
+      required:
+        - id
+        - email
+        - profile_image
+      properties:
+        id:
+          type: string
+          description: 구글 계정 ID
+          example: "123456789012345678901"
+        name:
+          type: string
+          nullable: true
+          description: 사용자 이름
+          example: "홍길동"
+        grade:
+          type: integer
+          nullable: true
+          minimum: 1
+          maximum: 3
+          description: 학년 (1-3)
+          example: 2
+        class:
+          type: integer
+          nullable: true
+          minimum: 1
+          maximum: 6
+          description: 반 (1-6)
+          example: 3
+        email:
+          type: string
+          format: email
+          description: 이메일
+          example: "user@example.com"
+        profile_image:
+          type: string
+          format: uri
+          description: 프로필 이미지 URL
+          example: "https://lh3.googleusercontent.com/a/profile_image"
 
-  Folder:
-    type: object
-    required:
-      - owner
-      - id
-      - from
-      - name
-    properties:
-      owner:
-        type: string
-        description: 사용자 ID
-        example: "123456789012345678901"
-      id:
-        type: integer
-        description: 폴더 ID
-        example: 5
-      from:
-        type: integer
-        description: 상위 폴더 ID (-1은 최상위)
-        example: 0
-      name:
-        type: string
-        description: 폴더 이름
-        example: "학교 과제"
+    Folder:
+      type: object
+      required:
+        - owner
+        - id
+        - from
+        - name
+      properties:
+        owner:
+          type: string
+          description: 사용자 ID
+          example: "123456789012345678901"
+        id:
+          type: integer
+          description: 폴더 ID
+          example: 5
+        from:
+          type: integer
+          description: 상위 폴더 ID (-1은 최상위)
+          example: 0
+        name:
+          type: string
+          description: 폴더 이름
+          example: "학교 과제"
 
-  Planner:
-    type: object
-    required:
-      - owner
-      - id
-      - from
-      - isDaily
-      - name
-    properties:
-      owner:
-        type: string
-        description: 사용자 ID
-        example: "123456789012345678901"
-      id:
-        type: integer
-        description: 플래너 ID
-        example: 10
-      from:
-        type: integer
-        description: 소속 폴더 ID
-        example: 5
-      isDaily:
-        type: integer
-        enum: [0, 1]
-        description: 일일 플래너 여부
-        example: 1
-      name:
-        type: string
-        description: 플래너 이름
-        example: "수학 과제"
+    Planner:
+      type: object
+      required:
+        - owner
+        - id
+        - from
+        - isDaily
+        - name
+      properties:
+        owner:
+          type: string
+          description: 사용자 ID
+          example: "123456789012345678901"
+        id:
+          type: integer
+          description: 플래너 ID
+          example: 10
+        from:
+          type: integer
+          description: 소속 폴더 ID
+          example: 5
+        isDaily:
+          type: integer
+          enum: [0, 1]
+          description: 일일 플래너 여부
+          example: 1
+        name:
+          type: string
+          description: 플래너 이름
+          example: "수학 과제"
 
-  Plan:
-    type: object
-    required:
-      - owner
-      - contents
-      - from
-      - isCompleted
-      - id
-      - priority
-    properties:
-      owner:
-        type: string
-        description: 사용자 ID
-        example: "123456789012345678901"
-      startDate:
-        type: string
-        format: date
-        nullable: true
-        description: 시작일
-        example: "2025-04-27"
-      dueDate:
-        type: string
-        format: date
-        nullable: true
-        description: 마감일
-        example: "2025-05-01"
-      contents:
-        type: string
-        description: 계획 내용
-        example: "수학 문제집 P.45-50 풀기"
-      from:
-        type: integer
-        description: 소속 플래너 ID
-        example: 10
-      isCompleted:
-        type: integer
-        enum: [0, 1]
-        description: 완료 여부
-        example: 0
-      id:
-        type: integer
-        description: 계획 ID
-        example: 15
-      priority:
-        type: integer
-        description: 우선순위
-        example: 2
+    Plan:
+      type: object
+      required:
+        - owner
+        - contents
+        - from
+        - isCompleted
+        - id
+        - priority
+      properties:
+        owner:
+          type: string
+          description: 사용자 ID
+          example: "123456789012345678901"
+        startDate:
+          type: string
+          format: date
+          nullable: true
+          description: 시작일
+          example: "2025-04-27"
+        dueDate:
+          type: string
+          format: date
+          nullable: true
+          description: 마감일
+          example: "2025-05-01"
+        contents:
+          type: string
+          description: 계획 내용
+          example: "수학 문제집 P.45-50 풀기"
+        from:
+          type: integer
+          description: 소속 플래너 ID
+          example: 10
+        isCompleted:
+          type: integer
+          enum: [0, 1]
+          description: 완료 여부
+          example: 0
+        id:
+          type: integer
+          description: 계획 ID
+          example: 15
+        priority:
+          type: integer
+          description: 우선순위
+          example: 2
 
-  Error:
-    type: object
-    required:
-      - message
-    properties:
-      message:
-        type: string
-        description: 오류 메시지
-        example: "Not authenticated"
-      error:
-        type: string
-        description: 상세 오류 정보
-        nullable: true
-        example: "Error retrieving data: database connection failed"
+    Error:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          description: 오류 메시지
+          example: "Not authenticated"
+        error:
+          type: string
+          description: 상세 오류 정보
+          nullable: true
+          example: "Error retrieving data: database connection failed"
 
-  ChatRoom:
-    type: object
-    required:
-      - owner
-      - id
-      - name
-    properties:
-      owner:
-        type: string
-        description: 사용자 ID
-        example: "123456789012345678901"
-      id:
-        type: integer
-        description: 채팅방 ID
-        example: 1
-      name:
-        type: string
-        description: 채팅방 이름
-        example: "수학 과제 도움방"
+    ChatRoom:
+      type: object
+      required:
+        - owner
+        - id
+        - name
+      properties:
+        owner:
+          type: string
+          description: 사용자 ID
+          example: "123456789012345678901"
+        id:
+          type: integer
+          description: 채팅방 ID
+          example: 1
+        name:
+          type: string
+          description: 채팅방 이름
+          example: "수학 과제 도움방"
 
-  ChatMessage:
-    type: object
-    required:
-      - owner
-      - from
-      - id
-      - message
-      - sender
-    properties:
-      owner:
-        type: string
-        description: 사용자 ID
-        example: "123456789012345678901"
-      from:
-        type: integer
-        description: 채팅방 ID
-        example: 1
-      id:
-        type: integer
-        description: 메시지 ID
-        example: 10
-      message:
-        type: string
-        description: 메시지 내용
-        example: "안녕하세요, 수학 문제 질문이 있습니다."
-      sender:
-        type: string
-        description: 메시지 발신자(user 또는 ai)
-        enum: ["user", "ai"]
-        example: "user"
+    ChatMessage:
+      type: object
+      required:
+        - owner
+        - from
+        - id
+        - message
+        - sender
+      properties:
+        owner:
+          type: string
+          description: 사용자 ID
+          example: "123456789012345678901"
+        from:
+          type: integer
+          description: 채팅방 ID
+          example: 1
+        id:
+          type: integer
+          description: 메시지 ID
+          example: 10
+        message:
+          type: string
+          description: 메시지 내용
+          example: "안녕하세요, 수학 문제 질문이 있습니다."
+        sender:
+          type: string
+          description: 메시지 발신자(user 또는 ai)
+          enum: ["user", "ai"]
+          example: "user"
 
-securitySchemes:
-  cookieAuth:
-    type: apiKey
-    in: cookie
-    name: connect.sid
-    description: 세션 인증을 위한 쿠키
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: connect.sid
+      description: 세션 인증을 위한 쿠키
