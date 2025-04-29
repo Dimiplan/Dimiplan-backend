@@ -99,7 +99,7 @@ router.get(
       const uid = req.session?.passport?.user?.id;
 
       // Get the stored origin domain or fallback to default FRONT_HOST
-      const originDomain = req.session.originDomain;
+      const originDomain = req.session.originDomain || process.env.FRONT_HOST;
       console.log("Redirecting to origin domain:", originDomain);
 
       if (!uid) {
