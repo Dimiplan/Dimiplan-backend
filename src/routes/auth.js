@@ -4,7 +4,6 @@
 const express = require("express");
 const passport = require("passport");
 const { Strategy: GoogleStrategy } = require("passport-google-oauth20");
-const path = require("path");
 require("../config/dotenv");
 const { createUser, isRegistered } = require("../models/userModel");
 
@@ -66,6 +65,11 @@ passport.deserializeUser((user, done) => {
  */
 router.get(
   "/google",
+  (req, res, next) => {
+    // Store the origin domain in session for use in callback
+    req.session.returnTo = req.get("origin") || process.env.FRONT_HOST;
+    next();
+  },
   passport.authenticate("google", {
     scope: ["profile", "email"],
     prompt: "select_account",
@@ -79,31 +83,47 @@ router.get(
 router.get(
   "/google/callback",
   passport.authenticate("google", {
-    failureRedirect: path.join(process.env.FRONT_HOST, "login", "fail"),
+    failureRedirect: "/auth/google/failure",
   }),
   async (req, res) => {
     try {
       const uid = req.session?.passport?.user?.id;
 
       if (!uid) {
-        return res.redirect(path.join(process.env.FRONT_HOST, "login", "fail"));
+        return res.redirect("/auth/google/failure");
       }
+
+      // Get the original requesting domain
+      const frontHost = req.session.returnTo || process.env.FRONT_HOST;
+
+      // Remove the session variable
+      delete req.session.returnTo;
 
       // Check if user is registered (has set name)
       const registered = await isRegistered(uid);
 
       // Redirect based on registration status
       if (!registered) {
-        return res.redirect(`${process.env.FRONT_HOST}/signup`);
+        return res.redirect(`${frontHost}/signup`);
       } else {
-        return res.redirect(`${process.env.FRONT_HOST}`);
+        return res.redirect(`${frontHost}`);
       }
     } catch (error) {
       console.error("Error in Google callback route:", error);
-      return res.redirect(path.join(process.env.FRONT_HOST, "login", "fail"));
+      return res.redirect("/auth/google/failure");
     }
   },
 );
+
+/**
+ * @route GET /auth/google/failure
+ * @desc Handle Google OAuth failure
+ */
+router.get("/google/failure", (req, res) => {
+  const frontHost = req.session.returnTo || process.env.FRONT_HOST;
+  delete req.session.returnTo;
+  return res.redirect(`${frontHost}/login/fail`);
+});
 
 /**
  * @route POST /auth/login
