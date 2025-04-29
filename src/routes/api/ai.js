@@ -17,10 +17,10 @@ const router = express.Router();
 router.use(isAuthenticated, isUserRegistered);
 
 /**
- * @route GET /api/ai/get-room-list
+ * @route GET /api/ai/getRoomList
  * @desc Get all chat rooms for a user
  */
-router.get("/get-room-list", async (req, res) => {
+router.get("/getRoomList", async (req, res) => {
   try {
     const roomData = await getChatRooms(req.userId);
     res.status(200).json({ roomData });
@@ -31,10 +31,10 @@ router.get("/get-room-list", async (req, res) => {
 });
 
 /**
- * @route POST /api/ai/add-room
+ * @route POST /api/ai/addRoom
  * @desc Create a new chat room
  */
-router.post("/add-room", async (req, res) => {
+router.post("/addRoom", async (req, res) => {
   try {
     const { name } = req.body;
 
@@ -52,10 +52,10 @@ router.post("/add-room", async (req, res) => {
 });
 
 /**
- * @route GET /api/ai/get-chat-in-room
+ * @route GET /api/ai/getChatInRoom
  * @desc Get all chat messages in a room
  */
-router.get("/get-chat-in-room", async (req, res) => {
+router.get("/getChatInRoom", async (req, res) => {
   try {
     const { from } = req.query;
 
