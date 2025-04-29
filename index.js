@@ -10,7 +10,7 @@ require("./src/config/dotenv"); // Load environment variables
 // Routes
 const authRouter = require("./src/routes/auth");
 const apiRouter = require("./src/routes/api");
-const updateRouter = require("./src/routes/update"); // Add the update router
+const webhookRouter = require("./src/routes/webhook");
 const passport = require("passport");
 
 const app = express();
@@ -21,6 +21,10 @@ const sessionStore = new ConnectSessionKnexStore({
 });
 
 app.set("trust proxy", true);
+
+// Webhook route - Add this before other middleware to ensure it works with raw body
+app.use("/update", webhookRouter);
+
 // Add this middleware to your Express app before your routes
 app.use((req, res, next) => {
   // First check session authentication (existing cookie method)
@@ -87,7 +91,6 @@ app.use(passport.session());
 
 app.use("/auth", authRouter);
 app.use("/api", apiRouter);
-app.use("/update", updateRouter); // Add the update route
 
 app.listen(8080, () => {
   console.log("Server is running on port 8080 (proxy 3000)");
