@@ -60,6 +60,10 @@ app.use(
     store: sessionStore,
     resave: false,
     saveUninitialized: false,
+    cookie: {
+      sameSite: "none",
+      secure: true,
+    },
   }),
 );
 
