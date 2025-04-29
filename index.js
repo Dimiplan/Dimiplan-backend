@@ -63,6 +63,7 @@ const whitelist = [
   "https://dimigo.co.kr",
   "https://m.dimigo.co.kr",
   "http://localhost:3000",
+  "https://dimiplan.com",
 ];
 
 const corsOptions = {
