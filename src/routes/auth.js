@@ -66,8 +66,8 @@ passport.deserializeUser((user, done) => {
 router.get(
   "/google",
   (req, res, next) => {
-    // Store the origin domain in session for use in callback
-    req.session.returnTo = req.get("origin") || process.env.FRONT_HOST;
+    // Store the origin domain for later redirect
+    req.session.originDomain = req.headers.referer || process.env.FRONT_HOST;
     next();
   },
   passport.authenticate("google", {
@@ -83,46 +83,43 @@ router.get(
 router.get(
   "/google/callback",
   passport.authenticate("google", {
-    failureRedirect: "/auth/google/failure",
+    failureRedirect: "/auth/google/callback/failure",
   }),
   async (req, res) => {
     try {
       const uid = req.session?.passport?.user?.id;
 
+      // Get the stored origin domain or fallback to default FRONT_HOST
+      const originDomain = req.session.originDomain || process.env.FRONT_HOST;
+
       if (!uid) {
-        return res.redirect("/auth/google/failure");
+        return res.redirect(`${originDomain}/login/fail`);
       }
-
-      // Get the original requesting domain
-      const frontHost = req.session.returnTo || process.env.FRONT_HOST;
-
-      // Remove the session variable
-      delete req.session.returnTo;
 
       // Check if user is registered (has set name)
       const registered = await isRegistered(uid);
 
       // Redirect based on registration status
       if (!registered) {
-        return res.redirect(`${frontHost}/signup`);
+        return res.redirect(`${originDomain}/signup`);
       } else {
-        return res.redirect(`${frontHost}`);
+        return res.redirect(`${originDomain}`);
       }
     } catch (error) {
       console.error("Error in Google callback route:", error);
-      return res.redirect("/auth/google/failure");
+      const fallbackDomain = req.session.originDomain || process.env.FRONT_HOST;
+      return res.redirect(`${fallbackDomain}/login/fail`);
     }
   },
 );
 
 /**
- * @route GET /auth/google/failure
+ * @route GET /auth/google/callback/failure
  * @desc Handle Google OAuth failure
  */
-router.get("/google/failure", (req, res) => {
-  const frontHost = req.session.returnTo || process.env.FRONT_HOST;
-  delete req.session.returnTo;
-  return res.redirect(`${frontHost}/login/fail`);
+router.get("/google/callback/failure", (req, res) => {
+  const fallbackDomain = req.session.originDomain || process.env.FRONT_HOST;
+  return res.redirect(`${fallbackDomain}/login/fail`);
 });
 
 /**
