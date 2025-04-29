@@ -127,7 +127,7 @@ router.post("/addPlanner", async (req, res) => {
   try {
     const { name, isDaily, from } = req.body;
 
-    if (!name || !from) {
+    if (name == undefined || from == undefined) {
       return res.status(400).json({ message: "Name and from are required" });
     }
 
