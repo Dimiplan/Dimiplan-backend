@@ -10,6 +10,7 @@ require("./src/config/dotenv"); // Load environment variables
 // Routes
 const authRouter = require("./src/routes/auth");
 const apiRouter = require("./src/routes/api");
+const updateRouter = require("./src/routes/update"); // Add the update router
 const passport = require("passport");
 
 const app = express();
@@ -85,6 +86,7 @@ app.use(passport.session());
 
 app.use("/auth", authRouter);
 app.use("/api", apiRouter);
+app.use("/update", updateRouter); // Add the update route
 
 app.listen(8080, () => {
   console.log("Server is running on port 8080 (proxy 3000)");
