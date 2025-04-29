@@ -67,8 +67,17 @@ router.get(
   "/google",
   (req, res, next) => {
     // Store the origin domain for later redirect
-    req.session.originDomain = req.headers.referer || process.env.FRONT_HOST;
-    next();
+    const originDomain = req.headers.referer || process.env.FRONT_HOST;
+    req.session.originDomain = originDomain;
+
+    // Explicitly save the session before continuing
+    req.session.save((err) => {
+      if (err) {
+        console.error("Error saving session:", err);
+        return next(err);
+      }
+      next();
+    });
   },
   passport.authenticate("google", {
     scope: ["profile", "email"],
@@ -91,6 +100,7 @@ router.get(
 
       // Get the stored origin domain or fallback to default FRONT_HOST
       const originDomain = req.session.originDomain || process.env.FRONT_HOST;
+      console.log("Redirecting to origin domain:", originDomain);
 
       if (!uid) {
         return res.redirect(`${originDomain}/login/fail`);
@@ -108,6 +118,7 @@ router.get(
     } catch (error) {
       console.error("Error in Google callback route:", error);
       const fallbackDomain = req.session.originDomain || process.env.FRONT_HOST;
+      console.log("Redirecting to fallback domain on failure:", fallbackDomain);
       return res.redirect(`${fallbackDomain}/login/fail`);
     }
   },
@@ -119,6 +130,7 @@ router.get(
  */
 router.get("/google/callback/failure", (req, res) => {
   const fallbackDomain = req.session.originDomain || process.env.FRONT_HOST;
+  console.log("Redirecting to fallback domain on failure:", fallbackDomain);
   return res.redirect(`${fallbackDomain}/login/fail`);
 });
 
