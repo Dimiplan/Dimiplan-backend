@@ -127,10 +127,8 @@ router.post("/addPlanner", async (req, res) => {
   try {
     const { name, isDaily, from } = req.body;
 
-    if (!name || isDaily === undefined || !from) {
-      return res
-        .status(400)
-        .json({ message: "Name, isDaily, and from are required" });
+    if (!name || !from) {
+      return res.status(400).json({ message: "Name and from are required" });
     }
 
     await createPlanner(req.userId, name, isDaily, from);

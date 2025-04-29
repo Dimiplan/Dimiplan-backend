@@ -42,7 +42,7 @@ const createPlanner = async (uid, name, isDaily, folderId) => {
       name: name,
       id: plannerId,
       from: folderId,
-      isDaily: isDaily,
+      isDaily: isDaily ?? "0",
     });
 
     return {
