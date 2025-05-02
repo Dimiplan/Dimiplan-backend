@@ -1,9 +1,15 @@
 /**
  * Plan model
- * Handles all plan-related database operations
+ * Handles all plan-related database operations with encryption
  */
 const db = require("../config/db");
 const { getNextId } = require("../utils/dbUtils");
+const {
+  hashUserId,
+  encryptData,
+  decryptData,
+} = require("../utils/cryptoUtils");
+const logger = require("../utils/logger");
 
 /**
  * Format a date string to YYYY-MM-DD format
@@ -34,9 +40,11 @@ const createPlan = async (
   priority = 1,
 ) => {
   try {
+    const hashedUid = hashUserId(uid);
+
     // Verify planner exists
     const planner = await db("planner")
-      .where({ owner: uid, id: plannerId })
+      .where({ owner: hashedUid, id: plannerId })
       .first();
 
     if (!planner) {
@@ -44,24 +52,29 @@ const createPlan = async (
     }
 
     // Get next plan ID
-    const planId = await getNextId(uid, "planId");
+    const planId = await getNextId(hashedUid, "planId");
 
     // Format dates
     const formattedStartDate = formatDate(startDate);
     const formattedDueDate = formatDate(dueDate);
 
-    // Create plan
+    // Encrypt plan contents
+    const encryptedContents = encryptData(uid, contents);
+
+    // Create plan with encrypted data
     await db("plan").insert({
-      owner: uid,
+      owner: hashedUid,
       startDate: formattedStartDate,
       dueDate: formattedDueDate,
-      contents: contents,
+      contents: encryptedContents,
       id: planId,
       from: plannerId,
       priority: priority || 1,
       isCompleted: 0,
+      created_at: new Date().toISOString(),
     });
 
+    // Return plain data for response
     return {
       owner: uid,
       startDate: formattedStartDate,
@@ -73,64 +86,91 @@ const createPlan = async (
       isCompleted: 0,
     };
   } catch (error) {
-    console.error("Error creating plan:", error);
+    logger.error("Error creating plan:", error);
     throw error;
   }
 };
 
 /**
- * Get a plan by ID
+ * Get a plan by ID with decrypted content
  * @param {string} uid - User ID
  * @param {number} id - Plan ID
  * @returns {Promise<Object|null>} - Plan data or null if not found
  */
 const getPlanById = async (uid, id) => {
   try {
-    return await db("plan").where({ owner: uid, id: id }).first();
+    const hashedUid = hashUserId(uid);
+    const plan = await db("plan").where({ owner: hashedUid, id: id }).first();
+
+    if (!plan) return null;
+
+    // Decrypt plan content
+    return {
+      ...plan,
+      owner: uid, // Use original ID for application logic
+      contents: decryptData(uid, plan.contents),
+    };
   } catch (error) {
-    console.error("Error getting plan by ID:", error);
+    logger.error("Error getting plan by ID:", error);
     throw error;
   }
 };
 
 /**
- * Get all plans for a user
+ * Get all plans for a user with decrypted content
  * @param {string} uid - User ID
  * @returns {Promise<Array>} - Array of plan objects
  */
 const getAllPlans = async (uid) => {
   try {
-    return await db("plan")
-      .where({ owner: uid })
+    const hashedUid = hashUserId(uid);
+    const plans = await db("plan")
+      .where({ owner: hashedUid })
       .orderByRaw("isCompleted ASC, priority DESC, id ASC");
+
+    // Decrypt plan contents
+    return plans.map((plan) => ({
+      ...plan,
+      owner: uid, // Use original ID for application logic
+      contents: decryptData(uid, plan.contents),
+    }));
   } catch (error) {
-    console.error("Error getting all plans:", error);
+    logger.error("Error getting all plans:", error);
     throw error;
   }
 };
 
 /**
- * Get all plans in a planner
+ * Get all plans in a planner with decrypted content
  * @param {string} uid - User ID
  * @param {number} plannerId - Planner ID
  * @returns {Promise<Array>} - Array of plan objects
  */
 const getPlansInPlanner = async (uid, plannerId) => {
   try {
+    const hashedUid = hashUserId(uid);
+
     // Verify planner exists
     const planner = await db("planner")
-      .where({ owner: uid, id: plannerId })
+      .where({ owner: hashedUid, id: plannerId })
       .first();
 
     if (!planner) {
       throw new Error("Planner not found");
     }
 
-    return await db("plan")
-      .where({ owner: uid, from: plannerId })
+    const plans = await db("plan")
+      .where({ owner: hashedUid, from: plannerId })
       .orderByRaw("isCompleted ASC, priority DESC, id ASC");
+
+    // Decrypt plan contents
+    return plans.map((plan) => ({
+      ...plan,
+      owner: uid, // Use original ID for application logic
+      contents: decryptData(uid, plan.contents),
+    }));
   } catch (error) {
-    console.error("Error getting plans in planner:", error);
+    logger.error("Error getting plans in planner:", error);
     throw error;
   }
 };
@@ -144,7 +184,8 @@ const getPlansInPlanner = async (uid, plannerId) => {
  */
 const updatePlan = async (uid, id, updateData) => {
   try {
-    const plan = await getPlanById(uid, id);
+    const hashedUid = hashUserId(uid);
+    const plan = await db("plan").where({ owner: hashedUid, id: id }).first();
 
     if (!plan) {
       throw new Error("Plan not found");
@@ -159,14 +200,20 @@ const updatePlan = async (uid, id, updateData) => {
       formattedData.dueDate = formatDate(formattedData.dueDate);
     }
 
-    await db("plan").where({ owner: uid, id: id }).update(formattedData);
+    // Encrypt contents if provided
+    if (formattedData.contents !== undefined) {
+      formattedData.contents = encryptData(uid, formattedData.contents);
+    }
 
-    return {
-      ...plan,
-      ...formattedData,
-    };
+    // Add update timestamp
+    formattedData.updated_at = new Date().toISOString();
+
+    await db("plan").where({ owner: hashedUid, id: id }).update(formattedData);
+
+    // Get the updated plan with decrypted content
+    return await getPlanById(uid, id);
   } catch (error) {
-    console.error("Error updating plan:", error);
+    logger.error("Error updating plan:", error);
     throw error;
   }
 };
@@ -179,17 +226,21 @@ const updatePlan = async (uid, id, updateData) => {
  */
 const deletePlan = async (uid, id) => {
   try {
-    const plan = await getPlanById(uid, id);
+    const hashedUid = hashUserId(uid);
+    const plan = await db("plan").where({ owner: hashedUid, id: id }).first();
 
     if (!plan) {
       throw new Error("Plan not found");
     }
 
-    await db("plan").where({ owner: uid, id: id }).del();
+    await db("plan").where({ owner: hashedUid, id: id }).del();
 
+    logger.info(
+      `Plan deleted: ${hashedUid.substring(0, 8)}... - Plan ID: ${id}`,
+    );
     return true;
   } catch (error) {
-    console.error("Error deleting plan:", error);
+    logger.error("Error deleting plan:", error);
     throw error;
   }
 };
@@ -202,20 +253,22 @@ const deletePlan = async (uid, id) => {
  */
 const completePlan = async (uid, id) => {
   try {
-    const plan = await getPlanById(uid, id);
+    const hashedUid = hashUserId(uid);
+    const plan = await db("plan").where({ owner: hashedUid, id: id }).first();
 
     if (!plan) {
       throw new Error("Plan not found");
     }
 
-    await db("plan").where({ owner: uid, id: id }).update({ isCompleted: 1 });
-
-    return {
-      ...plan,
+    await db("plan").where({ owner: hashedUid, id: id }).update({
       isCompleted: 1,
-    };
+      updated_at: new Date().toISOString(),
+    });
+
+    // Get the updated plan with decrypted content
+    return await getPlanById(uid, id);
   } catch (error) {
-    console.error("Error completing plan:", error);
+    logger.error("Error completing plan:", error);
     throw error;
   }
 };

@@ -6,6 +6,8 @@ const passport = require("passport");
 const { Strategy: GoogleStrategy } = require("passport-google-oauth20");
 require("../config/dotenv");
 const { createUser, isRegistered } = require("../models/userModel");
+const { storeUserInSession } = require("../config/sessionConfig");
+const logger = require("../utils/logger");
 
 const router = express.Router();
 
@@ -37,13 +39,13 @@ passport.use(
               : null,
         };
 
-        // Create user in database
+        // Create user in database (will be encrypted by userModel)
         await createUser(user);
 
-        // Return user ID for serialization
+        // Return user ID for serialization (only plain user ID)
         return done(null, { id: user.id });
       } catch (error) {
-        console.error("Error in Google OAuth callback:", error);
+        logger.error("Error in Google OAuth callback:", error);
         return done(error);
       }
     },
@@ -51,6 +53,7 @@ passport.use(
 );
 
 // Serialize and deserialize user
+// 세션에는 사용자 ID만 평문으로 저장
 passport.serializeUser((user, done) => {
   done(null, user);
 });
@@ -73,7 +76,7 @@ router.get(
     // Explicitly save the session before continuing
     req.session.save((err) => {
       if (err) {
-        console.error("Error saving session:", err);
+        logger.error("Error saving session:", err);
         return next(err);
       }
       next();
@@ -100,7 +103,7 @@ router.get(
 
       // Get the stored origin domain or fallback to default FRONT_HOST
       const originDomain = req.session.originDomain || process.env.FRONT_HOST;
-      console.log("Redirecting to origin domain:", originDomain);
+      logger.info("Redirecting to origin domain:", originDomain);
 
       if (!uid) {
         return res.redirect(`${originDomain}/login/fail`);
@@ -116,9 +119,9 @@ router.get(
         return res.redirect(`${originDomain}`);
       }
     } catch (error) {
-      console.error("Error in Google callback route:", error);
-      const fallbackDomain = req.session.originDomain;
-      console.log("Redirecting to fallback domain on failure:", fallbackDomain);
+      logger.error("Error in Google callback route:", error);
+      const fallbackDomain = req.session.originDomain || process.env.FRONT_HOST;
+      logger.info("Redirecting to fallback domain on failure:", fallbackDomain);
       return res.redirect(`${fallbackDomain}/login/fail`);
     }
   },
@@ -129,8 +132,8 @@ router.get(
  * @desc Handle Google OAuth failure
  */
 router.get("/google/callback/failure", (req, res) => {
-  const fallbackDomain = req.session.originDomain;
-  console.log("Redirecting to fallback domain on failure:", fallbackDomain);
+  const fallbackDomain = req.session.originDomain || process.env.FRONT_HOST;
+  logger.info("Redirecting to fallback domain on failure:", fallbackDomain);
   return res.redirect(`${fallbackDomain}/login/fail`);
 });
 
@@ -146,7 +149,7 @@ router.post("/login", async (req, res) => {
       return res.status(400).json({ message: "User ID is required" });
     }
 
-    // Create user if not exists
+    // Create user if not exists (will be encrypted by userModel)
     await createUser({
       id: userId,
       name: name,
@@ -156,21 +159,17 @@ router.post("/login", async (req, res) => {
       profile_image: photo,
     });
 
-    // Login the user
-    req.login({ id: userId }, (err) => {
-      if (err) {
-        console.error("Login error:", err);
-        return res.status(500).json({ message: "Login processing error" });
-      }
+    // 평문 userId만 세션에 저장
+    storeUserInSession(req.session, userId);
+    req.session.save();
 
-      // Return success with session ID
-      return res.status(200).json({
-        message: "Login successful",
-        sessionId: req.sessionID,
-      });
+    // Return success with session ID for mobile apps
+    return res.status(200).json({
+      message: "Login successful",
+      sessionId: req.sessionID,
     });
   } catch (error) {
-    console.error("Login error:", error);
+    logger.error("Login error:", error);
     res.status(500).json({ message: "Server error" });
   }
 });
@@ -182,11 +181,11 @@ router.post("/login", async (req, res) => {
 router.get("/logout", (req, res) => {
   req.session.destroy((err) => {
     if (err) {
-      console.error("Logout error:", err);
+      logger.error("Logout error:", err);
       return res.status(500).json({ message: "Logout error" });
     }
 
-    res.clearCookie("connect.sid", { path: "/" });
+    res.clearCookie("dimiplan.sid", { path: "/" });
     res.status(200).json({ message: "Logged out" });
   });
 });

@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon index.js"
+    "dev": "nodemon index.js",
+    "migrate:encrypt:dry": "node src/scripts/migrateToEncryption.js --dry-run",
+    "migrate:encrypt": "node src/scripts/migrateToEncryption.js"
   },
   "keywords": [],
   "author": "",
@@ -17,10 +19,12 @@
     "dotenv": "^16.4.7",
     "express": "^5.1.0",
     "express-session": "^1.18.1",
+    "helmet": "^7.0.0",
     "mysql2": "^3.14.0",
     "nodemon": "^3.1.9",
     "passport": "^0.7.0",
-    "passport-google-oauth20": "^2.0.0"
+    "passport-google-oauth20": "^2.0.0",
+    "winston": "^3.10.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.24.0",

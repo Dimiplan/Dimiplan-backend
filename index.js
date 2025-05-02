@@ -2,77 +2,42 @@
 const express = require("express");
 const cors = require("cors");
 const session = require("express-session");
-const { ConnectSessionKnexStore } = require("connect-session-knex");
-const dbModule = require("./src/config/db"); // dbModule에는 default export와 options가 있을 수 있습니다.
-const db = dbModule.default || dbModule; // default export가 있으면 사용, 없으면 모듈 자체 사용
-require("./src/config/dotenv"); // Load environment variables
+const passport = require("passport");
+const helmet = require("helmet");
+const { getSessionConfig } = require("./src/config/sessionConfig");
+const logger = require("./src/utils/logger");
+require("./src/config/dotenv");
 
 // Routes
 const authRouter = require("./src/routes/auth");
 const apiRouter = require("./src/routes/api");
-const passport = require("passport");
 
 const app = express();
 
-const sessionStore = new ConnectSessionKnexStore({
-  knex: db,
-  cleanupInterval: 0,
-});
+// 보안 HTTP 헤더 설정
+app.use(helmet());
 
+// Trust proxy for secure cookies behind load balancers
 app.set("trust proxy", true);
 
-// Add this middleware to your Express app before your routes
-app.use((req, res, next) => {
-  // First check session authentication (existing cookie method)
-  if (req.session && req.session.passport && req.session.passport.user) {
-    return next();
-  }
+// 세션 설정 - 메모리 기반 저장소 사용
+app.use(session(getSessionConfig()));
 
-  // Check for session ID in custom header
-  const sessionId = req.headers["x-session-id"];
-  if (sessionId) {
-    // Use your session store to retrieve the session with this ID
-    sessionStore.get(sessionId, (err, session) => {
-      if (err) {
-        return next();
-      }
-
-      if (session && session.passport && session.passport.user) {
-        // Reconstruct the session
-        req.session = session;
-        return next();
-      } else {
-        return next();
-      }
-    });
-  } else {
-    // No authentication found
-    next();
-  }
-});
-app.use(
-  session({
-    secret: process.env.SESSION_SECRET,
-    store: sessionStore,
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-      sameSite: "none",
-      secure: true,
-    },
-  }),
-);
-
+// CORS 설정 - 프로덕션 환경에서는 localhost 제거
 const whitelist = [
   "https://dimigo.co.kr",
   "https://m.dimigo.co.kr",
-  "http://localhost:3000",
   "https://dimiplan.com",
 ];
 
+// 개발 환경에서만 localhost 허용
+if (process.env.NODE_ENV !== "production") {
+  whitelist.push("http://localhost:3000");
+}
+
 const corsOptions = {
   origin: function (origin, callback) {
-    console.log("CORS origin:", origin);
+    logger.debug("CORS origin:", origin);
     if (!origin || whitelist.includes(origin)) {
       callback(null, true);
     } else {
@@ -80,18 +45,55 @@ const corsOptions = {
     }
   },
   credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization", "X-Session-ID"],
+  maxAge: 86400, // CORS preflight 캐시 설정 (24시간)
 };
 
 app.use(cors(corsOptions));
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// 요청 크기 제한 설정
+app.use(express.json({ limit: "1mb" }));
+app.use(express.urlencoded({ extended: true, limit: "1mb" }));
+
+// Passport 초기화
 app.use(passport.initialize());
 app.use(passport.session());
 
+// 요청 로깅 미들웨어
+app.use((req, res, next) => {
+  logger.info(`${req.method} ${req.path} - ${req.ip}`);
+  next();
+});
+
+// 라우터 설정
 app.use("/auth", authRouter);
 app.use("/api", apiRouter);
 
-app.listen(8080, () => {
-  console.log("Server is running on port 8080 (proxy 3000)");
+// 에러 핸들링 미들웨어
+app.use((err, req, res, next) => {
+  logger.error("Application error:", err);
+
+  // 프로덕션 환경에서는 자세한 오류 정보 노출하지 않음
+  const message =
+    process.env.NODE_ENV === "production"
+      ? "Internal server error"
+      : err.message;
+
+  res.status(500).json({ message });
 });
+
+// 서버 시작
+const PORT = process.env.PORT || 8080;
+app.listen(PORT, () => {
+  logger.info(`Server is running on port ${PORT}`);
+});
+
+// 정상적인 프로세스 종료 처리
+process.on("SIGTERM", () => {
+  logger.info("SIGTERM received, shutting down gracefully");
+  // 연결된 DB 종료 등의 정리 작업
+  process.exit(0);
+});
+
+module.exports = app;
