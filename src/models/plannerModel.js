@@ -117,8 +117,6 @@ const getPlannersInFolder = async (uid, folderId) => {
     // Hash the user ID for database queries
     const hashedUid = hashUserId(uid);
 
-    console.log(hashedUid);
-
     // Get encrypted planner data
     const planners = await db("planner")
       .where({ owner: hashedUid, from: folderId })
