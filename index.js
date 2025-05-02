@@ -23,7 +23,7 @@ app.set("trust proxy", true);
 // 세션 설정 - 메모리 기반 저장소 사용
 app.use(session(getSessionConfig()));
 
-// CORS 설정 - 프로덕션 환경에서는 localhost 제거
+// CORS 설정
 const whitelist = [
   "https://dimigo.co.kr",
   "https://m.dimigo.co.kr",
@@ -67,7 +67,7 @@ app.use("/auth", authRouter);
 app.use("/api", apiRouter);
 
 // 에러 핸들링 미들웨어
-app.use((err, req, res) => {
+app.use((err, req, res, next) => {
   logger.error("Application error:", err);
 
   res.status(500).json({ message: "Internal server error" });

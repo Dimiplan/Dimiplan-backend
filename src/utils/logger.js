@@ -4,6 +4,8 @@
  */
 const winston = require("winston");
 const { format, transports } = winston;
+const fs = require("fs");
+const path = require("path");
 require("../config/dotenv"); // Load environment variables
 
 // Define log levels
@@ -79,38 +81,29 @@ const safeStringify = (obj) => {
   }
 };
 
-// Filter for sensitive data in logs
+// Filter for sensitive data in logs - simplified for reliability
 const filterSensitiveData = format((info) => {
   try {
-    // Handle simple string messages directly
-    if (typeof info === "string") {
-      return { message: info };
-    }
+    // Start with a shallow copy of the info object
+    const filteredInfo = { ...info };
 
-    // Create a safe copy of the info object
-    let filteredInfo;
-
-    if (typeof info === "object") {
-      // Use safe stringify and re-parse to create a deep copy without circular references
-      try {
-        filteredInfo = JSON.parse(safeStringify(info));
-      } catch {
-        // If parsing fails, create a new object with just the message
-        filteredInfo = {
-          level: info.level,
-          message:
-            typeof info.message === "string"
-              ? info.message
-              : "Non-serializable log message",
-        };
+    // Ensure message is a string
+    if (typeof filteredInfo.message !== "string") {
+      if (filteredInfo.message === undefined) {
+        filteredInfo.message = "";
+      } else if (typeof filteredInfo.message === "object") {
+        try {
+          filteredInfo.message = safeStringify(filteredInfo.message);
+        } catch (e) {
+          filteredInfo.message = "[Complex object]";
+        }
+      } else {
+        filteredInfo.message = String(filteredInfo.message);
       }
-    } else {
-      // For non-objects
-      filteredInfo = { message: String(info) };
     }
 
-    // Filter out sensitive fields if present in message string
-    if (typeof filteredInfo.message === "string") {
+    // Mask sensitive data in message strings
+    if (filteredInfo.message) {
       // Mask emails
       filteredInfo.message = filteredInfo.message.replace(
         /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g,
@@ -130,71 +123,27 @@ const filterSensitiveData = format((info) => {
       );
     }
 
-    // Filter metadata objects recursively
-    const filterObject = (obj) => {
-      if (!obj || typeof obj !== "object" || Array.isArray(obj)) return obj;
-
-      const filtered = {};
-
-      Object.keys(obj).forEach((key) => {
-        const lowerKey = key.toLowerCase();
-
-        // Skip non-serializable properties
-        if (
-          key === "_events" ||
-          key === "_eventsCount" ||
-          key === "_readableState"
-        ) {
-          return;
-        }
-
-        // Redact sensitive fields
-        if (
-          lowerKey.includes("password") ||
-          lowerKey.includes("token") ||
-          lowerKey.includes("secret") ||
-          lowerKey.includes("key") ||
-          lowerKey.includes("auth")
-        ) {
-          filtered[key] = "[REDACTED]";
-        } else if (typeof obj[key] === "object" && obj[key] !== null) {
-          // Handle Error objects
-          if (obj[key] instanceof Error) {
-            filtered[key] = {
-              name: obj[key].name,
-              message: obj[key].message,
-              stack: obj[key].stack,
-            };
-          } else {
-            // Recursively filter nested objects
-            filtered[key] = filterObject(obj[key]);
-          }
-        } else {
-          filtered[key] = obj[key];
-        }
-      });
-
-      return filtered;
-    };
-
-    // Apply filtering to all metadata
-    Object.keys(filteredInfo).forEach((key) => {
-      if (key !== "level" && key !== "message" && key !== "timestamp") {
-        filteredInfo[key] = filterObject(filteredInfo[key]);
-      }
-    });
-
     return filteredInfo;
   } catch (error) {
     // Fallback if filtering fails
     return {
       level: info.level || "error",
       message: `Error in log filtering: ${error.message}`,
-      original_message:
-        typeof info.message === "string" ? info.message : "[Complex Object]",
     };
   }
 });
+
+// Define log directory
+const logDir = path.join(process.cwd(), "logs");
+
+// Create logs directory if it doesn't exist
+try {
+  if (!fs.existsSync(logDir)) {
+    fs.mkdirSync(logDir, { recursive: true, mode: 0o755 });
+  }
+} catch (err) {
+  console.error(`Failed to create logs directory: ${err.message}`);
+}
 
 // Define logger format
 const logFormat = format.combine(
@@ -209,15 +158,17 @@ const logFormat = format.combine(
   }),
 );
 
-// Make sure logs directory exists
-const fs = require("fs");
-const path = require("path");
-const logDir = "logs";
-
-// Create logs directory if it doesn't exist
-if (!fs.existsSync(logDir)) {
-  fs.mkdirSync(logDir);
-}
+// Create console formatter with colors
+const consoleFormat = format.combine(
+  format.colorize({ all: true }),
+  format.timestamp({ format: "YYYY-MM-DD HH:mm:ss" }),
+  format.printf((info) => {
+    if (info.error && info.error instanceof Error) {
+      return `${info.timestamp} ${info.level}: ${info.message} - ${info.error.stack}`;
+    }
+    return `${info.timestamp} ${info.level}: ${info.message}`;
+  }),
+);
 
 // Create the logger instance
 const logger = winston.createLogger({
@@ -225,22 +176,26 @@ const logger = winston.createLogger({
   levels,
   format: logFormat,
   transports: [
-    // Console transport
+    // Console transport with colors
     new transports.Console({
-      format: format.combine(format.colorize({ all: true })),
+      format: consoleFormat,
     }),
-    // File transport for all logs
+
+    // File transport for all logs - with explicit flags
     new transports.File({
       filename: path.join(logDir, "combined.log"),
       maxsize: 5242880, // 5MB
       maxFiles: 5,
+      options: { flags: "a" }, // Append flag
     }),
-    // Separate file for error logs
+
+    // Separate file for error logs - with explicit flags
     new transports.File({
       filename: path.join(logDir, "errors.log"),
       level: "error",
       maxsize: 5242880, // 5MB
       maxFiles: 5,
+      options: { flags: "a" }, // Append flag
     }),
   ],
   // Don't exit on uncaught exceptions
@@ -252,29 +207,45 @@ logger.stream = {
   write: (message) => logger.http(message.trim()),
 };
 
-// Safe logging wrappers
-const safeLog = (level, message, meta = {}) => {
-  try {
-    if (typeof message === "object" && message !== null) {
-      // If message is an object, stringify it
-      logger[level](JSON.stringify(message), meta);
-    } else {
-      logger[level](message, meta);
-    }
-  } catch (err) {
-    console.error(`Failed to log message: ${err.message}`);
-    console.error(
-      `Original message: ${typeof message === "object" ? "[Object]" : message}`,
-    );
-  }
-};
-
-// Export safe logging methods with appropriate level check
+// Simple direct logging function
 module.exports = {
-  error: (message, meta = {}) => safeLog("error", message, meta),
-  warn: (message, meta = {}) => safeLog("warn", message, meta),
-  info: (message, meta = {}) => safeLog("info", message, meta),
-  http: (message, meta = {}) => safeLog("http", message, meta),
-  debug: (message, meta = {}) => safeLog("debug", message, meta),
+  error: (message, meta = {}) => {
+    try {
+      logger.error(message, meta);
+    } catch (err) {
+      console.error(`Failed to log error: ${err.message}`);
+      console.error(
+        `Original message: ${typeof message === "object" ? JSON.stringify(message) : message}`,
+      );
+    }
+  },
+  warn: (message, meta = {}) => {
+    try {
+      logger.warn(message, meta);
+    } catch (err) {
+      console.error(`Failed to log warning: ${err.message}`);
+    }
+  },
+  info: (message, meta = {}) => {
+    try {
+      logger.info(message, meta);
+    } catch (err) {
+      console.error(`Failed to log info: ${err.message}`);
+    }
+  },
+  http: (message, meta = {}) => {
+    try {
+      logger.http(message, meta);
+    } catch (err) {
+      console.error(`Failed to log HTTP: ${err.message}`);
+    }
+  },
+  debug: (message, meta = {}) => {
+    try {
+      logger.debug(message, meta);
+    } catch (err) {
+      console.error(`Failed to log debug: ${err.message}`);
+    }
+  },
   stream: logger.stream,
 };
