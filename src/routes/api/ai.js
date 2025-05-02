@@ -134,7 +134,7 @@ const autoAiRequest = async (req, res) => {
 
     res.status(200).json({ response });
   } catch (error) {
-    console.error(`Error generating ${model} response:`, error);
+    console.error(`Error generating response:`, error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
