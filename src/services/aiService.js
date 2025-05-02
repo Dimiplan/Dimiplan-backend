@@ -29,7 +29,7 @@ const PAID_MODELS = {
  */
 const generateAutoResponse = async (prompt) => {
   try {
-    const model_selection = await openRouter.responses.create({
+    const model_selection = await openRouter.chat.completions.create({
       model: "openai/gpt-4.1-nano",
       messages: [
         {
@@ -41,7 +41,7 @@ const generateAutoResponse = async (prompt) => {
       ],
     });
 
-    const selectedModel = model_selection.response.output_text;
+    const selectedModel = model_selection.choices[0].message.content;
     const model = FREE_MODELS[JSON.parse(selectedModel).model];
 
     console.log(`Selected model: ${model}`);
