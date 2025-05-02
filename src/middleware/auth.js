@@ -19,11 +19,14 @@ const isAuthenticated = (req, res, next) => {
       // Check for API key or custom session header for mobile apps
       const sessionId = req.headers["x-session-id"];
       if (sessionId) {
-        // 모바일 앱을 위한 세션 ID 기반 인증 (필요시 구현)
+        // 모바일 앱을 위한 세션 ID 기반 인증
         logger.warn("Using x-session-id header for authentication");
-        return res
-          .status(401)
-          .json({ message: "Session-based auth not implemented" });
+        req.userId = sessionId;
+        req.hashedUserId = hashUserId(sessionId);
+        logger.info(
+          `User authenticated in mobile: ${req.hashedUserId.substring(0, 8)}...`,
+        );
+        next();
       }
 
       logger.warn("Authentication failed - no session found");

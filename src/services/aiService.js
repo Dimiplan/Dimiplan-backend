@@ -75,11 +75,11 @@ const generateAutoResponse = async (prompt) => {
  */
 const generateResponse = async (model, prompt) => {
   try {
-    if (!Object.values(AI_MODELS).includes(model)) {
+    if (!Object.values(FREE_MODELS).includes(model)) {
       throw new Error(`Invalid model: ${model}`);
     }
 
-    const response = await openai.responses.create({
+    const response = await openRouter.chat.completions.create({
       model: model,
       input: prompt,
     });

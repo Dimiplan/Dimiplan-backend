@@ -209,9 +209,19 @@ const logFormat = format.combine(
   }),
 );
 
+// Make sure logs directory exists
+const fs = require("fs");
+const path = require("path");
+const logDir = "logs";
+
+// Create logs directory if it doesn't exist
+if (!fs.existsSync(logDir)) {
+  fs.mkdirSync(logDir);
+}
+
 // Create the logger instance
 const logger = winston.createLogger({
-  level: "info",
+  level: process.env.LOG_LEVEL || "info", // Use environment variable or default to info
   levels,
   format: logFormat,
   transports: [
@@ -221,13 +231,13 @@ const logger = winston.createLogger({
     }),
     // File transport for all logs
     new transports.File({
-      filename: "logs/combined.log",
+      filename: path.join(logDir, "combined.log"),
       maxsize: 5242880, // 5MB
       maxFiles: 5,
     }),
     // Separate file for error logs
     new transports.File({
-      filename: "logs/errors.log",
+      filename: path.join(logDir, "errors.log"),
       level: "error",
       maxsize: 5242880, // 5MB
       maxFiles: 5,
@@ -245,14 +255,21 @@ logger.stream = {
 // Safe logging wrappers
 const safeLog = (level, message, meta = {}) => {
   try {
-    logger[level](message, meta);
+    if (typeof message === "object" && message !== null) {
+      // If message is an object, stringify it
+      logger[level](JSON.stringify(message), meta);
+    } else {
+      logger[level](message, meta);
+    }
   } catch (err) {
     console.error(`Failed to log message: ${err.message}`);
-    console.error(`Original message: ${message}`);
+    console.error(
+      `Original message: ${typeof message === "object" ? "[Object]" : message}`,
+    );
   }
 };
 
-// Export safe logging methods
+// Export safe logging methods with appropriate level check
 module.exports = {
   error: (message, meta = {}) => safeLog("error", message, meta),
   warn: (message, meta = {}) => safeLog("warn", message, meta),
