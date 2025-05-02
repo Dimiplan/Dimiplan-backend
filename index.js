@@ -28,12 +28,8 @@ const whitelist = [
   "https://dimigo.co.kr",
   "https://m.dimigo.co.kr",
   "https://dimiplan.com",
+  "http://localhost:3000",
 ];
-
-// 개발 환경에서만 localhost 허용
-if (process.env.NODE_ENV !== "production") {
-  whitelist.push("http://localhost:3000");
-}
 
 const corsOptions = {
   origin: function (origin, callback) {
@@ -71,16 +67,10 @@ app.use("/auth", authRouter);
 app.use("/api", apiRouter);
 
 // 에러 핸들링 미들웨어
-app.use((err, req, res, next) => {
+app.use((err, req, res) => {
   logger.error("Application error:", err);
 
-  // 프로덕션 환경에서는 자세한 오류 정보 노출하지 않음
-  const message =
-    process.env.NODE_ENV === "production"
-      ? "Internal server error"
-      : err.message;
-
-  res.status(500).json({ message });
+  res.status(500).json({ message: "Internal server error" });
 });
 
 // 서버 시작

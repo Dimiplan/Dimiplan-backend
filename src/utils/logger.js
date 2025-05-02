@@ -14,12 +14,6 @@ const levels = {
   debug: 4,
 };
 
-// Define level based on environment
-const level = () => {
-  const env = process.env.NODE_ENV || "development";
-  return env === "development" ? "debug" : "info";
-};
-
 // Define colors for each level
 const colors = {
   error: "red",
@@ -106,7 +100,7 @@ const logFormat = format.combine(
 
 // Create the logger instance
 const logger = winston.createLogger({
-  level: level(),
+  level: "info",
   levels,
   format: logFormat,
   transports: [

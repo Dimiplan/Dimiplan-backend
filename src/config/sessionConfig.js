@@ -20,10 +20,10 @@ const getSessionConfig = () => {
     secret: SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
-    name: "dimiplan.sid", // Custom name instead of default connect.sid
+    name: "dimiplan.sid",
     cookie: {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production", // Always use secure in production
+      secure: true,
       sameSite: "strict",
       maxAge: SESSION_MAX_AGE,
     },
