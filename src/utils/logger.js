@@ -14,6 +14,12 @@ const levels = {
   debug: 4,
 };
 
+// Define level based on environment
+const level = () => {
+  const env = process.env.NODE_ENV || "development";
+  return env === "development" ? "debug" : "info";
+};
+
 // Define colors for each level
 const colors = {
   error: "red",
@@ -25,64 +31,174 @@ const colors = {
 
 winston.addColors(colors);
 
+/**
+ * Safe JSON stringify that handles circular references
+ * @param {Object} obj - Object to stringify
+ * @returns {String} - JSON string
+ */
+const safeStringify = (obj) => {
+  if (!obj) return String(obj);
+
+  // Handle primitive types
+  if (typeof obj !== "object") return String(obj);
+
+  // Create a cache to store already processed objects
+  const cache = new Set();
+
+  // Custom replacer function to handle circular references
+  const replacer = (key, value) => {
+    // If value is an object and not null
+    if (typeof value === "object" && value !== null) {
+      // Skip circular references
+      if (cache.has(value)) {
+        return "[Circular Reference]";
+      }
+      cache.add(value);
+
+      // Handle Error objects specially
+      if (value instanceof Error) {
+        return {
+          name: value.name,
+          message: value.message,
+          stack: value.stack,
+        };
+      }
+
+      // Skip complex objects like sockets, streams, etc.
+      if (
+        value.constructor &&
+        ["Socket", "IncomingMessage", "ServerResponse", "HTTPParser"].includes(
+          value.constructor.name,
+        )
+      ) {
+        return `[${value.constructor.name}]`;
+      }
+    }
+    return value;
+  };
+
+  try {
+    return JSON.stringify(obj, replacer);
+  } catch (error) {
+    return `[Object Not Serializable: ${error.message}]`;
+  }
+};
+
 // Filter for sensitive data in logs
 const filterSensitiveData = format((info) => {
-  // Create a deep copy of the info object to avoid modifying the original
-  const filteredInfo = JSON.parse(JSON.stringify(info));
+  try {
+    // Handle simple string messages directly
+    if (typeof info === "string") {
+      return { message: info };
+    }
 
-  // Filter out sensitive fields if present in message string
-  if (typeof filteredInfo.message === "string") {
-    // Mask emails
-    filteredInfo.message = filteredInfo.message.replace(
-      /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g,
-      "[EMAIL REDACTED]",
-    );
+    // Create a safe copy of the info object
+    let filteredInfo;
 
-    // Mask potential auth tokens
-    filteredInfo.message = filteredInfo.message.replace(
-      /(token|jwt|auth|api|key)[:=]\s*['"]?\w+['"]?/gi,
-      "$1: [REDACTED]",
-    );
+    if (typeof info === "object") {
+      // Use safe stringify and re-parse to create a deep copy without circular references
+      try {
+        filteredInfo = JSON.parse(safeStringify(info));
+      } catch (e) {
+        // If parsing fails, create a new object with just the message
+        filteredInfo = {
+          level: info.level,
+          message:
+            typeof info.message === "string"
+              ? info.message
+              : "Non-serializable log message",
+        };
+      }
+    } else {
+      // For non-objects
+      filteredInfo = { message: String(info) };
+    }
 
-    // Mask potential password fields
-    filteredInfo.message = filteredInfo.message.replace(
-      /(password|passwd|pwd)[:=]\s*['"]?\w+['"]?/gi,
-      "$1: [REDACTED]",
-    );
-  }
+    // Filter out sensitive fields if present in message string
+    if (typeof filteredInfo.message === "string") {
+      // Mask emails
+      filteredInfo.message = filteredInfo.message.replace(
+        /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g,
+        "[EMAIL REDACTED]",
+      );
 
-  // Filter metadata objects recursively
-  const filterObject = (obj) => {
-    if (!obj || typeof obj !== "object") return obj;
+      // Mask potential auth tokens
+      filteredInfo.message = filteredInfo.message.replace(
+        /(token|jwt|auth|api|key)[:=]\s*['"]?\w+['"]?/gi,
+        "$1: [REDACTED]",
+      );
 
-    Object.keys(obj).forEach((key) => {
-      const lowerKey = key.toLowerCase();
+      // Mask potential password fields
+      filteredInfo.message = filteredInfo.message.replace(
+        /(password|passwd|pwd)[:=]\s*['"]?\w+['"]?/gi,
+        "$1: [REDACTED]",
+      );
+    }
 
-      // Redact sensitive fields
-      if (
-        lowerKey.includes("password") ||
-        lowerKey.includes("token") ||
-        lowerKey.includes("secret") ||
-        lowerKey.includes("key") ||
-        lowerKey.includes("auth")
-      ) {
-        obj[key] = "[REDACTED]";
-      } else if (typeof obj[key] === "object") {
-        obj[key] = filterObject(obj[key]);
+    // Filter metadata objects recursively
+    const filterObject = (obj) => {
+      if (!obj || typeof obj !== "object" || Array.isArray(obj)) return obj;
+
+      const filtered = {};
+
+      Object.keys(obj).forEach((key) => {
+        const lowerKey = key.toLowerCase();
+
+        // Skip non-serializable properties
+        if (
+          key === "_events" ||
+          key === "_eventsCount" ||
+          key === "_readableState"
+        ) {
+          return;
+        }
+
+        // Redact sensitive fields
+        if (
+          lowerKey.includes("password") ||
+          lowerKey.includes("token") ||
+          lowerKey.includes("secret") ||
+          lowerKey.includes("key") ||
+          lowerKey.includes("auth")
+        ) {
+          filtered[key] = "[REDACTED]";
+        } else if (typeof obj[key] === "object" && obj[key] !== null) {
+          // Handle Error objects
+          if (obj[key] instanceof Error) {
+            filtered[key] = {
+              name: obj[key].name,
+              message: obj[key].message,
+              stack: obj[key].stack,
+            };
+          } else {
+            // Recursively filter nested objects
+            filtered[key] = filterObject(obj[key]);
+          }
+        } else {
+          filtered[key] = obj[key];
+        }
+      });
+
+      return filtered;
+    };
+
+    // Apply filtering to all metadata
+    Object.keys(filteredInfo).forEach((key) => {
+      if (key !== "level" && key !== "message" && key !== "timestamp") {
+        filteredInfo[key] = filterObject(filteredInfo[key]);
       }
     });
 
-    return obj;
-  };
-
-  // Apply filtering to all metadata
-  Object.keys(filteredInfo).forEach((key) => {
-    if (key !== "level" && key !== "message" && key !== "timestamp") {
-      filteredInfo[key] = filterObject(filteredInfo[key]);
-    }
-  });
-
-  return filteredInfo;
+    return filteredInfo;
+  } catch (error) {
+    // Fallback if filtering fails
+    return {
+      level: info.level || "error",
+      message: `Error in log filtering: ${error.message}`,
+      original_message:
+        typeof info.message === "string" ? info.message : "[Complex Object]",
+    };
+  }
 });
 
 // Define logger format
@@ -100,7 +216,7 @@ const logFormat = format.combine(
 
 // Create the logger instance
 const logger = winston.createLogger({
-  level: "info",
+  level: level(),
   levels,
   format: logFormat,
   transports: [
@@ -111,11 +227,15 @@ const logger = winston.createLogger({
     // File transport for all logs
     new transports.File({
       filename: "logs/combined.log",
+      maxsize: 5242880, // 5MB
+      maxFiles: 5,
     }),
     // Separate file for error logs
     new transports.File({
       filename: "logs/errors.log",
       level: "error",
+      maxsize: 5242880, // 5MB
+      maxFiles: 5,
     }),
   ],
   // Don't exit on uncaught exceptions
@@ -127,4 +247,22 @@ logger.stream = {
   write: (message) => logger.http(message.trim()),
 };
 
-module.exports = logger;
+// Safe logging wrappers
+const safeLog = (level, message, meta = {}) => {
+  try {
+    logger[level](message, meta);
+  } catch (err) {
+    console.error(`Failed to log message: ${err.message}`);
+    console.error(`Original message: ${message}`);
+  }
+};
+
+// Export safe logging methods
+module.exports = {
+  error: (message, meta = {}) => safeLog("error", message, meta),
+  warn: (message, meta = {}) => safeLog("warn", message, meta),
+  info: (message, meta = {}) => safeLog("info", message, meta),
+  http: (message, meta = {}) => safeLog("http", message, meta),
+  debug: (message, meta = {}) => safeLog("debug", message, meta),
+  stream: logger.stream,
+};

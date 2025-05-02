@@ -1,9 +1,16 @@
 /**
  * Planner model
- * Handles all planner-related database operations
+ * Handles all planner-related database operations with encryption
  */
 const db = require("../config/db");
 const { getNextId, executeTransaction } = require("../utils/dbUtils");
+const {
+  hashUserId,
+  encryptData,
+  decryptData,
+  getTimestamp,
+} = require("../utils/cryptoUtils");
+const logger = require("../utils/logger");
 
 /**
  * Create a new planner
@@ -15,9 +22,12 @@ const { getNextId, executeTransaction } = require("../utils/dbUtils");
  */
 const createPlanner = async (uid, name, isDaily, folderId) => {
   try {
+    // Hash the user ID for database queries
+    const hashedUid = hashUserId(uid);
+
     // Check if folder exists
     const folder = await db("folders")
-      .where({ owner: uid, id: folderId })
+      .where({ owner: hashedUid, id: folderId })
       .first();
 
     if (!folder) {
@@ -26,7 +36,11 @@ const createPlanner = async (uid, name, isDaily, folderId) => {
 
     // Check if same planner name exists in the folder
     const existingPlanner = await db("planner")
-      .where({ owner: uid, from: folderId, name: name })
+      .where({
+        owner: hashedUid,
+        from: folderId,
+        name: encryptData(uid, name), // Check for encrypted name
+      })
       .first();
 
     if (existingPlanner) {
@@ -34,26 +48,28 @@ const createPlanner = async (uid, name, isDaily, folderId) => {
     }
 
     // Get next planner ID
-    const plannerId = await getNextId(uid, "plannerId");
+    const plannerId = await getNextId(hashedUid, "plannerId");
 
-    // Create planner
+    // Create planner with encrypted name
     await db("planner").insert({
-      owner: uid,
-      name: name,
+      owner: hashedUid,
+      name: encryptData(uid, name),
       id: plannerId,
       from: folderId,
-      isDaily: isDaily ?? "0",
+      isDaily: isDaily ?? 0,
+      created_at: getTimestamp(),
+      updated_at: getTimestamp(),
     });
 
     return {
-      owner: uid,
-      name: name,
+      owner: uid, // Return plain user ID for application logic
+      name: name, // Return decrypted name
       id: plannerId,
       from: folderId,
-      isDaily: isDaily,
+      isDaily: isDaily ?? 0,
     };
   } catch (error) {
-    console.error("Error creating planner:", error);
+    logger.error("Error creating planner:", error);
     throw error;
   }
 };
@@ -66,9 +82,26 @@ const createPlanner = async (uid, name, isDaily, folderId) => {
  */
 const getPlannerById = async (uid, id) => {
   try {
-    return await db("planner").where({ owner: uid, id: id }).first();
+    // Hash the user ID for database queries
+    const hashedUid = hashUserId(uid);
+
+    // Get encrypted planner data
+    const planner = await db("planner")
+      .where({ owner: hashedUid, id: id })
+      .first();
+
+    if (!planner) {
+      return null;
+    }
+
+    // Decrypt name field
+    return {
+      ...planner,
+      owner: uid, // Return original ID for application logic
+      name: decryptData(uid, planner.name),
+    };
   } catch (error) {
-    console.error("Error getting planner by ID:", error);
+    logger.error("Error getting planner by ID:", error);
     throw error;
   }
 };
@@ -81,11 +114,22 @@ const getPlannerById = async (uid, id) => {
  */
 const getPlannersInFolder = async (uid, folderId) => {
   try {
-    return await db("planner")
-      .where({ owner: uid, from: folderId })
+    // Hash the user ID for database queries
+    const hashedUid = hashUserId(uid);
+
+    // Get encrypted planner data
+    const planners = await db("planner")
+      .where({ owner: hashedUid, from: folderId })
       .orderByRaw("isDaily ASC, id ASC");
+
+    // Decrypt names in results
+    return planners.map((planner) => ({
+      ...planner,
+      owner: uid, // Return original user ID for application logic
+      name: decryptData(uid, planner.name),
+    }));
   } catch (error) {
-    console.error("Error getting planners in folder:", error);
+    logger.error("Error getting planners in folder:", error);
     throw error;
   }
 };
@@ -99,7 +143,13 @@ const getPlannersInFolder = async (uid, folderId) => {
  */
 const renamePlanner = async (uid, id, newName) => {
   try {
-    const planner = await getPlannerById(uid, id);
+    // Hash user ID for database queries
+    const hashedUid = hashUserId(uid);
+
+    // Get planner
+    const planner = await db("planner")
+      .where({ owner: hashedUid, id: id })
+      .first();
 
     if (!planner) {
       throw new Error("Planner not found");
@@ -107,7 +157,11 @@ const renamePlanner = async (uid, id, newName) => {
 
     // Check if new name conflicts with existing planner in the same folder
     const existingPlanner = await db("planner")
-      .where({ owner: uid, from: planner.from, name: newName })
+      .where({
+        owner: hashedUid,
+        from: planner.from,
+        name: encryptData(uid, newName),
+      })
       .whereNot({ id: id })
       .first();
 
@@ -115,14 +169,22 @@ const renamePlanner = async (uid, id, newName) => {
       throw new Error("Planner with same name already exists in this folder");
     }
 
-    await db("planner").where({ owner: uid, id: id }).update({ name: newName });
+    // Update with encrypted name
+    await db("planner")
+      .where({ owner: hashedUid, id: id })
+      .update({
+        name: encryptData(uid, newName),
+        updated_at: getTimestamp(),
+      });
 
+    // Return updated planner with decrypted name
     return {
       ...planner,
-      name: newName,
+      owner: uid, // Original user ID for application logic
+      name: newName, // Decrypted name
     };
   } catch (error) {
-    console.error("Error renaming planner:", error);
+    logger.error("Error renaming planner:", error);
     throw error;
   }
 };
@@ -135,7 +197,13 @@ const renamePlanner = async (uid, id, newName) => {
  */
 const deletePlanner = async (uid, id) => {
   try {
-    const planner = await getPlannerById(uid, id);
+    // Hash user ID for database operations
+    const hashedUid = hashUserId(uid);
+
+    // Verify planner exists
+    const planner = await db("planner")
+      .where({ owner: hashedUid, id: id })
+      .first();
 
     if (!planner) {
       throw new Error("Planner not found");
@@ -144,15 +212,18 @@ const deletePlanner = async (uid, id) => {
     // Use transaction to ensure all operations succeed or fail together
     await executeTransaction(async (trx) => {
       // Delete all plans in the planner
-      await trx("plan").where({ owner: uid, from: id }).del();
+      await trx("plan").where({ owner: hashedUid, from: id }).del();
 
       // Delete the planner
-      await trx("planner").where({ owner: uid, id: id }).del();
+      await trx("planner").where({ owner: hashedUid, id: id }).del();
     });
 
+    logger.info(
+      `Planner deleted: ID ${id} by user ${hashedUid.substring(0, 8)}...`,
+    );
     return true;
   } catch (error) {
-    console.error("Error deleting planner:", error);
+    logger.error("Error deleting planner:", error);
     throw error;
   }
 };
