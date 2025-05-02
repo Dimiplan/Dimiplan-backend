@@ -23,9 +23,8 @@ const getSessionConfig = () => {
     saveUninitialized: false,
     name: "dimiplan.sid",
     cookie: {
-      httpOnly: true,
       secure: true,
-      sameSite: "strict",
+      sameSite: "none",
       maxAge: SESSION_MAX_AGE,
     },
   };
