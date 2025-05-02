@@ -42,10 +42,12 @@ const generateAutoResponse = async (prompt) => {
     });
 
     const selectedModel = model_selection.response.output_text;
-    const model = JSON.parse(selectedModel).model;
+    const model = FREE_MODELS[JSON.parse(selectedModel).model];
+
+    console.log(`Selected model: ${model}`);
 
     const response = await openRouter.responses.create({
-      model: FREE_MODELS[model],
+      model: model,
       messages: [
         {
           role: "system",
