@@ -4,6 +4,7 @@
  */
 const { generateSecureToken } = require("../utils/cryptoUtils");
 
+require("./dotenv"); // Load environment variables
 // Session secret should be environment variable in production
 const SESSION_SECRET = process.env.SESSION_SECRET || generateSecureToken();
 

@@ -4,6 +4,7 @@
  */
 const crypto = require("crypto");
 const { formatDateForMySQL } = require("./dateUtils");
+require("../config/dotenv"); // Load environment variables
 
 // Master encryption key - in production, should be stored in a secure vault/environment variable
 // This is just a placeholder - NEVER hardcode this in actual code

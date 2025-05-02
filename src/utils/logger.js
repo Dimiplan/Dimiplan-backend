@@ -4,6 +4,7 @@
  */
 const winston = require("winston");
 const { format, transports } = winston;
+require("../config/dotenv"); // Load environment variables
 
 // Define log levels
 const levels = {
@@ -12,12 +13,6 @@ const levels = {
   info: 2,
   http: 3,
   debug: 4,
-};
-
-// Define level based on environment
-const level = () => {
-  const env = process.env.NODE_ENV || "development";
-  return env === "development" ? "debug" : "info";
 };
 
 // Define colors for each level
@@ -216,7 +211,7 @@ const logFormat = format.combine(
 
 // Create the logger instance
 const logger = winston.createLogger({
-  level: level(),
+  level: "info",
   levels,
   format: logFormat,
   transports: [

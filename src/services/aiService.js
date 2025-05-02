@@ -3,6 +3,7 @@
  * Handles interactions with OpenAI API
  */
 const OpenAI = require("openai");
+require("../config/dotenv"); // Load environment variables
 
 // Initialize OpenAI client
 const openai = new OpenAI({
