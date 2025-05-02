@@ -5,20 +5,62 @@
 const OpenAI = require("openai");
 require("../config/dotenv"); // Load environment variables
 
-// Initialize OpenAI client
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
+const openRouter = new OpenAI({
+  baseURL: "https://openrouter.ai/api/v1",
+  apiKey: process.env.OPENROUTER_API_KEY,
 });
 
+const FREE_MODELS = [
+  "openai/gpt-4.1-nano",
+  "openai/o4-mini",
+  "anthropic/claude-3.5-haiku",
+  "openai/gpt-4.1",
+];
+
+const PAID_MODELS = {
+  CLAUDE_SONNET: "anthropic/claude-3.7-sonnet:thinking",
+  O3: "openai/o3",
+};
+
 /**
- * Available AI models
- * @type {Object}
+ * Generate a response from Automatic AI model
+ * @param {string} prompt - User prompt
+ * @returns {Promise<Object>} - AI response
  */
-const AI_MODELS = {
-  GPT4O_MINI: "gpt-4o-mini",
-  GPT4O: "gpt-4o",
-  GPT41: "gpt-4.1",
-  O4_MINI: "o4-mini",
+const generateAutoResponse = async (prompt) => {
+  try {
+    const model_selection = await openRouter.responses.create({
+      model: "gpt-4.1-nano",
+      messages: [
+        {
+          role: "system",
+          content:
+            "Choose the AI model for this prompt. If the prompt is simple, respond {model: 0}, if it requires more complex reasoning, respond {model: 1}, if it requires more knowledge or is about programming, respond {model: 2}, and if it requires more information and large AI model size, respond {model: 3}",
+        },
+        { role: "user", content: prompt },
+      ],
+    });
+
+    const selectedModel = model_selection.response.output_text;
+    const model = JSON.parse(selectedModel).model;
+
+    const response = await openRouter.responses.create({
+      model: FREE_MODELS[model],
+      messages: [
+        {
+          role: "system",
+          content:
+            "Do not response in more than 1000 tokens if it is not necessary",
+        },
+        { role: "user", content: prompt },
+      ],
+    });
+
+    return response;
+  } catch (error) {
+    console.error(`Error generating response:`, error);
+    throw error;
+  }
 };
 
 /**
@@ -26,6 +68,7 @@ const AI_MODELS = {
  * @param {string} model - AI model to use
  * @param {string} prompt - User prompt
  * @returns {Promise<Object>} - AI response
+ * @deprecated
  */
 const generateResponse = async (model, prompt) => {
   try {
@@ -46,6 +89,5 @@ const generateResponse = async (model, prompt) => {
 };
 
 module.exports = {
-  AI_MODELS,
-  generateResponse,
+  generateAutoResponse,
 };

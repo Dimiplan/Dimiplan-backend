@@ -9,7 +9,10 @@ const {
   addChatMessages,
   getChatMessages,
 } = require("../../models/chatModel");
-const { AI_MODELS, generateResponse } = require("../../services/aiService");
+const {
+  generateResponse,
+  generateAutoResponse,
+} = require("../../services/aiService");
 
 const router = express.Router();
 
@@ -77,8 +80,9 @@ router.get("/getChatInRoom", async (req, res) => {
  * @param {Object} req - Express request object
  * @param {Object} res - Express response object
  * @param {string} model - AI model to use
+ * @deprecated
  */
-const handleAiRequest = async (req, res, model) => {
+const customAiRequest = async (req, res, model) => {
   try {
     const { prompt, room } = req.body;
 
@@ -105,35 +109,79 @@ const handleAiRequest = async (req, res, model) => {
 };
 
 /**
+ * Helper function to handle AI response generation
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ */
+const autoAiRequest = async (req, res) => {
+  try {
+    const { prompt, room } = req.body;
+
+    if (!prompt) {
+      return res.status(400).json({ message: "Prompt is required" });
+    }
+
+    if (!room) {
+      return res.status(400).json({ message: "Room ID is required" });
+    }
+
+    // Generate AI response
+    const response = await generateAutoResponse(prompt);
+
+    // Save messages to database
+    const aiResponseText = response.output_text || "";
+    await addChatMessages(req.userId, room, prompt, aiResponseText);
+
+    res.status(200).json({ response });
+  } catch (error) {
+    console.error(`Error generating ${model} response:`, error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+/**
+ * @route POST /api/ai/auto
+ * @desc Generate response using Auto model
+ * @deprecated
+ */
+router.post("/auto", async (req, res) => {
+  await autoAiRequest(req, res);
+});
+
+/**
  * @route POST /api/ai/gpt4o_m
  * @desc Generate response using GPT-4o Mini model
+ * @deprecated
  */
 router.post("/gpt4o_m", async (req, res) => {
-  await handleAiRequest(req, res, AI_MODELS.GPT4O_MINI);
+  await autoAiRequest(req, res);
 });
 
 /**
  * @route POST /api/ai/gpt4o
  * @desc Generate response using GPT-4o model
+ * @deprecated
  */
 router.post("/gpt4o", async (req, res) => {
-  await handleAiRequest(req, res, AI_MODELS.GPT4O);
+  await autoAiRequest(req, res);
 });
 
 /**
  * @route POST /api/ai/gpt41
  * @desc Generate response using GPT-4.1 model
+ * @deprecated
  */
 router.post("/gpt41", async (req, res) => {
-  await handleAiRequest(req, res, AI_MODELS.GPT41);
+  await autoAiRequest(req, res);
 });
 
 /**
  * @route POST /api/ai/o4-mini
  * @desc Generate response using o4-mini model
+ * @deprecated
  */
 router.post("/o4-mini", async (req, res) => {
-  await handleAiRequest(req, res, AI_MODELS.O4_MINI);
+  await autoAiRequest(req, res);
 });
 
 module.exports = router;
