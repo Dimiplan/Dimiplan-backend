@@ -27,6 +27,7 @@ const isAuthenticated = (req, res, next) => {
           `User authenticated in mobile: ${req.hashedUserId.substring(0, 8)}...`,
         );
         next();
+        return;
       }
 
       logger.warn("Authentication failed - no session found");
