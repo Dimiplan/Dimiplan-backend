@@ -94,7 +94,7 @@ const filterSensitiveData = format((info) => {
       // Use safe stringify and re-parse to create a deep copy without circular references
       try {
         filteredInfo = JSON.parse(safeStringify(info));
-      } catch (e) {
+      } catch {
         // If parsing fails, create a new object with just the message
         filteredInfo = {
           level: info.level,
