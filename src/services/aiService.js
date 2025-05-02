@@ -42,11 +42,14 @@ const generateAutoResponse = async (prompt) => {
     });
 
     const selectedModel = model_selection.choices[0].message.content;
+
+    console.log(selectedModel);
+
     const model = FREE_MODELS[JSON.parse(selectedModel).model];
 
     console.log(`Selected model: ${model}`);
 
-    const response = await openRouter.responses.create({
+    const response = await openRouter.chat.completions.create({
       model: model,
       messages: [
         {
