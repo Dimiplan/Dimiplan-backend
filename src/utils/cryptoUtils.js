@@ -3,6 +3,7 @@
  * Provides SHA3 hashing and AES encryption/decryption
  */
 const crypto = require("crypto");
+const { formatDateForMySQL } = require("./dateUtils");
 
 // Master encryption key - in production, should be stored in a secure vault/environment variable
 // This is just a placeholder - NEVER hardcode this in actual code
@@ -127,10 +128,19 @@ const generateSecureToken = (length = 32) => {
   return crypto.randomBytes(length).toString("hex");
 };
 
+/**
+ * Get current timestamp in MySQL-compatible format
+ * @returns {string} - MySQL compatible timestamp
+ */
+const getTimestamp = () => {
+  return formatDateForMySQL(new Date());
+};
+
 module.exports = {
   hashUserId,
   verifyUserId,
   encryptData,
   decryptData,
   generateSecureToken,
+  getTimestamp,
 };

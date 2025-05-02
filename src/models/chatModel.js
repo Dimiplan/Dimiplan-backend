@@ -8,6 +8,7 @@ const {
   hashUserId,
   encryptData,
   decryptData,
+  getTimestamp,
 } = require("../utils/cryptoUtils");
 const logger = require("../utils/logger");
 
@@ -30,7 +31,7 @@ const createChatRoom = async (uid, name) => {
       id: roomId,
       name: encryptedName,
       isProcessing: 0,
-      created_at: new Date().toISOString(),
+      created_at: getTimestamp(),
     });
 
     return {
@@ -82,7 +83,7 @@ const addChatMessages = async (uid, roomId, userMessage, aiMessage) => {
 
     // Get next chat ID
     const chatId = await getNextId(hashedUid, "chatId");
-    const timestamp = new Date().toISOString();
+    const timestamp = getTimestamp();
 
     // Encrypt messages
     const encryptedUserMessage = encryptData(uid, userMessage);

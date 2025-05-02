@@ -7,6 +7,7 @@ const {
   hashUserId,
   encryptData,
   decryptData,
+  getTimestamp,
 } = require("../utils/cryptoUtils");
 const logger = require("../utils/logger");
 
@@ -47,8 +48,8 @@ const createUser = async (user) => {
           : null,
       };
 
-      // Add audit metadata
-      const timestamp = new Date().toISOString();
+      // Add audit metadata (MySQL 호환 형식)
+      const timestamp = getTimestamp();
       encryptedUser.created_at = timestamp;
       encryptedUser.updated_at = timestamp;
 
@@ -147,8 +148,8 @@ const updateUser = async (uid, userData) => {
       encryptedData.class = userData.class;
     }
 
-    // Add update timestamp
-    encryptedData.updated_at = new Date().toISOString();
+    // Add update timestamp (MySQL 호환 형식)
+    encryptedData.updated_at = getTimestamp();
 
     return await db("users").where("id", hashedUid).update(encryptedData);
   } catch (error) {

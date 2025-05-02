@@ -8,6 +8,7 @@ const {
   hashUserId,
   encryptData,
   decryptData,
+  getTimestamp,
 } = require("../utils/cryptoUtils");
 const logger = require("../utils/logger");
 
@@ -71,7 +72,7 @@ const createPlan = async (
       from: plannerId,
       priority: priority || 1,
       isCompleted: 0,
-      created_at: new Date().toISOString(),
+      created_at: getTimestamp(),
     });
 
     // Return plain data for response
@@ -206,7 +207,7 @@ const updatePlan = async (uid, id, updateData) => {
     }
 
     // Add update timestamp
-    formattedData.updated_at = new Date().toISOString();
+    formattedData.updated_at = getTimestamp();
 
     await db("plan").where({ owner: hashedUid, id: id }).update(formattedData);
 
@@ -262,7 +263,7 @@ const completePlan = async (uid, id) => {
 
     await db("plan").where({ owner: hashedUid, id: id }).update({
       isCompleted: 1,
-      updated_at: new Date().toISOString(),
+      updated_at: getTimestamp(),
     });
 
     // Get the updated plan with decrypted content
