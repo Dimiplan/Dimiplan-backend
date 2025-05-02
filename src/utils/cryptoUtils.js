@@ -7,13 +7,11 @@ const { formatDateForMySQL } = require("./dateUtils");
 
 // Master encryption key - in production, should be stored in a secure vault/environment variable
 // This is just a placeholder - NEVER hardcode this in actual code
-const MASTER_KEY =
-  process.env.CRYPTO_MASTER_KEY ||
-  "your-secure-master-key-with-at-least-32-chars";
-const MASTER_IV = process.env.CRYPTO_MASTER_IV || "your-secure-16-c";
+const MASTER_KEY = process.env.CRYPTO_MASTER_KEY;
+const MASTER_IV = process.env.CRYPTO_MASTER_IV;
 
 // Salt for user ID hashing - should be a secure random value
-const UID_SALT = process.env.UID_SALT || "dimiplan-uid-salt-value";
+const UID_SALT = process.env.UID_SALT;
 
 /**
  * Generate a derived encryption key for a specific user
