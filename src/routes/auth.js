@@ -200,17 +200,4 @@ router.get("/logout", (req, res) => {
   });
 });
 
-/**
- * @route GET /auth/session
- * @desc Check session validity
- */
-router.get("/session", (req, res) => {
-  const sessionIdHeader = req.headers["x-session-id"];
-
-  if (req.session && req.session.passport && req.session.passport.user) {
-    return res.status(200).json({ valid: true });
-  }
-  return res.status(401).json({ valid: false, message: "Invalid session" });
-});
-
 module.exports = router;
