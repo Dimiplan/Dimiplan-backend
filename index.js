@@ -53,6 +53,12 @@ app.use(express.urlencoded({ extended: true, limit: "1mb" }));
 // 세션 설정 - 메모리 기반 저장소 사용
 app.use(session(getSessionConfig()));
 
+// 로깅
+app.use((req, res, next) => {
+  logger.info(`${req.method} ${req.path} - ${req.ip}`);
+  next();
+});
+
 // Passport 초기화
 app.use(passport.initialize());
 app.use(passport.session());

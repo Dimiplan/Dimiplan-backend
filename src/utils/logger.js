@@ -179,7 +179,6 @@ const logger = winston.createLogger({
     // Console transport with colors
     new transports.Console({
       format: consoleFormat,
-      level: "debug", // Set console level to debug
     }),
 
     // File transport for all logs - with explicit flags

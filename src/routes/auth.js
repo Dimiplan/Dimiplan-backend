@@ -206,9 +206,6 @@ router.get("/logout", (req, res) => {
  */
 router.get("/session", (req, res) => {
   const sessionIdHeader = req.headers["x-session-id"];
-  logger.debug(
-    `Session check with header: ${sessionIdHeader}, sessionID: ${req.sessionID}`,
-  );
 
   if (req.session && req.session.passport && req.session.passport.user) {
     return res.status(200).json({ valid: true });
