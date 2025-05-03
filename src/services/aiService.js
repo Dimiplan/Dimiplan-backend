@@ -41,6 +41,12 @@ const generateAutoResponse = async (prompt) => {
         { role: "user", content: prompt },
       ],
     });
+    if (response.status !== 200) {
+      logger.error(
+        `Error while generating response: ${response.status}, ${response.body}`,
+      );
+      throw new Error("Response generation failed");
+    }
 
     const selectedModel = model_selection.choices[0].message.content;
 
@@ -64,6 +70,9 @@ const generateAutoResponse = async (prompt) => {
       logger.info("Response generated successfully");
       return response;
     } else {
+      logger.error(
+        `Error while generating response: ${response.status}, ${response.body}`,
+      );
       throw new Error("Response generation failed");
     }
   } catch (error) {
