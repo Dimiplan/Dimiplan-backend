@@ -4,6 +4,7 @@
  */
 const OpenAI = require("openai");
 require("../config/dotenv"); // Load environment variables
+const logger = require("../utils/logger");
 
 const openRouter = new OpenAI({
   baseURL: "https://openrouter.ai/api/v1",
