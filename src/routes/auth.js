@@ -170,10 +170,6 @@ router.post("/login", async (req, res) => {
       });
     });
 
-    logger.debug(
-      `Login successful for user ${userId}, session ID: ${req.sessionID}`,
-    );
-
     // 세션 ID를 응답 헤더와 본문에 모두 포함
     res.setHeader("x-session-id", req.sessionID);
 

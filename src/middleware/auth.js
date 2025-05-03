@@ -16,37 +16,58 @@ const isAuthenticated = (req, res, next) => {
     let value;
     if (sessionIdHeader) {
       const sessionStore = req.sessionStore;
-      sessionStore.get(
+      // 콜백을 사용한 비동기 함수를 동기적으로 처리
+      return sessionStore.get(
         sessionIdHeader,
         (err, session) => {
-          value = session;
+          // 세션에서 사용자 ID 확인
+          const uid = getUserFromSession(session);
+
+          if (!uid) {
+            logger.warn(
+              `Authentication failed - session found but no user ID: ${sessionIdHeader}`,
+            );
+            return res.status(401).json({ message: "Not authenticated" });
+          }
+
+          // 평문 uid를 요청 객체에 저장
+          req.userId = uid;
+
+          // 해시된 uid도 함께 저장 (DB 쿼리용)
+          req.hashedUserId = hashUserId(uid);
+
+          // 인증 성공 로그
+          logger.info(
+            `User authenticated: ${req.hashedUserId.substring(0, 8)}...`,
+          );
+
+          next();
         },
         (err) => {
           logger.error("Session retrieval error:", err);
+          return res.status(500).json({ message: "Session retrieval error" });
         },
       );
     } else {
-      value = req.session;
+      // 세션에서 사용자 ID 확인
+      const uid = getUserFromSession(req.session);
+
+      if (!uid) {
+        logger.warn("Authentication failed - no session found");
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
+      // 평문 uid를 요청 객체에 저장
+      req.userId = uid;
+
+      // 해시된 uid도 함께 저장 (DB 쿼리용)
+      req.hashedUserId = hashUserId(uid);
+
+      // 인증 성공 로그
+      logger.info(`User authenticated: ${req.hashedUserId.substring(0, 8)}...`);
+
+      next();
     }
-
-    // 세션에서 사용자 ID 확인
-    const uid = getUserFromSession(value);
-
-    if (!uid) {
-      logger.warn("Authentication failed - no session found");
-      return res.status(401).json({ message: "Not authenticated" });
-    }
-
-    // 평문 uid를 요청 객체에 저장
-    req.userId = uid;
-
-    // 해시된 uid도 함께 저장 (DB 쿼리용)
-    req.hashedUserId = hashUserId(uid);
-
-    // 인증 성공 로그
-    logger.info(`User authenticated: ${req.hashedUserId.substring(0, 8)}...`);
-
-    next();
   } catch (error) {
     logger.error("Authentication error:", error);
     res.status(500).json({ message: "Authentication error" });
