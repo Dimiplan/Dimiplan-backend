@@ -30,23 +30,23 @@ const PAID_MODELS = {
  */
 const generateAutoResponse = async (prompt) => {
   try {
-    const model_selection = await openRouter.chat.completions.create({
-      model: "openai/gpt-4.1-nano",
-      messages: [
-        {
-          role: "system",
-          content:
-            "Choose the AI model for this prompt. If the prompt is simple, respond {model: 0}, if it requires more complex reasoning, respond {model: 1}, if it requires more knowledge or is about programming, respond {model: 2}, and if it requires more information and large AI model size, respond {model: 3}",
-        },
-        { role: "user", content: prompt },
-      ],
-    });
-    if (model_selection.status !== 200) {
-      logger.error(
-        `Error while generating response: ${model_selection.status}, ${model_selection.body}`,
-      );
-      throw new Error("Response generation failed");
-    }
+    const model_selection = await openRouter.chat.completions
+      .create({
+        model: "openai/gpt-4.1-nano",
+        messages: [
+          {
+            role: "system",
+            content:
+              "Choose the AI model for this prompt. If the prompt is simple, respond {model: 0}, if it requires more complex reasoning, respond {model: 1}, if it requires more knowledge or is about programming, respond {model: 2}, and if it requires more information and large AI model size, respond {model: 3}",
+          },
+          { role: "user", content: prompt },
+        ],
+      })
+      .catch(async (error) => {
+        logger.error(
+          `Error while generating response: ${error.status}, ${error.name}`,
+        );
+      });
 
     const selectedModel = model_selection.choices[0].message.content;
 
@@ -54,27 +54,26 @@ const generateAutoResponse = async (prompt) => {
 
     logger.info("Selecting model : ", model);
 
-    const response = await openRouter.chat.completions.create({
-      model: model,
-      messages: [
-        {
-          role: "system",
-          content:
-            "Do not response in more than 1000 tokens if it is not necessary",
-        },
-        { role: "user", content: prompt },
-      ],
-    });
+    const response = await openRouter.chat.completions
+      .create({
+        model: model,
+        messages: [
+          {
+            role: "system",
+            content:
+              "Do not response in more than 1000 tokens if it is not necessary",
+          },
+          { role: "user", content: prompt },
+        ],
+      })
+      .catch(async (error) => {
+        logger.error(
+          `Error while generating response: ${error.status}, ${error.name}`,
+        );
+      });
 
-    if (response.status === 200) {
-      logger.info("Response generated successfully");
-      return response;
-    } else {
-      logger.error(
-        `Error while generating response: ${response.status}, ${response.body}`,
-      );
-      throw new Error("Response generation failed");
-    }
+    logger.info("Response generated successfully");
+    return response;
   } catch (error) {
     console.error(`Error generating response:`, error);
     throw error;
