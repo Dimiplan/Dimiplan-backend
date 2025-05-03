@@ -52,7 +52,7 @@ const generateAutoResponse = async (prompt) => {
 
     const model = FREE_MODELS[parseInt(selectedModel.match(/\d+/)[0])];
 
-    logger.info("Selecting model : ", model);
+    logger.info(`Selecting model : ${model}`);
 
     const response = await openRouter.chat.completions
       .create({
