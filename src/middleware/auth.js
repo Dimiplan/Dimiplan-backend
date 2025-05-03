@@ -13,21 +13,24 @@ const { getUserFromSession } = require("../config/sessionConfig");
 const isAuthenticated = (req, res, next) => {
   try {
     const sessionIdHeader = req.headers["x-session-id"];
+    let value;
     if (sessionIdHeader) {
       const sessionStore = req.sessionStore;
       sessionStore.get(
         sessionIdHeader,
         (err, session) => {
-          req.session = session;
+          value = session;
         },
         (err) => {
           logger.error("Session retrieval error:", err);
         },
       );
+    } else {
+      value = req.session;
     }
 
     // 세션에서 사용자 ID 확인
-    const uid = getUserFromSession(req.session);
+    const uid = getUserFromSession(value);
 
     if (!uid) {
       logger.warn("Authentication failed - no session found");
