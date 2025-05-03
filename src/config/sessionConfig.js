@@ -25,7 +25,7 @@ const getSessionConfig = () => {
     cookie: {
       httpOnly: true,
       secure: true,
-      sameSite: "strict",
+      sameSite: "none", // 크로스 사이트 요청 허용을 위해 변경
       maxAge: SESSION_MAX_AGE,
     },
   };

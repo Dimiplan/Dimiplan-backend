@@ -161,11 +161,19 @@ router.post("/login", async (req, res) => {
 
     // 평문 userId만 세션에 저장
     storeUserInSession(req.session, userId);
-    req.session.save();
+
+    // 세션 저장 및 세션 ID 추출
+    await new Promise((resolve, reject) => {
+      req.session.save((err) => {
+        if (err) reject(err);
+        else resolve();
+      });
+    });
 
     // Return success with session ID for mobile apps
     return res.status(200).json({
       message: "Login successful",
+      sessionId: req.sessionID,
     });
   } catch (error) {
     logger.error("Login error:", error);
@@ -187,6 +195,17 @@ router.get("/logout", (req, res) => {
     res.clearCookie("dimiplan.sid", { path: "/" });
     res.status(200).json({ message: "Logged out" });
   });
+});
+
+/**
+ * @route GET /auth/session
+ * @desc Check session validity
+ */
+router.get("/session", (req, res) => {
+  if (req.session && req.session.passport && req.session.passport.user) {
+    return res.status(200).json({ valid: true });
+  }
+  return res.status(401).json({ valid: false, message: "Invalid session" });
 });
 
 module.exports = router;
