@@ -45,7 +45,7 @@ const generateAutoResponse = async (prompt) => {
 
     const model = FREE_MODELS[parseInt(selectedModel.match(/\d+/)[0])];
 
-    console.log(model);
+    logger.info("Selecting model : ", model);
 
     const response = await openRouter.chat.completions.create({
       model: model,
@@ -59,7 +59,12 @@ const generateAutoResponse = async (prompt) => {
       ],
     });
 
-    return response;
+    if (response.status === 200) {
+      logger.info("Response generated successfully");
+      return response;
+    } else {
+      throw new Error("Response generation failed");
+    }
   } catch (error) {
     console.error(`Error generating response:`, error);
     throw error;
