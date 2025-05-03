@@ -172,7 +172,7 @@ const consoleFormat = format.combine(
 
 // Create the logger instance
 const logger = winston.createLogger({
-  level: process.env.LOG_LEVEL || "info", // Use environment variable or default to info
+  level: "info", // Use environment variable or default to info
   levels,
   format: logFormat,
   transports: [

@@ -30,6 +30,8 @@ app.use((req, res, next) => {
     // 세션 스토어에서 세션 조회
     const sessionStore = req.sessionStore;
     sessionStore.get(sessionIdHeader, (err, session) => {
+      console.log("Session ID:", sessionIdHeader);
+      console.log("Session:", session);
       if (!err && session) {
         // 세션 복원
         req.sessionID = sessionIdHeader;
