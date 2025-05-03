@@ -166,7 +166,6 @@ router.post("/login", async (req, res) => {
     // Return success with session ID for mobile apps
     return res.status(200).json({
       message: "Login successful",
-      sessionId: req.sessionID,
     });
   } catch (error) {
     logger.error("Login error:", error);

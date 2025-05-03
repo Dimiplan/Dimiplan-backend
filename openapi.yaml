@@ -1,4 +1,4 @@
-openapi: 3.0.3
+openapi: 3.1.1
 info:
   title: Dimiplan API
   description: Dimiplan 서비스를 위한 API 명세서
