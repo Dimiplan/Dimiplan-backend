@@ -26,11 +26,11 @@ app.use(session(getSessionConfig()));
 // 세션 ID 헤더 처리 미들웨어
 app.use((req, res, next) => {
   const sessionIdHeader = req.get("X-Session-ID");
+  console.log("Session ID:", sessionIdHeader);
   if (sessionIdHeader && !req.sessionID) {
     // 세션 스토어에서 세션 조회
     const sessionStore = req.sessionStore;
     sessionStore.get(sessionIdHeader, (err, session) => {
-      console.log("Session ID:", sessionIdHeader);
       console.log("Session:", session);
       if (!err && session) {
         // 세션 복원
