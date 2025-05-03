@@ -25,7 +25,6 @@ const getSessionConfig = () => {
     cookie: {
       httpOnly: true,
       secure: true,
-      sameSite: "strict",
       maxAge: SESSION_MAX_AGE,
     },
   };
