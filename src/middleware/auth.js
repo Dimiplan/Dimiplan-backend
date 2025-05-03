@@ -12,13 +12,18 @@ const { getUserFromSession } = require("../config/sessionConfig");
  */
 const isAuthenticated = (req, res, next) => {
   try {
-    // 요청 헤더 디버깅 로그
-    logger.debug("Request headers:", req.headers);
-
-    // 세션 ID가 헤더를 통해 전달되었는지 확인 (모바일)
     const sessionIdHeader = req.headers["x-session-id"];
     if (sessionIdHeader) {
-      logger.debug(`x-session-id header found: ${sessionIdHeader}`);
+      const sessionStore = req.sessionStore;
+      sessionStore.get(
+        sessionIdHeader,
+        (err, session) => {
+          req.session = session;
+        },
+        (err) => {
+          logger.error("Session retrieval error:", err);
+        },
+      );
     }
 
     // 세션에서 사용자 ID 확인

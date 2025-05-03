@@ -53,41 +53,6 @@ app.use(express.urlencoded({ extended: true, limit: "1mb" }));
 // 세션 설정 - 메모리 기반 저장소 사용
 app.use(session(getSessionConfig()));
 
-// 요청 로깅 미들웨어 (헤더 로깅 추가)
-app.use((req, res, next) => {
-  logger.info(`${req.method} ${req.path} - ${req.ip}`);
-  logger.debug("Headers:", req.headers);
-  next();
-});
-
-// 세션 ID 헤더 처리 미들웨어 (CORS 설정 및 본문 파싱 이후에 배치)
-app.use((req, res, next) => {
-  // 브라켓 표기법으로 접근 (소문자로 된 헤더 이름 사용)
-  const sessionIdHeader = req.headers["x-session-id"];
-
-  if (sessionIdHeader && !req.sessionID) {
-    logger.debug(`Found x-session-id header: ${sessionIdHeader}`);
-
-    // 세션 스토어에서 세션 조회
-    const sessionStore = req.sessionStore;
-    sessionStore.get(sessionIdHeader, (err, session) => {
-      if (!err && session) {
-        // 세션 복원
-        req.sessionID = sessionIdHeader;
-        req.session = session;
-        logger.debug("Session restored successfully from header");
-      } else if (err) {
-        logger.warn(`Error retrieving session: ${err.message}`);
-      } else {
-        logger.warn("Session not found for provided x-session-id");
-      }
-      next();
-    });
-  } else {
-    next();
-  }
-});
-
 // Passport 초기화
 app.use(passport.initialize());
 app.use(passport.session());
