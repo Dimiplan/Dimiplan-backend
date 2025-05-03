@@ -170,6 +170,13 @@ router.post("/login", async (req, res) => {
       });
     });
 
+    logger.debug(
+      `Login successful for user ${userId}, session ID: ${req.sessionID}`,
+    );
+
+    // 세션 ID를 응답 헤더와 본문에 모두 포함
+    res.setHeader("x-session-id", req.sessionID);
+
     // Return success with session ID for mobile apps
     return res.status(200).json({
       message: "Login successful",
@@ -202,6 +209,11 @@ router.get("/logout", (req, res) => {
  * @desc Check session validity
  */
 router.get("/session", (req, res) => {
+  const sessionIdHeader = req.headers["x-session-id"];
+  logger.debug(
+    `Session check with header: ${sessionIdHeader}, sessionID: ${req.sessionID}`,
+  );
+
   if (req.session && req.session.passport && req.session.passport.user) {
     return res.status(200).json({ valid: true });
   }

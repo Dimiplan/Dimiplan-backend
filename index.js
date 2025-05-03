@@ -20,30 +20,6 @@ app.use(helmet());
 // Trust proxy for secure cookies behind load balancers
 app.set("trust proxy", true);
 
-// 세션 설정 - 메모리 기반 저장소 사용
-app.use(session(getSessionConfig()));
-
-// 세션 ID 헤더 처리 미들웨어
-app.use((req, res, next) => {
-  const sessionIdHeader = req.get("X-Session-ID");
-  console.log("Session ID:", sessionIdHeader);
-  if (sessionIdHeader && !req.sessionID) {
-    // 세션 스토어에서 세션 조회
-    const sessionStore = req.sessionStore;
-    sessionStore.get(sessionIdHeader, (err, session) => {
-      console.log("Session:", session);
-      if (!err && session) {
-        // 세션 복원
-        req.sessionID = sessionIdHeader;
-        req.session = session;
-      }
-      next();
-    });
-  } else {
-    next();
-  }
-});
-
 // CORS 설정
 const whitelist = [
   "https://dimigo.co.kr",
@@ -63,7 +39,8 @@ const corsOptions = {
   },
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization", "X-Session-ID"],
+  allowedHeaders: ["Content-Type", "Authorization", "x-session-id"],
+  exposedHeaders: ["x-session-id"],
   maxAge: 86400, // CORS preflight 캐시 설정 (24시간)
 };
 
@@ -73,15 +50,47 @@ app.use(cors(corsOptions));
 app.use(express.json({ limit: "1mb" }));
 app.use(express.urlencoded({ extended: true, limit: "1mb" }));
 
+// 세션 설정 - 메모리 기반 저장소 사용
+app.use(session(getSessionConfig()));
+
+// 요청 로깅 미들웨어 (헤더 로깅 추가)
+app.use((req, res, next) => {
+  logger.info(`${req.method} ${req.path} - ${req.ip}`);
+  logger.debug("Headers:", req.headers);
+  next();
+});
+
+// 세션 ID 헤더 처리 미들웨어 (CORS 설정 및 본문 파싱 이후에 배치)
+app.use((req, res, next) => {
+  // 브라켓 표기법으로 접근 (소문자로 된 헤더 이름 사용)
+  const sessionIdHeader = req.headers["x-session-id"];
+
+  if (sessionIdHeader && !req.sessionID) {
+    logger.debug(`Found x-session-id header: ${sessionIdHeader}`);
+
+    // 세션 스토어에서 세션 조회
+    const sessionStore = req.sessionStore;
+    sessionStore.get(sessionIdHeader, (err, session) => {
+      if (!err && session) {
+        // 세션 복원
+        req.sessionID = sessionIdHeader;
+        req.session = session;
+        logger.debug("Session restored successfully from header");
+      } else if (err) {
+        logger.warn(`Error retrieving session: ${err.message}`);
+      } else {
+        logger.warn("Session not found for provided x-session-id");
+      }
+      next();
+    });
+  } else {
+    next();
+  }
+});
+
 // Passport 초기화
 app.use(passport.initialize());
 app.use(passport.session());
-
-// 요청 로깅 미들웨어
-app.use((req, res, next) => {
-  logger.info(`${req.method} ${req.path} - ${req.ip}`);
-  next();
-});
 
 // 라우터 설정
 app.use("/auth", authRouter);
