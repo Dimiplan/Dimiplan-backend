@@ -129,10 +129,12 @@ const autoAiRequest = async (req, res) => {
     const response = await generateAutoResponse(prompt);
 
     // Save messages to database
-    const aiResponseText = response.output_text || "";
+    const aiResponseText =
+      response.choices[0].message.content ||
+      "죄송합니다. 응답을 생성하는 데 문제가 발생했습니다. 다시 시도해 주세요.";
     await addChatMessages(req.userId, room, prompt, aiResponseText);
 
-    res.status(200).json({ response });
+    res.status(200).json({ message: aiResponseText });
   } catch (error) {
     console.error(`Error generating response:`, error);
     res.status(500).json({ message: "Internal server error" });
