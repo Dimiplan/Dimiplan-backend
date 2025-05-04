@@ -23,16 +23,16 @@ const formatDate = (dateString) => {
 };
 
 /**
- * Create a new plan
+ * Create a new task
  * @param {string} uid - User ID
- * @param {string} contents - Plan contents
+ * @param {string} contents - Task contents
  * @param {number} plannerId - Planner ID
  * @param {string|null} startDate - Start date (YYYY-MM-DD)
  * @param {string|null} dueDate - Due date (YYYY-MM-DD)
  * @param {number} priority - Priority (default: 1)
- * @returns {Promise<Object>} - Created plan data
+ * @returns {Promise<Object>} - Created task data
  */
-const createPlan = async (
+const createTask = async (
   uid,
   contents,
   plannerId,
@@ -93,61 +93,61 @@ const createPlan = async (
 };
 
 /**
- * Get a plan by ID with decrypted content
+ * Get a task by ID with decrypted content
  * @param {string} uid - User ID
- * @param {number} id - Plan ID
- * @returns {Promise<Object|null>} - Plan data or null if not found
+ * @param {number} id - Task ID
+ * @returns {Promise<Object|null>} - Task data or null if not found
  */
-const getPlanById = async (uid, id) => {
+const getTaskById = async (uid, id) => {
   try {
     const hashedUid = hashUserId(uid);
-    const plan = await db("plan").where({ owner: hashedUid, id: id }).first();
+    const task = await db("plan").where({ owner: hashedUid, id: id }).first();
 
-    if (!plan) return null;
+    if (!task) return null;
 
-    // Decrypt plan content
+    // Decrypt task content
     return {
-      ...plan,
+      ...task,
       owner: uid, // Use original ID for application logic
-      contents: decryptData(uid, plan.contents),
+      contents: decryptData(uid, task.contents),
     };
   } catch (error) {
-    logger.error("Error getting plan by ID:", error);
+    logger.error("Error getting task by ID:", error);
     throw error;
   }
 };
 
 /**
- * Get all plans for a user with decrypted content
+ * Get all tasks for a user with decrypted content
  * @param {string} uid - User ID
- * @returns {Promise<Array>} - Array of plan objects
+ * @returns {Promise<Array>} - Array of task objects
  */
-const getAllPlans = async (uid) => {
+const getAllTasks = async (uid) => {
   try {
     const hashedUid = hashUserId(uid);
-    const plans = await db("plan")
+    const tasks = await db("plan")
       .where({ owner: hashedUid })
       .orderByRaw("isCompleted ASC, priority DESC, id ASC");
 
-    // Decrypt plan contents
-    return plans.map((plan) => ({
-      ...plan,
+    // Decrypt task contents
+    return tasks.map((task) => ({
+      ...task,
       owner: uid, // Use original ID for application logic
-      contents: decryptData(uid, plan.contents),
+      contents: decryptData(uid, task.contents),
     }));
   } catch (error) {
-    logger.error("Error getting all plans:", error);
+    logger.error("Error getting all tasks:", error);
     throw error;
   }
 };
 
 /**
- * Get all plans in a planner with decrypted content
+ * Get all tasks in a planner with decrypted content
  * @param {string} uid - User ID
  * @param {number} plannerId - Planner ID
- * @returns {Promise<Array>} - Array of plan objects
+ * @returns {Promise<Array>} - Array of task objects
  */
-const getPlansInPlanner = async (uid, plannerId) => {
+const getTasksInPlanner = async (uid, plannerId) => {
   try {
     const hashedUid = hashUserId(uid);
 
@@ -160,36 +160,36 @@ const getPlansInPlanner = async (uid, plannerId) => {
       throw new Error("Planner not found");
     }
 
-    const plans = await db("plan")
+    const tasks = await db("plan")
       .where({ owner: hashedUid, from: plannerId })
       .orderByRaw("isCompleted ASC, priority DESC, id ASC");
 
-    // Decrypt plan contents
-    return plans.map((plan) => ({
-      ...plan,
+    // Decrypt task contents
+    return tasks.map((task) => ({
+      ...task,
       owner: uid, // Use original ID for application logic
-      contents: decryptData(uid, plan.contents),
+      contents: decryptData(uid, task.contents),
     }));
   } catch (error) {
-    logger.error("Error getting plans in planner:", error);
+    logger.error("Error getting tasks in planner:", error);
     throw error;
   }
 };
 
 /**
- * Update a plan
+ * Update a task
  * @param {string} uid - User ID
- * @param {number} id - Plan ID
+ * @param {number} id - Task ID
  * @param {Object} updateData - Data to update
- * @returns {Promise<Object>} - Updated plan data
+ * @returns {Promise<Object>} - Updated task data
  */
-const updatePlan = async (uid, id, updateData) => {
+const updateTask = async (uid, id, updateData) => {
   try {
     const hashedUid = hashUserId(uid);
-    const plan = await db("plan").where({ owner: hashedUid, id: id }).first();
+    const task = await db("plan").where({ owner: hashedUid, id: id }).first();
 
-    if (!plan) {
-      throw new Error("Plan not found");
+    if (!task) {
+      throw new Error("Task not found");
     }
 
     // Format dates if provided
@@ -211,54 +211,54 @@ const updatePlan = async (uid, id, updateData) => {
 
     await db("plan").where({ owner: hashedUid, id: id }).update(formattedData);
 
-    // Get the updated plan with decrypted content
-    return await getPlanById(uid, id);
+    // Get the updated task with decrypted content
+    return await getTaskById(uid, id);
   } catch (error) {
-    logger.error("Error updating plan:", error);
+    logger.error("Error updating task:", error);
     throw error;
   }
 };
 
 /**
- * Delete a plan
+ * Delete a task
  * @param {string} uid - User ID
- * @param {number} id - Plan ID
+ * @param {number} id - Task ID
  * @returns {Promise<boolean>} - Success status
  */
-const deletePlan = async (uid, id) => {
+const deleteTask = async (uid, id) => {
   try {
     const hashedUid = hashUserId(uid);
-    const plan = await db("plan").where({ owner: hashedUid, id: id }).first();
+    const task = await db("plan").where({ owner: hashedUid, id: id }).first();
 
-    if (!plan) {
-      throw new Error("Plan not found");
+    if (!task) {
+      throw new Error("Task not found");
     }
 
     await db("plan").where({ owner: hashedUid, id: id }).del();
 
     logger.info(
-      `Plan deleted: ${hashedUid.substring(0, 8)}... - Plan ID: ${id}`,
+      `Task deleted: ${hashedUid.substring(0, 8)}... - Task ID: ${id}`,
     );
     return true;
   } catch (error) {
-    logger.error("Error deleting plan:", error);
+    logger.error("Error deleting task:", error);
     throw error;
   }
 };
 
 /**
- * Mark a plan as completed
+ * Mark a task as completed
  * @param {string} uid - User ID
- * @param {number} id - Plan ID
+ * @param {number} id - Task ID
  * @returns {Promise<Object>} - Updated plan data
  */
-const completePlan = async (uid, id) => {
+const completeTask = async (uid, id) => {
   try {
     const hashedUid = hashUserId(uid);
-    const plan = await db("plan").where({ owner: hashedUid, id: id }).first();
+    const task = await db("plan").where({ owner: hashedUid, id: id }).first();
 
-    if (!plan) {
-      throw new Error("Plan not found");
+    if (!task) {
+      throw new Error("Task not found");
     }
 
     await db("plan").where({ owner: hashedUid, id: id }).update({
@@ -266,20 +266,20 @@ const completePlan = async (uid, id) => {
       updated_at: getTimestamp(),
     });
 
-    // Get the updated plan with decrypted content
-    return await getPlanById(uid, id);
+    // Get the updated task with decrypted content
+    return await getTaskById(uid, id);
   } catch (error) {
-    logger.error("Error completing plan:", error);
+    logger.error("Error completing task:", error);
     throw error;
   }
 };
 
 module.exports = {
-  createPlan,
-  getPlanById,
-  getAllPlans,
-  getPlansInPlanner,
-  updatePlan,
-  deletePlan,
-  completePlan,
+  createTask,
+  getTaskById,
+  getAllTasks,
+  getTasksInPlanner,
+  updateTask,
+  deleteTask,
+  completeTask,
 };

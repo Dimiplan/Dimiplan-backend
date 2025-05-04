@@ -1,6 +1,7 @@
 /**
  * Plan routes
- */
+ @deprecated
+*/
 const express = require("express");
 const { isAuthenticated, isUserRegistered } = require("../../middleware/auth");
 const {
@@ -18,13 +19,13 @@ const {
   deletePlanner,
 } = require("../../models/plannerModel");
 const {
-  createPlan,
-  getAllPlans,
-  getPlansInPlanner,
-  updatePlan,
-  deletePlan,
-  completePlan,
-} = require("../../models/planModel");
+  createTask,
+  getAllTasks,
+  getTasksInPlanner,
+  updateTask,
+  deleteTask,
+  completeTask,
+} = require("../../models/taskModel");
 
 const router = express.Router();
 
@@ -291,7 +292,7 @@ router.post("/addPlan", async (req, res) => {
         .json({ message: "Contents and from are required" });
     }
 
-    await createPlan(req.userId, contents, from, startDate, dueDate, priority);
+    await createTask(req.userId, contents, from, startDate, dueDate, priority);
 
     res.status(201).json({ message: "Plan added successfully" });
   } catch (error) {
@@ -305,10 +306,10 @@ router.post("/addPlan", async (req, res) => {
 });
 
 /**
- * @route POST /api/plan/updatePlan
+ * @route POST /api/plan/updateTask
  * @desc Update a plan
  */
-router.post("/updatePlan", async (req, res) => {
+router.post("/updateTask", async (req, res) => {
   try {
     const { id, contents, priority, from, startDate, dueDate, isCompleted } =
       req.body;
@@ -330,7 +331,7 @@ router.post("/updatePlan", async (req, res) => {
       return res.status(400).json({ message: "Data is required" });
     }
 
-    await updatePlan(req.userId, id, updateData);
+    await updateTask(req.userId, id, updateData);
 
     res.status(200).json({ message: "Plan updated successfully" });
   } catch (error) {
@@ -355,7 +356,7 @@ router.post("/deletePlan", async (req, res) => {
       return res.status(400).json({ message: "Id is required" });
     }
 
-    await deletePlan(req.userId, id);
+    await deleteTask(req.userId, id);
 
     res.status(200).json({ message: "Plan deleted successfully" });
   } catch (error) {
@@ -369,10 +370,10 @@ router.post("/deletePlan", async (req, res) => {
 });
 
 /**
- * @route POST /api/plan/completePlan
+ * @route POST /api/plan/completeTask
  * @desc Mark a plan as completed
  */
-router.post("/completePlan", async (req, res) => {
+router.post("/completeTask", async (req, res) => {
   try {
     const { id } = req.body;
 
@@ -380,7 +381,7 @@ router.post("/completePlan", async (req, res) => {
       return res.status(400).json({ message: "Id is required" });
     }
 
-    await completePlan(req.userId, id);
+    await completeTask(req.userId, id);
 
     res.status(200).json({ message: "Plan completed successfully" });
   } catch (error) {
@@ -399,7 +400,7 @@ router.post("/completePlan", async (req, res) => {
  */
 router.get("/getEveryPlan", async (req, res) => {
   try {
-    const plans = await getAllPlans(req.userId);
+    const plans = await getAllTasks(req.userId);
 
     if (plans.length === 0) {
       return res.status(404).json({ message: "Plan not found" });
@@ -424,7 +425,7 @@ router.get("/getPlanInPlanner", async (req, res) => {
       return res.status(400).json({ message: "Id is required" });
     }
 
-    const plans = await getPlansInPlanner(req.userId, id);
+    const plans = await getTasksInPlanner(req.userId, id);
 
     res.status(200).json(plans);
   } catch (error) {
