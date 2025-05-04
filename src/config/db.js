@@ -10,7 +10,7 @@ const options = {
 };
 
 const db = knex({
-  client: "mysql2",
+  client: "mysql",
   connection: options,
 });
 
