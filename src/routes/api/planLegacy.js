@@ -1,7 +1,7 @@
 /**
  * Plan routes
- @deprecated
-*/
+ * @deprecated
+ */
 const express = require("express");
 const { isAuthenticated, isUserRegistered } = require("../../middleware/auth");
 const {
