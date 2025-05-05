@@ -6,7 +6,6 @@ const express = require("express");
 const userRouter = require("./user");
 const taskRouter = require("./task");
 const plannerRouter = require("./planner");
-const legacyPlanRouter = require("./planLegacy");
 const aiRouter = require("./ai");
 const { isAuthenticated } = require("../../middleware/auth");
 
@@ -19,7 +18,6 @@ router.use(isAuthenticated);
 router.use("/user", userRouter);
 router.use("/task", taskRouter);
 router.use("/planner", plannerRouter);
-router.use("/plan", legacyPlanRouter); // deprecated
 router.use("/ai", aiRouter);
 
 module.exports = router;

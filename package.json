@@ -4,11 +4,11 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon index.js",
-    "migrate:encrypt:dry": "node src/scripts/migrateToEncryption.js --dry-run",
-    "migrate:encrypt": "node src/scripts/migrateToEncryption.js",
-    "auto-pull": "nodemon src/scripts/autoPull.js"
+    "dev:node": "nodemon index.js",
+    "dev": "bun --hot index.js",
+    "dev:bun": "bun --hot index.js",
+    "auto-pull": "bun src/scripts/autoPull.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
@@ -22,7 +22,6 @@
     "express-session": "^1.18.1",
     "helmet": "^7.0.0",
     "mysql": "^2.18.1",
-    "mysql2": "^3.14.0",
     "nodemon": "^3.1.9",
     "openai": "^4.96.2",
     "passport": "^0.7.0",
