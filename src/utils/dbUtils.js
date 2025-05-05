@@ -21,7 +21,7 @@ const executeTransaction = async (transactionFn) => {
 /**
  * Get the next available ID for a user and update the counter
  * @param {string} uid - User ID
- * @param {string} idType - Type of ID (folderId, plannerId, planId, roomId, chatId)
+ * @param {string} idType - Type of ID (plannerId, planId, roomId, chatId)
  * @returns {Promise<number>} - The next available ID
  */
 const getNextId = async (uid, idType) => {
@@ -36,7 +36,6 @@ const getNextId = async (uid, idType) => {
       // Initialize user if not exists
       await db("userid").insert({
         owner: uid,
-        folderId: 1,
         plannerId: 1,
         planId: 1,
         roomId: 1,

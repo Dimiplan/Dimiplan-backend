@@ -58,20 +58,10 @@ const createUser = async (user) => {
       // Initialize userId table for the new user
       await db("userid").insert({
         owner: hashedUid,
-        folderId: 1,
         plannerId: 1,
         planId: 1,
         roomId: 1,
         chatId: 1,
-        created_at: timestamp,
-      });
-
-      // Create root folder for the new user
-      await db("folders").insert({
-        owner: hashedUid,
-        name: encryptData(user.id, "Root"),
-        id: 0,
-        from: -1,
         created_at: timestamp,
       });
 

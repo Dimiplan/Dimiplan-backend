@@ -29,14 +29,6 @@ router.post("/add", async (req, res) => {
 
     res.status(201).json({ message: "Planner added successfully" });
   } catch (error) {
-    if (error.message === "Folder not found") {
-      return res.status(404).json({ message: "Folder not found" });
-    } else if (
-      error.message === "Planner with same name already exists in this folder"
-    ) {
-      return res.status(409).json({ message: "Same planner already exists" });
-    }
-
     console.error("Error adding planner:", error);
     res.status(500).json({ message: "Internal server error" });
   }
@@ -58,16 +50,6 @@ router.post("/rename", async (req, res) => {
 
     res.status(200).json({ message: "Planner renamed successfully" });
   } catch (error) {
-    if (error.message === "Planner not found") {
-      return res.status(404).json({ message: "Planner not found" });
-    } else if (
-      error.message === "Planner with same name already exists in this folder"
-    ) {
-      return res.status(409).json({
-        message: "Planner with same name already exists in this folder",
-      });
-    }
-
     console.error("Error renaming planner:", error);
     res.status(500).json({ message: "Internal server error" });
   }
@@ -131,11 +113,11 @@ router.get("/getInfo", async (req, res) => {
 
 /**
  * @route GET /api/planner/getPlanners
- * @desc Get all planners in a folder
+ * @desc Get all planners
  */
 router.get("/getPlanners", async (req, res) => {
   try {
-    // Get planners in the folder
+    // Get planners
     const planners = await getPlanners(req.userId);
 
     if (planners.length === 0) {

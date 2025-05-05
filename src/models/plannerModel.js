@@ -17,34 +17,23 @@ const logger = require("../utils/logger");
  * @param {string} uid - User ID
  * @param {string} name - Planner name
  * @param {number} isDaily - Whether the planner is daily (0 or 1)
- * @param {number} folderId - Folder ID the planner belongs to
  * @returns {Promise<Object>} - Created planner data
  */
-const createPlanner = async (uid, name, isDaily, folderId) => {
+const createPlanner = async (uid, name, isDaily) => {
   try {
     // Hash the user ID for database queries
     const hashedUid = hashUserId(uid);
 
-    // Check if folder exists
-    const folder = await db("folders")
-      .where({ owner: hashedUid, id: folderId })
-      .first();
-
-    if (!folder) {
-      throw new Error("Folder not found");
-    }
-
-    // Check if same planner name exists in the folder
+    // Check if same planner name exists
     const existingPlanner = await db("planner")
       .where({
         owner: hashedUid,
-        from: folderId,
         name: encryptData(uid, name), // Check for encrypted name
       })
       .first();
 
     if (existingPlanner) {
-      throw new Error("Planner with same name already exists in this folder");
+      throw new Error("Planner with same name already exists");
     }
 
     // Get next planner ID
@@ -55,7 +44,6 @@ const createPlanner = async (uid, name, isDaily, folderId) => {
       owner: hashedUid,
       name: encryptData(uid, name),
       id: plannerId,
-      from: folderId,
       isDaily: isDaily ?? 0,
       created_at: getTimestamp(),
       updated_at: getTimestamp(),
@@ -65,7 +53,6 @@ const createPlanner = async (uid, name, isDaily, folderId) => {
       owner: uid, // Return plain user ID for application logic
       name: name, // Return decrypted name
       id: plannerId,
-      from: folderId,
       isDaily: isDaily ?? 0,
     };
   } catch (error) {
@@ -107,9 +94,8 @@ const getPlannerById = async (uid, id) => {
 };
 
 /**
- * Get all planners in a folder
+ * Get all planner
  * @param {string} uid - User ID
- * @param {number} folderId - Folder ID
  * @returns {Promise<Array>} - Array of planner objects
  */
 const getPlanners = async (uid) => {
@@ -129,7 +115,7 @@ const getPlanners = async (uid) => {
       name: decryptData(uid, planner.name),
     }));
   } catch (error) {
-    logger.error("Error getting planners in folder:", error);
+    logger.error("Error getting planners :", error);
     throw error;
   }
 };
@@ -155,18 +141,17 @@ const renamePlanner = async (uid, id, newName) => {
       throw new Error("Planner not found");
     }
 
-    // Check if new name conflicts with existing planner in the same folder
+    // Check if new name conflicts with existing planner
     const existingPlanner = await db("planner")
       .where({
         owner: hashedUid,
-        from: planner.from,
         name: encryptData(uid, newName),
       })
       .whereNot({ id: id })
       .first();
 
     if (existingPlanner) {
-      throw new Error("Planner with same name already exists in this folder");
+      throw new Error("Planner with same name already exists");
     }
 
     // Update with encrypted name
@@ -231,7 +216,7 @@ const deletePlanner = async (uid, id) => {
 module.exports = {
   createPlanner,
   getPlannerById,
-  getPlannersInFolder,
+  getPlanners,
   renamePlanner,
   deletePlanner,
 };
