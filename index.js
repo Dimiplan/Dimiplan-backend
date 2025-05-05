@@ -25,6 +25,9 @@ const whitelist = [
   "https://dimigo.co.kr",
   "https://m.dimigo.co.kr",
   "https://dimiplan.com",
+  "https://m.dimiplan.com",
+  "https://dev.dimiplan.com",
+  "https://m-dev.dimiplan.com",
   "http://localhost:3000",
 ];
 
