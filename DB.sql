@@ -1,121 +1,139 @@
--- --------------------------------------------------------
--- 호스트:                          127.0.0.1
--- 서버 버전:                        8.0.41 - MySQL Community Server - GPL
--- 서버 OS:                        Win64
--- HeidiSQL 버전:                  12.10.0.7000
--- --------------------------------------------------------
+/*M!999999\- enable the sandbox mode */ 
+-- MariaDB dump 10.19  Distrib 10.11.11-MariaDB, for debian-linux-gnu (aarch64)
+--
+-- Host: localhost    Database: dimiplan
+-- ------------------------------------------------------
+-- Server version	10.11.11-MariaDB-0+deb12u1
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
-/*!40101 SET NAMES utf8 */;
-/*!50503 SET NAMES utf8mb4 */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8mb4 */;
 /*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
 /*!40103 SET TIME_ZONE='+00:00' */;
+/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
 /*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
+--
+-- Table structure for table `chat`
+--
 
--- dimiplan 데이터베이스 구조 내보내기
-CREATE DATABASE IF NOT EXISTS `dimiplan` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
-USE `dimiplan`;
-
--- 테이블 dimiplan.chat 구조 내보내기
-CREATE TABLE IF NOT EXISTS `chat` (
-  `from` int DEFAULT NULL,
-  `id` int DEFAULT NULL,
-  `message` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci,
+DROP TABLE IF EXISTS `chat`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `chat` (
+  `from` int(11) DEFAULT NULL,
+  `id` int(11) DEFAULT NULL,
+  `message` longtext DEFAULT NULL,
   `owner` varchar(128) NOT NULL,
-  `sender` tinytext,
-  `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  `sender` tinytext DEFAULT NULL,
+  `created_at` datetime DEFAULT current_timestamp(),
+  `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
--- 내보낼 데이터가 선택되어 있지 않습니다.
+--
+-- Table structure for table `chat_rooms`
+--
 
--- 테이블 dimiplan.chat_rooms 구조 내보내기
-CREATE TABLE IF NOT EXISTS `chat_rooms` (
+DROP TABLE IF EXISTS `chat_rooms`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `chat_rooms` (
   `owner` varchar(128) NOT NULL,
-  `id` int NOT NULL DEFAULT (0),
-  `name` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci,
-  `isProcessing` tinyint NOT NULL DEFAULT (0),
-  `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  `id` int(11) NOT NULL DEFAULT 0,
+  `name` text DEFAULT NULL,
+  `isProcessing` tinyint(4) NOT NULL DEFAULT 0,
+  `created_at` datetime DEFAULT current_timestamp(),
+  `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
--- 내보낼 데이터가 선택되어 있지 않습니다.
+--
+-- Table structure for table `plan`
+--
 
--- 테이블 dimiplan.folders 구조 내보내기
-CREATE TABLE IF NOT EXISTS `folders` (
-  `owner` varchar(128) NOT NULL,
-  `id` int DEFAULT (0),
-  `from` int DEFAULT NULL,
-  `name` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci,
-  `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
--- 내보낼 데이터가 선택되어 있지 않습니다.
-
--- 테이블 dimiplan.plan 구조 내보내기
-CREATE TABLE IF NOT EXISTS `plan` (
+DROP TABLE IF EXISTS `plan`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `plan` (
   `owner` varchar(128) NOT NULL,
   `startDate` date DEFAULT NULL,
   `dueDate` date DEFAULT NULL,
-  `contents` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci,
-  `from` int NOT NULL DEFAULT (0),
-  `isCompleted` tinyint NOT NULL DEFAULT (0),
-  `id` int NOT NULL,
-  `priority` int NOT NULL DEFAULT (1),
-  `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  `contents` text DEFAULT NULL,
+  `from` int(11) NOT NULL DEFAULT 0,
+  `isCompleted` tinyint(4) NOT NULL DEFAULT 0,
+  `id` int(11) NOT NULL,
+  `priority` int(11) NOT NULL DEFAULT 1,
+  `created_at` datetime DEFAULT current_timestamp(),
+  `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
--- 내보낼 데이터가 선택되어 있지 않습니다.
+--
+-- Table structure for table `planner`
+--
 
--- 테이블 dimiplan.planner 구조 내보내기
-CREATE TABLE IF NOT EXISTS `planner` (
+DROP TABLE IF EXISTS `planner`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `planner` (
   `owner` varchar(128) NOT NULL,
-  `id` int NOT NULL,
-  `from` int NOT NULL DEFAULT (0),
-  `isDaily` tinyint NOT NULL DEFAULT (0),
-  `name` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci,
-  `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  `id` int(11) NOT NULL,
+  `isDaily` tinyint(4) NOT NULL DEFAULT 0,
+  `name` text DEFAULT NULL,
+  `created_at` datetime DEFAULT current_timestamp(),
+  `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
--- 내보낼 데이터가 선택되어 있지 않습니다.
+--
+-- Table structure for table `userid`
+--
 
--- 테이블 dimiplan.userid 구조 내보내기
-CREATE TABLE IF NOT EXISTS `userid` (
+DROP TABLE IF EXISTS `userid`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `userid` (
   `owner` varchar(128) NOT NULL,
-  `planId` int NOT NULL DEFAULT (1),
-  `folderId` int NOT NULL DEFAULT (1),
-  `plannerId` int NOT NULL DEFAULT '1',
-  `chatId` int NOT NULL DEFAULT (1),
-  `roomId` int NOT NULL DEFAULT (1),
-  `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  `planId` int(11) NOT NULL DEFAULT 1,
+  `plannerId` int(11) NOT NULL DEFAULT 1,
+  `chatId` int(11) NOT NULL DEFAULT 1,
+  `roomId` int(11) NOT NULL DEFAULT 1,
+  `created_at` datetime DEFAULT current_timestamp(),
+  `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
--- 내보낼 데이터가 선택되어 있지 않습니다.
+--
+-- Table structure for table `users`
+--
 
--- 테이블 dimiplan.users 구조 내보내기
-CREATE TABLE IF NOT EXISTS `users` (
+DROP TABLE IF EXISTS `users`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `users` (
   `id` varchar(128) NOT NULL,
-  `name` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci,
-  `grade` tinyint DEFAULT NULL,
-  `class` tinyint DEFAULT NULL,
-  `email` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci,
-  `profile_image` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci,
-  `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `name` text DEFAULT NULL,
+  `grade` tinyint(4) DEFAULT NULL,
+  `class` tinyint(4) DEFAULT NULL,
+  `email` text DEFAULT NULL,
+  `profile_image` text DEFAULT NULL,
+  `created_at` datetime DEFAULT current_timestamp(),
+  `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   PRIMARY KEY (`id`(100))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
--- 내보낼 데이터가 선택되어 있지 않습니다.
-
-/*!40103 SET TIME_ZONE=IFNULL(@OLD_TIME_ZONE, 'system') */;
-/*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
-/*!40014 SET FOREIGN_KEY_CHECKS=IFNULL(@OLD_FOREIGN_KEY_CHECKS, 1) */;
+/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
+/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
+/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40111 SET SQL_NOTES=IFNULL(@OLD_SQL_NOTES, 1) */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+
+-- Dump completed on 2025-05-06  1:14:10
