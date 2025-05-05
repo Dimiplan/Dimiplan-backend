@@ -5,7 +5,6 @@
 const express = require("express");
 const userRouter = require("./user");
 const taskRouter = require("./task");
-const folderRouter = require("./folder");
 const plannerRouter = require("./planner");
 const legacyPlanRouter = require("./planLegacy");
 const aiRouter = require("./ai");
@@ -19,7 +18,6 @@ router.use(isAuthenticated);
 // Register route handlers
 router.use("/user", userRouter);
 router.use("/task", taskRouter);
-router.use("/folder", folderRouter);
 router.use("/planner", plannerRouter);
 router.use("/plan", legacyPlanRouter); // deprecated
 router.use("/ai", aiRouter);

@@ -1,13 +1,9 @@
 const express = require("express");
 const { isAuthenticated, isUserRegistered } = require("../../middleware/auth");
 const {
-  getFolderById,
-  getFolderByNameAndParent,
-} = require("../../models/folderModel");
-const {
   createPlanner,
   getPlannerById,
-  getPlannersInFolder,
+  getPlanners,
   renamePlanner,
   deletePlanner,
 } = require("../../models/plannerModel");
@@ -139,26 +135,8 @@ router.get("/getInfo", async (req, res) => {
  */
 router.get("/getPlanners", async (req, res) => {
   try {
-    const { id, from, name } = req.query;
-    let folder;
-
-    // Get folder by ID or by name and parent
-    if (id) {
-      folder = await getFolderById(req.userId, id);
-    } else if (name && from) {
-      folder = await getFolderByNameAndParent(req.userId, name, from);
-    } else {
-      return res
-        .status(400)
-        .json({ message: "Id or (from + name) is required" });
-    }
-
-    if (!folder) {
-      return res.status(404).json({ message: "Folder not found" });
-    }
-
     // Get planners in the folder
-    const planners = await getPlannersInFolder(req.userId, folder.id);
+    const planners = await getPlanners(req.userId);
 
     if (planners.length === 0) {
       return res.status(404).json({ message: "Planner not found" });

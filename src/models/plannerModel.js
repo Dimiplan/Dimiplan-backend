@@ -112,14 +112,14 @@ const getPlannerById = async (uid, id) => {
  * @param {number} folderId - Folder ID
  * @returns {Promise<Array>} - Array of planner objects
  */
-const getPlannersInFolder = async (uid, folderId) => {
+const getPlanners = async (uid) => {
   try {
     // Hash the user ID for database queries
     const hashedUid = hashUserId(uid);
 
     // Get encrypted planner data
     const planners = await db("planner")
-      .where({ owner: hashedUid, from: folderId })
+      .where({ owner: hashedUid })
       .orderByRaw("isDaily ASC, id ASC");
 
     // Decrypt names in results
