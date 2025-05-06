@@ -84,13 +84,20 @@ const getUser = async (uid) => {
 
     if (!users[0]) return null;
 
-    const user = users[0];
-    // 임시 삽입 <- 모두 복호화시 삭제
-    if (isEncrypted(user.name)) {
-      user.name = decryptData(uid, user.name);
-      user.email = decryptData(uid, user.email);
-      user.profile_image = decryptData(uid, user.profile_image);
-      await updateUser(uid, user);
+    let user = users[0];
+
+    user.name = isEncrypted(user.name)
+      ? decryptData(uid, user.name)
+      : user.name;
+    user.email = isEncrypted(user.email)
+      ? decryptData(uid, user.email)
+      : user.email;
+    user.profile_image = isEncrypted(user.profile_image)
+      ? decryptData(uid, user.profile_image)
+      : user.profile_image;
+
+    if (user != users[0]) {
+      updateUser(uid, user);
     }
 
     return {
@@ -132,7 +139,6 @@ const updateUser = async (uid, userData) => {
       encryptedData.profile_image = userData.profile_image;
     }
 
-    // Non-encrypted fields
     if (userData.grade !== undefined) {
       encryptedData.grade = userData.grade;
     }
