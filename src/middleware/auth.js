@@ -13,13 +13,12 @@ const { getUserFromSession } = require("../config/sessionConfig");
 const isAuthenticated = (req, res, next) => {
   try {
     const sessionIdHeader = req.headers["x-session-id"];
-    let value;
     if (sessionIdHeader) {
       const sessionStore = req.sessionStore;
       // 콜백을 사용한 비동기 함수를 동기적으로 처리
       return sessionStore.get(
         sessionIdHeader,
-        (err, session) => {
+        (session) => {
           // 세션에서 사용자 ID 확인
           const uid = getUserFromSession(session);
 

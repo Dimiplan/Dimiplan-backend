@@ -119,6 +119,18 @@ const decryptData = (userId, encryptedData, parseJson = false) => {
 };
 
 /**
+ * Check if a given string is likely encrypted data
+ * @param {string} data - Data to check
+ * @returns {boolean} - True if the data appears to be encrypted
+ */
+const isEncrypted = (data) => {
+  // Check if it's a hex string of appropriate length for AES encrypted data
+  return (
+    typeof data === "string" && /^[0-9a-f]+$/i.test(data) && data.length >= 32
+  ); // Minimum reasonable length for encrypted data
+};
+
+/**
  * Generate a secure random string
  * @param {number} length - Length of the string
  * @returns {string} - Random string
@@ -140,6 +152,7 @@ module.exports = {
   verifyUserId,
   encryptData,
   decryptData,
+  isEncrypted,
   generateSecureToken,
   getTimestamp,
 };

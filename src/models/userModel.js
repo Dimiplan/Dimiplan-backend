@@ -8,6 +8,7 @@ const {
   encryptData,
   decryptData,
   getTimestamp,
+  isEncrypted,
 } = require("../utils/cryptoUtils");
 const logger = require("../utils/logger");
 
@@ -86,17 +87,21 @@ const getUser = async (uid) => {
 
     if (!users[0]) return null;
 
-    // Decrypt user information
     const user = users[0];
+    // 임시 삽입 <- 모두 복호화시 삭제
+    if (isEncrypted(user.name)) user.name = decryptData(uid, user.name);
+    if (isEncrypted(user.email)) user.email = decryptData(uid, user.email);
+    if (isEncrypted(user.profile_image))
+      user.profile_image = decryptData(uid, user.profile_image);
+    await updateUser(user.id, user);
+
     return {
       id: uid, // Return original ID for session use
-      name: user.name ? decryptData(uid, user.name) : null,
+      name: user.name,
       grade: user.grade,
       class: user.class,
-      email: user.email ? decryptData(uid, user.email) : null,
-      profile_image: user.profile_image
-        ? decryptData(uid, user.profile_image)
-        : null,
+      email: user.email,
+      profile_image: user.profile_image,
     };
   } catch (error) {
     logger.error("Error getting user:", error);
