@@ -86,11 +86,12 @@ const getUser = async (uid) => {
 
     const user = users[0];
     // 임시 삽입 <- 모두 복호화시 삭제
-    if (isEncrypted(user.name)) user.name = decryptData(uid, user.name);
-    if (isEncrypted(user.email)) user.email = decryptData(uid, user.email);
-    if (isEncrypted(user.profile_image))
+    if (isEncrypted(user.name)) {
+      user.name = decryptData(uid, user.name);
+      user.email = decryptData(uid, user.email);
       user.profile_image = decryptData(uid, user.profile_image);
-    await updateUser(user.id, user);
+      await updateUser(uid, user);
+    }
 
     return {
       id: uid, // Return original ID for session use
