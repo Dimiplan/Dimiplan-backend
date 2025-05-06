@@ -5,7 +5,6 @@
 const db = require("../config/db");
 const {
   hashUserId,
-  encryptData,
   decryptData,
   getTimestamp,
   isEncrypted,
@@ -40,13 +39,11 @@ const createUser = async (user) => {
       const hashedUid = hashUserId(user.id);
       const encryptedUser = {
         id: hashedUid,
-        name: user.name ? encryptData(user.id, user.name) : null,
+        name: user.name,
         grade: user.grade,
         class: user.class,
-        email: user.email ? encryptData(user.id, user.email) : null,
-        profile_image: user.profile_image
-          ? encryptData(user.id, user.profile_image)
-          : null,
+        email: user.email,
+        profile_image: user.profile_image,
       };
 
       // Add audit metadata (MySQL 호환 형식)
@@ -123,15 +120,15 @@ const updateUser = async (uid, userData) => {
     const encryptedData = {};
 
     if (userData.name !== undefined) {
-      encryptedData.name = encryptData(uid, userData.name);
+      encryptedData.name = userData.name;
     }
 
     if (userData.email !== undefined) {
-      encryptedData.email = encryptData(uid, userData.email);
+      encryptedData.email = userData.email;
     }
 
     if (userData.profile_image !== undefined) {
-      encryptedData.profile_image = encryptData(uid, userData.profile_image);
+      encryptedData.profile_image = userData.profile_image;
     }
 
     // Non-encrypted fields
