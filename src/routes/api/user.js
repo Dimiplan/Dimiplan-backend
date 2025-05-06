@@ -95,7 +95,7 @@ router.post("/update", isAuthenticated, async (req, res) => {
 router.get("/registered", isAuthenticated, async (req, res) => {
   try {
     const registered = await isRegistered(req.userId);
-    res.status(registered ? 200 : 401).json({ registered });
+    res.status(registered ? 200 : 410).json({ registered });
   } catch (error) {
     console.error("Error checking registration:", error);
     res.status(500).json({ message: "Internal server error" });
