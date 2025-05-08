@@ -8,7 +8,7 @@ const logger = require("./logger");
 /**
  * 안전한 데이터베이스 트랜잭션 실행
  * 데이터베이스 작업 중 오류 처리 및 롤백 관리
- * 
+ *
  * @param {Function} transactionFn - 트랜잭션 작업을 포함하는 함수
  * @returns {Promise} 트랜잭션 결과
  */
@@ -23,8 +23,8 @@ const executeTransaction = async (transactionFn) => {
 
 /**
  * 사용자별 다음 사용 가능한 ID 조회 및 업데이트
- * 사용자 고유 ID 카운터 관리 
- * 
+ * 사용자 고유 ID 카운터 관리
+ *
  * @param {string} uid - 사용자 ID
  * @param {string} idType - ID 유형 (plannerId, planId, roomId, chatId)
  * @returns {Promise<number>} 다음 사용 가능한 ID
@@ -46,7 +46,7 @@ const getNextId = async (uid, idType) => {
         roomId: 1,
         chatId: 1,
       });
-      
+
       logger.info(`새 사용자 ID 초기화 - 사용자: ${uid}`);
       return 1;
     }
@@ -69,22 +69,22 @@ const getNextId = async (uid, idType) => {
 /**
  * 데이터베이스 연결 테스트
  * 데이터베이스 연결 상태 확인 및 진단
- * 
+ *
  * @returns {Promise<boolean>} 데이터베이스 연결 상태
  */
 const testDatabaseConnection = async () => {
   try {
-    await db.raw('SELECT 1');
-    logger.info('데이터베이스 연결 성공');
+    await db.raw("SELECT 1");
+    logger.info("데이터베이스 연결 성공");
     return true;
   } catch (error) {
-    logger.error('데이터베이스 연결 실패:', error);
+    logger.error("데이터베이스 연결 실패:", error);
     return false;
   }
 };
 
 module.exports = {
-  executeTransaction,  // 트랜잭션 실행
-  getNextId,           // 다음 ID 발급
+  executeTransaction, // 트랜잭션 실행
+  getNextId, // 다음 ID 발급
   testDatabaseConnection, // 데이터베이스 연결 테스트
 };

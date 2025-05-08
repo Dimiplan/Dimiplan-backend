@@ -78,14 +78,12 @@ const isUserRegistered = async (req, res, next) => {
   try {
     // 사용자 등록 상태 확인
     const registered = await isRegistered(req.userId);
-    
+
     if (!registered) {
-      logger.warn(
-        `미등록 사용자: ${req.hashedUserId.substring(0, 8)}...`,
-      );
+      logger.warn(`미등록 사용자: ${req.hashedUserId.substring(0, 8)}...`);
       return res.status(403).json({ message: "미등록 사용자" });
     }
-    
+
     next();
   } catch (error) {
     logger.error("등록 상태 확인 중 오류:", error);

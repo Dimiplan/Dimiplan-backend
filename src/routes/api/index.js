@@ -15,9 +15,9 @@ const router = express.Router();
 router.use(isAuthenticated);
 
 // 세부 라우터 등록
-router.use("/user", userRouter);     // 사용자 관련 API
-router.use("/task", taskRouter);      // 작업 관련 API
+router.use("/user", userRouter); // 사용자 관련 API
+router.use("/task", taskRouter); // 작업 관련 API
 router.use("/planner", plannerRouter); // 플래너 관련 API
-router.use("/ai", aiRouter);           // AI 관련 API
+router.use("/ai", aiRouter); // AI 관련 API
 
 module.exports = router;

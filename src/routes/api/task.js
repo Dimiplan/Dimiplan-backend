@@ -59,7 +59,8 @@ router.post("/add", async (req, res) => {
  */
 router.post("/update", async (req, res) => {
   try {
-    const { id, contents, priority, from, startDate, dueDate, isCompleted } = req.body;
+    const { id, contents, priority, from, startDate, dueDate, isCompleted } =
+      req.body;
 
     // ID 필수 검증
     if (!id) {
@@ -79,7 +80,9 @@ router.post("/update", async (req, res) => {
     // 업데이트할 데이터 검증
     if (Object.keys(updateData).length === 0) {
       logger.warn(`작업 업데이트 실패: 업데이트 데이터 없음 - ${req.userId}`);
-      return res.status(400).json({ message: "업데이트할 데이터가 필요합니다" });
+      return res
+        .status(400)
+        .json({ message: "업데이트할 데이터가 필요합니다" });
     }
 
     // 작업 업데이트
@@ -185,7 +188,9 @@ router.get("/get", async (req, res) => {
     // 특정 플래너의 작업 조회
     const tasks = await getTasksInPlanner(req.userId, id);
 
-    logger.info(`플래너 작업 조회 성공 - 사용자: ${req.userId}, 플래너ID: ${id}`);
+    logger.info(
+      `플래너 작업 조회 성공 - 사용자: ${req.userId}, 플래너ID: ${id}`,
+    );
     res.status(200).json(tasks);
   } catch (error) {
     if (error.message === "Planner not found") {

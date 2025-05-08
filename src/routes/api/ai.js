@@ -10,9 +10,7 @@ const {
   addChatMessages,
   getChatMessages,
 } = require("../../models/chatModel");
-const {
-  generateAutoResponse,
-} = require("../../services/aiService");
+const { generateAutoResponse } = require("../../services/aiService");
 const logger = require("../../utils/logger");
 
 const router = express.Router();
@@ -28,7 +26,9 @@ router.get("/getRoomList", async (req, res) => {
   try {
     const roomData = await getChatRooms(req.userId);
 
-    logger.info(`채팅방 목록 조회 성공 - 사용자: ${req.userId}, 채팅방 수: ${roomData.length}`);
+    logger.info(
+      `채팅방 목록 조회 성공 - 사용자: ${req.userId}, 채팅방 수: ${roomData.length}`,
+    );
     res.status(200).json({ roomData });
   } catch (error) {
     logger.error(`채팅방 목록 조회 중 오류 - 사용자: ${req.userId}`, error);
@@ -78,7 +78,9 @@ router.get("/getChatInRoom", async (req, res) => {
     // 채팅 메시지 조회
     const chatData = await getChatMessages(req.userId, from);
 
-    logger.info(`채팅 메시지 조회 성공 - 사용자: ${req.userId}, 채팅방ID: ${from}`);
+    logger.info(
+      `채팅 메시지 조회 성공 - 사용자: ${req.userId}, 채팅방ID: ${from}`,
+    );
     res.status(200).json({ chatData });
   } catch (error) {
     logger.error(`채팅 메시지 조회 중 오류 - 사용자: ${req.userId}`, error);

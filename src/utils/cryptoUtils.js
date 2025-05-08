@@ -1,7 +1,7 @@
 /**
  * 암호화 유틸리티 함수
  * 보안 데이터 저장 및 검색을 위한 암호화 기능 제공
- * SHA3 해싱 및 AES 암호화/복호화 
+ * SHA3 해싱 및 AES 암호화/복호화
  */
 const crypto = require("crypto");
 const { formatDateForMySQL } = require("./dateUtils");
@@ -148,11 +148,11 @@ const getTimestamp = () => {
 };
 
 module.exports = {
-  hashUserId,       // 사용자 ID 해시
-  verifyUserId,     // 사용자 ID 검증
-  encryptData,      // 데이터 암호화
-  decryptData,      // 데이터 복호화
-  isEncrypted,      // 암호화 여부 확인
+  hashUserId, // 사용자 ID 해시
+  verifyUserId, // 사용자 ID 검증
+  encryptData, // 데이터 암호화
+  decryptData, // 데이터 복호화
+  isEncrypted, // 암호화 여부 확인
   generateSecureToken, // 안전한 토큰 생성
-  getTimestamp,     // 타임스탬프 생성
+  getTimestamp, // 타임스탬프 생성
 };

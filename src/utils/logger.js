@@ -10,11 +10,11 @@ require("../config/dotenv"); // 환경 변수 로드
 
 // 로그 레벨 정의
 const levels = {
-  error: 0,   // 치명적인 오류
-  warn: 1,    // 경고성 메시지
-  info: 2,    // 일반 정보
-  http: 3,    // HTTP 요청 로그
-  debug: 4,   // 디버깅 정보
+  error: 0, // 치명적인 오류
+  warn: 1, // 경고성 메시지
+  info: 2, // 일반 정보
+  http: 3, // HTTP 요청 로그
+  debug: 4, // 디버깅 정보
   verbose: 5, // 상세 로깅 (테스트 환경용)
 };
 
@@ -32,7 +32,7 @@ winston.addColors(colors);
 /**
  * 안전한 JSON 직렬화 함수
  * 순환 참조 및 복잡한 객체 처리
- * 
+ *
  * @param {Object} obj - 직렬화할 객체
  * @returns {string} 직렬화된 JSON 문자열
  */
@@ -110,11 +110,11 @@ const logger = winston.createLogger({
     format.timestamp({ format: "YYYY-MM-DD HH:mm:ss" }),
     format.printf((info) => {
       const { timestamp, level, message, ...rest } = info;
-      const restString = Object.keys(rest).length 
-        ? ` ${safeStringify(rest)}` 
-        : '';
+      const restString = Object.keys(rest).length
+        ? ` ${safeStringify(rest)}`
+        : "";
       return `${timestamp} ${level}: ${message}${restString}`;
-    })
+    }),
   ),
   transports: [
     new transports.Console({
@@ -122,12 +122,12 @@ const logger = winston.createLogger({
         format.colorize({ all: true }),
         format.printf((info) => {
           const { timestamp, level, message, ...rest } = info;
-          const restString = Object.keys(rest).length 
-            ? ` ${safeStringify(rest)}` 
-            : '';
+          const restString = Object.keys(rest).length
+            ? ` ${safeStringify(rest)}`
+            : "";
           return `${timestamp} ${level}: ${message}${restString}`;
-        })
-      )
+        }),
+      ),
     }),
     new transports.File({
       filename: path.join(logDir, "combined.log"),
@@ -139,7 +139,7 @@ const logger = winston.createLogger({
       level: "error",
       maxsize: 5242880, // 5MB
       maxFiles: 5,
-    })
+    }),
   ],
   exitOnError: false,
 });
@@ -152,7 +152,7 @@ module.exports = {
   debug: (message, meta = {}) => logger.debug(message, meta),
   http: (message, meta = {}) => logger.http(message, meta),
   verbose: (message, meta = {}) => logger.verbose(message, meta),
-  
+
   // 테스트 환경용 추가 로깅 함수
   logRequest: (req) => {
     if (isTestEnvironment) {
@@ -172,10 +172,10 @@ module.exports = {
       });
     }
   },
-  
+
   // 기타 유틸리티
   isTestEnvironment,
-  stream: { 
-    write: (message) => logger.http(message.trim()) 
+  stream: {
+    write: (message) => logger.http(message.trim()),
   },
 };

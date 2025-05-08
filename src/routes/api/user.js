@@ -24,8 +24,8 @@ const validateUserData = (userData) => {
   if (
     userData.grade &&
     (isNaN(parseInt(userData.grade)) ||
-     parseInt(userData.grade) > 3 ||
-     parseInt(userData.grade) < 1)
+      parseInt(userData.grade) > 3 ||
+      parseInt(userData.grade) < 1)
   ) {
     return false;
   }
@@ -34,8 +34,8 @@ const validateUserData = (userData) => {
   if (
     userData.class &&
     (isNaN(parseInt(userData.class)) ||
-     parseInt(userData.class) > 6 ||
-     parseInt(userData.class) < 1)
+      parseInt(userData.class) > 6 ||
+      parseInt(userData.class) < 1)
   ) {
     return false;
   }

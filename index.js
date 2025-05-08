@@ -89,7 +89,7 @@ app.use(passport.session());
 
 // 라우터 연결
 app.use("/auth", authRouter); // 인증 관련 라우터
-app.use("/api", apiRouter);   // API 관련 라우터
+app.use("/api", apiRouter); // API 관련 라우터
 
 // 전역 에러 핸들링 미들웨어
 app.use((err, req, res, next) => {
