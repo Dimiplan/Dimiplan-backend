@@ -1,71 +1,73 @@
 /**
- * User routes
+ * 사용자 라우터
+ * 사용자 정보 관리 및 업데이트 API
  */
 const express = require("express");
 const { getUser, isRegistered, updateUser } = require("../../models/userModel");
 const { isAuthenticated } = require("../../middleware/auth");
+const logger = require("../../utils/logger");
 
 const router = express.Router();
 
 /**
- * Validate user data
- * @param {Object} userData - User data to validate
- * @returns {boolean} - Whether the data is valid
+ * 사용자 데이터 유효성 검사
+ * @param {Object} userData - 검증할 사용자 데이터
+ * @returns {boolean} 데이터 유효성 여부
  */
 const validateUserData = (userData) => {
-  let isValid = true;
-
-  // Validate name (15 characters max)
+  // 이름 길이 검증 (최대 15자)
   if (userData.name && userData.name.toString().length > 15) {
-    isValid = false;
+    return false;
   }
 
-  // Validate grade (1-3)
+  // 학년 검증 (1~3학년)
   if (
     userData.grade &&
-    (isNaN(parseInt(userData.grade.toString())) ||
-      parseInt(userData.grade.toString()) > 3 ||
-      parseInt(userData.grade.toString()) < 1)
+    (isNaN(parseInt(userData.grade)) ||
+     parseInt(userData.grade) > 3 ||
+     parseInt(userData.grade) < 1)
   ) {
-    isValid = false;
+    return false;
   }
 
-  // Validate class (1-6)
+  // 반 검증 (1~6반)
   if (
     userData.class &&
-    (isNaN(parseInt(userData.class.toString())) ||
-      parseInt(userData.class.toString()) > 6 ||
-      parseInt(userData.class.toString()) < 1)
+    (isNaN(parseInt(userData.class)) ||
+     parseInt(userData.class) > 6 ||
+     parseInt(userData.class) < 1)
   ) {
-    isValid = false;
+    return false;
   }
 
-  return isValid;
+  return true;
 };
 
 /**
  * @route POST /api/user/update
- * @desc Update user information
+ * @desc 사용자 정보 업데이트
+ * 프로필 정보 수정 API
  */
 router.post("/update", isAuthenticated, async (req, res) => {
   try {
     const { name, grade, class: classInput, email, profile_image } = req.body;
 
-    // Process input data
+    // 입력 데이터 처리
     const userData = {
       name: name ? name.toString() : undefined,
-      grade: grade ? parseInt(grade.toString()) : undefined,
-      class: classInput ? parseInt(classInput.toString()) : undefined,
+      grade: grade ? parseInt(grade) : undefined,
+      class: classInput ? parseInt(classInput) : undefined,
       email: email ? email.toString() : undefined,
       profile_image: profile_image ? profile_image.toString() : undefined,
     };
 
-    // Validate data
+    // 데이터 유효성 검사
     if (!validateUserData(userData)) {
-      return res.status(400).json({ message: "Bad request" });
+      logger.warn("유효하지 않은 사용자 데이터");
+      return res.status(400).json({ message: "잘못된 요청" });
     }
 
-    // Filter out undefined fields
+    // 유효한 필드만 추출
     const cleanedData = Object.keys(userData).reduce((acc, key) => {
       if (userData[key] !== undefined) {
         acc[key] = userData[key];
@@ -73,51 +75,58 @@ router.post("/update", isAuthenticated, async (req, res) => {
       return acc;
     }, {});
 
-    // Check if there's anything to update
+    // 업데이트할 필드 확인
     if (Object.keys(cleanedData).length === 0) {
-      return res.status(400).json({ message: "No fields to update" });
+      logger.warn("업데이트할 필드 없음");
+      return res.status(400).json({ message: "업데이트할 필드가 없습니다" });
     }
 
-    // Update user
+    // 사용자 정보 업데이트
     await updateUser(req.userId, cleanedData);
 
-    res.status(200).json({ message: "Updated" });
+    logger.info(`사용자 ${req.userId} 정보 업데이트 완료`);
+    res.status(200).json({ message: "업데이트 완료" });
   } catch (error) {
-    console.error("Error updating user:", error);
-    res.status(500).json({ message: "Internal server error" });
+    logger.error("사용자 정보 업데이트 중 오류:", error);
+    res.status(500).json({ message: "서버 내부 오류" });
   }
 });
 
 /**
  * @route GET /api/user/registered
- * @desc Check if user is registered
+ * @desc 사용자 등록 상태 확인
+ * 사용자의 회원가입 완료 여부 확인
  */
 router.get("/registered", isAuthenticated, async (req, res) => {
   try {
     const registered = await isRegistered(req.userId);
+    logger.info(`사용자 ${req.userId} 등록 상태: ${registered}`);
     res.status(registered ? 200 : 410).json({ registered });
   } catch (error) {
-    console.error("Error checking registration:", error);
-    res.status(500).json({ message: "Internal server error" });
+    logger.error("등록 상태 확인 중 오류:", error);
+    res.status(500).json({ message: "서버 내부 오류" });
   }
 });
 
 /**
  * @route GET /api/user/get
- * @desc Get current user information
+ * @desc 현재 사용자 정보 조회
+ * 로그인된 사용자의 프로필 정보 반환
  */
 router.get("/get", isAuthenticated, async (req, res) => {
   try {
     const user = await getUser(req.userId);
 
     if (!user) {
-      return res.status(404).json({ message: "User not found" });
+      logger.warn(`사용자 ${req.userId} 정보 없음`);
+      return res.status(404).json({ message: "사용자를 찾을 수 없음" });
     }
 
+    logger.info(`사용자 ${req.userId} 정보 조회 성공`);
     res.status(200).json(user);
   } catch (error) {
-    console.error("Error getting user info:", error);
-    res.status(500).json({ message: "Internal server error" });
+    logger.error("사용자 정보 조회 중 오류:", error);
+    res.status(500).json({ message: "서버 내부 오류" });
   }
 });
 

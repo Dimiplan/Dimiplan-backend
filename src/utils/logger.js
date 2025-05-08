@@ -1,24 +1,24 @@
 /**
- * Logging utility
- * Provides structured logging capabilities with sensitive data filtering
+ * 로깅 유틸리티
+ * 민감한 데이터 필터링과 구조화된 로깅 기능 제공
  */
 const winston = require("winston");
 const { format, transports } = winston;
 const fs = require("fs");
 const path = require("path");
-require("../config/dotenv"); // Load environment variables
+require("../config/dotenv"); // 환경 변수 로드
 
-// Define log levels
+// 로그 레벨 정의
 const levels = {
-  error: 0,
-  warn: 1,
-  info: 2,
-  http: 3,
-  debug: 4,
-  verbose: 5, // 테스트 환경용 상세 로깅 레벨 추가
+  error: 0,   // 치명적인 오류
+  warn: 1,    // 경고성 메시지
+  info: 2,    // 일반 정보
+  http: 3,    // HTTP 요청 로그
+  debug: 4,   // 디버깅 정보
+  verbose: 5, // 상세 로깅 (테스트 환경용)
 };
 
-// Define colors for each level
+// 각 레벨별 색상 정의
 const colors = {
   error: "red",
   warn: "yellow",
@@ -30,30 +30,30 @@ const colors = {
 winston.addColors(colors);
 
 /**
- * Safe JSON stringify that handles circular references
- * @param {Object} obj - Object to stringify
- * @returns {String} - JSON string
+ * 안전한 JSON 직렬화 함수
+ * 순환 참조 및 복잡한 객체 처리
+ * 
+ * @param {Object} obj - 직렬화할 객체
+ * @returns {string} 직렬화된 JSON 문자열
  */
 const safeStringify = (obj) => {
   if (!obj) return String(obj);
 
-  // Handle primitive types
+  // 원시 타입 처리
   if (typeof obj !== "object") return String(obj);
 
-  // Create a cache to store already processed objects
+  // 순환 참조 방지를 위한 캐시
   const cache = new Set();
 
-  // Custom replacer function to handle circular references
+  // 순환 참조 및 복잡한 객체 처리를 위한 대체자 함수
   const replacer = (key, value) => {
-    // If value is an object and not null
     if (typeof value === "object" && value !== null) {
-      // Skip circular references
       if (cache.has(value)) {
-        return "[Circular Reference]";
+        return "[순환 참조]";
       }
       cache.add(value);
 
-      // Handle Error objects specially
+      // 오류 객체 특별 처리
       if (value instanceof Error) {
         return {
           name: value.name,
@@ -62,7 +62,7 @@ const safeStringify = (obj) => {
         };
       }
 
-      // Skip complex objects like sockets, streams, etc.
+      // 복잡한 시스템 객체 필터링
       if (
         value.constructor &&
         ["Socket", "IncomingMessage", "ServerResponse", "HTTPParser"].includes(
@@ -78,235 +78,104 @@ const safeStringify = (obj) => {
   try {
     return JSON.stringify(obj, replacer);
   } catch (error) {
-    return `[Object Not Serializable: ${error.message}]`;
+    return `[직렬화 불가 객체: ${error.message}]`;
   }
 };
 
-// Filter for sensitive data in logs - simplified for reliability
-const filterSensitiveData = format((info) => {
-  try {
-    // Start with a shallow copy of the info object
-    const filteredInfo = { ...info };
-
-    // Ensure message is a string
-    if (typeof filteredInfo.message !== "string") {
-      if (filteredInfo.message === undefined) {
-        filteredInfo.message = "";
-      } else if (typeof filteredInfo.message === "object") {
-        try {
-          filteredInfo.message = safeStringify(filteredInfo.message);
-        } catch (e) {
-          filteredInfo.message = "[Complex object]";
-        }
-      } else {
-        filteredInfo.message = String(filteredInfo.message);
-      }
-    }
-
-    // Mask sensitive data in message strings
-    if (filteredInfo.message) {
-      // Mask emails
-      filteredInfo.message = filteredInfo.message.replace(
-        /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g,
-        "[EMAIL REDACTED]",
-      );
-
-      // Mask potential auth tokens
-      filteredInfo.message = filteredInfo.message.replace(
-        /(token|jwt|auth|api|key)[:=]\s*['"]?\w+['"]?/gi,
-        "$1: [REDACTED]",
-      );
-
-      // Mask potential password fields
-      filteredInfo.message = filteredInfo.message.replace(
-        /(password|passwd|pwd)[:=]\s*['"]?\w+['"]?/gi,
-        "$1: [REDACTED]",
-      );
-    }
-
-    return filteredInfo;
-  } catch (error) {
-    // Fallback if filtering fails
-    return {
-      level: info.level || "error",
-      message: `Error in log filtering: ${error.message}`,
-    };
-  }
-});
-
-// Define log directory
+// 로그 디렉토리 정의
 const logDir = path.join(process.cwd(), "logs");
 
-// Create logs directory if it doesn't exist
+// 로그 디렉토리 생성
 try {
   if (!fs.existsSync(logDir)) {
     fs.mkdirSync(logDir, { recursive: true, mode: 0o755 });
   }
 } catch (err) {
-  console.error(`Failed to create logs directory: ${err.message}`);
+  console.error(`로그 디렉토리 생성 실패: ${err.message}`);
 }
 
-// Define logger format
-const logFormat = format.combine(
-  format.timestamp({ format: "YYYY-MM-DD HH:mm:ss" }),
-  filterSensitiveData(),
-  format.printf((info) => {
-    // Handle error objects specially
-    if (info.error && info.error instanceof Error) {
-      return `${info.timestamp} ${info.level}: ${info.message} - ${info.error.stack}`;
-    }
-    return `${info.timestamp} ${info.level}: ${info.message}`;
-  }),
-);
-
-// Create console formatter with colors
-const consoleFormat = format.combine(
-  format.colorize({ all: true }),
-  format.timestamp({ format: "YYYY-MM-DD HH:mm:ss" }),
-  format.printf((info) => {
-    if (info.error && info.error instanceof Error) {
-      return `${info.timestamp} ${info.level}: ${info.message} - ${info.error.stack}`;
-    }
-    return `${info.timestamp} ${info.level}: ${info.message}`;
-  }),
-);
-
-// 테스트 환경인지 확인
+// 테스트 환경 확인
 const isTestEnvironment = process.env.NODE_ENV === "test";
 
-// 테스트 환경일 경우 로깅 레벨 변경
+// 로그 레벨 설정
 const logLevel = isTestEnvironment
   ? "verbose"
   : process.env.LOG_LEVEL || "info";
 
-// Create the logger instance
+// 로거 생성
 const logger = winston.createLogger({
-  level: logLevel, // 테스트 환경에서는 'verbose' 레벨 사용
+  level: logLevel,
   levels,
-  format: logFormat,
+  format: format.combine(
+    format.timestamp({ format: "YYYY-MM-DD HH:mm:ss" }),
+    format.printf((info) => {
+      const { timestamp, level, message, ...rest } = info;
+      const restString = Object.keys(rest).length 
+        ? ` ${safeStringify(rest)}` 
+        : '';
+      return `${timestamp} ${level}: ${message}${restString}`;
+    })
+  ),
   transports: [
-    // Console transport with colors
     new transports.Console({
-      format: consoleFormat,
+      format: format.combine(
+        format.colorize({ all: true }),
+        format.printf((info) => {
+          const { timestamp, level, message, ...rest } = info;
+          const restString = Object.keys(rest).length 
+            ? ` ${safeStringify(rest)}` 
+            : '';
+          return `${timestamp} ${level}: ${message}${restString}`;
+        })
+      )
     }),
-
-    // File transport for all logs - with explicit flags
     new transports.File({
       filename: path.join(logDir, "combined.log"),
       maxsize: 5242880, // 5MB
       maxFiles: 5,
-      options: { flags: "a" }, // Append flag
     }),
-
-    // Separate file for error logs - with explicit flags
     new transports.File({
       filename: path.join(logDir, "errors.log"),
       level: "error",
       maxsize: 5242880, // 5MB
       maxFiles: 5,
-      options: { flags: "a" }, // Append flag
-    }),
+    })
   ],
-  // Don't exit on uncaught exceptions
   exitOnError: false,
 });
 
-// Create a stream object for Morgan HTTP request logging
-logger.stream = {
-  write: (message) => logger.http(message.trim()),
-};
-
-// Simple direct logging function
+// 외부 노출 로깅 함수
 module.exports = {
-  error: (message, meta = {}) => {
-    try {
-      logger.error(message, meta);
-    } catch (err) {
-      console.error(`Failed to log error: ${err.message}`);
-      console.error(
-        `Original message: ${typeof message === "object" ? JSON.stringify(message) : message}`,
-      );
-    }
-  },
-  warn: (message, meta = {}) => {
-    try {
-      logger.warn(message, meta);
-    } catch (err) {
-      console.error(`Failed to log warning: ${err.message}`);
-    }
-  },
-  info: (message, meta = {}) => {
-    try {
-      logger.info(message, meta);
-    } catch (err) {
-      console.error(`Failed to log info: ${err.message}`);
-    }
-  },
-  http: (message, meta = {}) => {
-    try {
-      logger.http(message, meta);
-    } catch (err) {
-      console.error(`Failed to log HTTP: ${err.message}`);
-    }
-  },
-  debug: (message, meta = {}) => {
-    try {
-      logger.debug(message, meta);
-    } catch (err) {
-      console.error(`Failed to log debug: ${err.message}`);
-    }
-  },
-  // 테스트 환경용 상세 로깅 함수 추가
-  verbose: (message, meta = {}) => {
-    try {
-      logger.verbose(message, meta);
-    } catch (err) {
-      console.error(`Failed to log verbose: ${err.message}`);
-    }
-  },
-  // 요청/응답 상세 로깅 함수
+  error: (message, meta = {}) => logger.error(message, meta),
+  warn: (message, meta = {}) => logger.warn(message, meta),
+  info: (message, meta = {}) => logger.info(message, meta),
+  debug: (message, meta = {}) => logger.debug(message, meta),
+  http: (message, meta = {}) => logger.http(message, meta),
+  verbose: (message, meta = {}) => logger.verbose(message, meta),
+  
+  // 테스트 환경용 추가 로깅 함수
   logRequest: (req) => {
     if (isTestEnvironment) {
-      try {
-        logger.verbose(`REQUEST ${req.method} ${req.url}`, {
-          headers: req.headers,
-          body: req.body,
-          query: req.query,
-          params: req.params,
-          ip: req.ip,
-        });
-      } catch (err) {
-        console.error(`Failed to log request: ${err.message}`);
-      }
+      logger.verbose(`요청: ${req.method} ${req.url}`, {
+        headers: req.headers,
+        body: req.body,
+        query: req.query,
+        ip: req.ip,
+      });
     }
   },
   logResponse: (req, res, body) => {
     if (isTestEnvironment) {
-      try {
-        logger.verbose(
-          `RESPONSE ${req.method} ${req.url} [${res.statusCode}]`,
-          {
-            headers: res.getHeaders(),
-            body: body,
-          },
-        );
-      } catch (err) {
-        console.error(`Failed to log response: ${err.message}`);
-      }
+      logger.verbose(`응답: ${req.method} ${req.url} [${res.statusCode}]`, {
+        headers: res.getHeaders(),
+        body: body,
+      });
     }
   },
-  logDbQuery: (query, bindings) => {
-    if (isTestEnvironment) {
-      try {
-        logger.verbose(`DB QUERY`, {
-          sql: query,
-          bindings: bindings,
-        });
-      } catch (err) {
-        console.error(`Failed to log DB query: ${err.message}`);
-      }
-    }
-  },
+  
+  // 기타 유틸리티
   isTestEnvironment,
-  stream: logger.stream,
+  stream: { 
+    write: (message) => logger.http(message.trim()) 
+  },
 };

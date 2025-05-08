@@ -1,6 +1,6 @@
 /**
- * API Routes Index
- * Handles all routes under /api
+ * API 라우터 인덱스
+ * /api 경로 아래의 모든 라우터 통합 관리
  */
 const express = require("express");
 const userRouter = require("./user");
@@ -11,13 +11,13 @@ const { isAuthenticated } = require("../../middleware/auth");
 
 const router = express.Router();
 
-// Apply authentication to all API routes
+// 모든 API 라우트에 인증 적용
 router.use(isAuthenticated);
 
-// Register route handlers
-router.use("/user", userRouter);
-router.use("/task", taskRouter);
-router.use("/planner", plannerRouter);
-router.use("/ai", aiRouter);
+// 세부 라우터 등록
+router.use("/user", userRouter);     // 사용자 관련 API
+router.use("/task", taskRouter);      // 작업 관련 API
+router.use("/planner", plannerRouter); // 플래너 관련 API
+router.use("/ai", aiRouter);           // AI 관련 API
 
 module.exports = router;

@@ -1,23 +1,41 @@
+/**
+ * 데이터베이스 연결 구성
+ * MySQL 데이터베이스 연결 및 Knex.js 설정 관리
+ */
 const knex = require("knex");
-require("./dotenv"); // Load environment variables
+require("./dotenv"); // 환경 변수 로드
 const logger = require("../utils/logger");
 
+// 데이터베이스 연결 옵션
 const options = {
   host: process.env.DB_HOST,
   port: parseInt(process.env.DB_PORT, 10),
   user: process.env.DB_USER,
   password: process.env.DB_PASS,
   database: process.env.DB_NAME,
+  // MySQL 연결 보안 설정
+  connectTimeout: 10000,  // 10초 연결 타임아웃
+  acquireTimeout: 10000,  // 연결 획득 타임아웃
+  connectionLimit: 10,    // 연결 풀 크기
+  waitForConnections: true, // 연결 대기 활성화
+  queueLimit: 0,          // 무제한 대기열
 };
 
-// DB 쿼리 로깅을 위한 설정 추가
+// Knex.js 데이터베이스 구성
 const dbConfig = {
-  client: "mysql",
+  client: "mysql", // MySQL 드라이버 사용
   connection: options,
+  pool: {
+    min: 2,    // 최소 연결 수
+    max: 10,   // 최대 연결 수
+  },
+  // 쿼리 실행 타임아웃 설정 (초 단위)
+  acquireConnectionTimeout: 10000,
 };
 
-// 테스트 환경에서는 쿼리 로깅 활성화
+// 테스트 환경에서 상세 로깅 설정
 if (logger.isTestEnvironment) {
+  // 다양한 로그 수준에 대한 로깅 핸들러 설정
   dbConfig.log = {
     warn: (message) => logger.warn(message),
     error: (message) => logger.error(message),
@@ -25,24 +43,25 @@ if (logger.isTestEnvironment) {
     debug: (message) => logger.debug(message),
   };
 
-  // 모든 쿼리를 로깅하기 위한 이벤트 핸들러 추가
-  dbConfig.postProcessResponse = (result, queryContext) => {
-    return result;
-  };
-
-  dbConfig.wrapIdentifier = (value, origImpl, queryContext) => {
-    return origImpl(value);
-  };
+  // 쿼리 후처리 및 식별자 래핑
+  dbConfig.postProcessResponse = (result) => result;
+  dbConfig.wrapIdentifier = (value, origImpl) => origImpl(value);
 }
 
+// Knex.js 데이터베이스 인스턴스 생성
 const db = knex(dbConfig);
 
-// 테스트 환경에서 모든 쿼리 로깅
+// 테스트 환경에서 쿼리 로깅
 if (logger.isTestEnvironment) {
   db.on("query", (queryData) => {
     logger.logDbQuery(queryData.sql, queryData.bindings);
   });
 }
+
+// 데이터베이스 연결 오류 처리
+db.on('error', (error) => {
+  logger.error('데이터베이스 연결 오류:', error);
+});
 
 module.exports = db;
 module.exports.options = options;
