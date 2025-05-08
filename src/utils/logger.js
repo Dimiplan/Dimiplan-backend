@@ -172,10 +172,12 @@ const consoleFormat = format.combine(
 );
 
 // 테스트 환경인지 확인
-const isTestEnvironment = process.env.NODE_ENV === 'test';
+const isTestEnvironment = process.env.NODE_ENV === "test";
 
 // 테스트 환경일 경우 로깅 레벨 변경
-const logLevel = isTestEnvironment ? 'verbose' : (process.env.LOG_LEVEL || 'info');
+const logLevel = isTestEnvironment
+  ? "verbose"
+  : process.env.LOG_LEVEL || "info";
 
 // Create the logger instance
 const logger = winston.createLogger({
@@ -271,7 +273,7 @@ module.exports = {
           body: req.body,
           query: req.query,
           params: req.params,
-          ip: req.ip
+          ip: req.ip,
         });
       } catch (err) {
         console.error(`Failed to log request: ${err.message}`);
@@ -281,10 +283,13 @@ module.exports = {
   logResponse: (req, res, body) => {
     if (isTestEnvironment) {
       try {
-        logger.verbose(`RESPONSE ${req.method} ${req.url} [${res.statusCode}]`, {
-          headers: res.getHeaders(),
-          body: body
-        });
+        logger.verbose(
+          `RESPONSE ${req.method} ${req.url} [${res.statusCode}]`,
+          {
+            headers: res.getHeaders(),
+            body: body,
+          },
+        );
       } catch (err) {
         console.error(`Failed to log response: ${err.message}`);
       }
@@ -295,7 +300,7 @@ module.exports = {
       try {
         logger.verbose(`DB QUERY`, {
           sql: query,
-          bindings: bindings
+          bindings: bindings,
         });
       } catch (err) {
         console.error(`Failed to log DB query: ${err.message}`);

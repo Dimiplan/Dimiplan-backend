@@ -24,12 +24,12 @@ if (logger.isTestEnvironment) {
     deprecate: (message) => logger.warn(message),
     debug: (message) => logger.debug(message),
   };
-  
+
   // 모든 쿼리를 로깅하기 위한 이벤트 핸들러 추가
   dbConfig.postProcessResponse = (result, queryContext) => {
     return result;
   };
-  
+
   dbConfig.wrapIdentifier = (value, origImpl, queryContext) => {
     return origImpl(value);
   };
@@ -39,7 +39,7 @@ const db = knex(dbConfig);
 
 // 테스트 환경에서 모든 쿼리 로깅
 if (logger.isTestEnvironment) {
-  db.on('query', (queryData) => {
+  db.on("query", (queryData) => {
     logger.logDbQuery(queryData.sql, queryData.bindings);
   });
 }
