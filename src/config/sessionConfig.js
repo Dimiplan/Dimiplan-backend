@@ -3,6 +3,7 @@
  * Provides secure session configuration settings
  */
 const { generateSecureToken } = require("../utils/cryptoUtils");
+const logger = require("../utils/logger");
 
 require("./dotenv"); // Load environment variables
 // Session secret should be environment variable in production
@@ -50,6 +51,7 @@ const storeUserInSession = (session, userId) => {
  * @returns {string|null} - User ID or null if not found
  */
 const getUserFromSession = (session) => {
+  logger.debug(session);
   return session?.passport?.user?.id || null;
 };
 

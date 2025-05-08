@@ -14,6 +14,25 @@ const apiRouter = require("./src/routes/api");
 
 const app = express();
 
+// 테스트 환경에서 요청/응답 로깅을 위한 미들웨어
+if (logger.isTestEnvironment) {
+  app.use((req, res, next) => {
+    // 요청 로깅
+    logger.logRequest(req);
+    
+    // 원본 res.send 함수 저장
+    const originalSend = res.send;
+    
+    // res.send 재정의하여 응답 본문 캡처
+    res.send = function(body) {
+      logger.logResponse(req, res, body);
+      return originalSend.apply(res, arguments);
+    };
+    
+    next();
+  });
+}
+
 // 보안 HTTP 헤더 설정
 app.use(helmet());
 

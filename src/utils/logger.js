@@ -15,6 +15,7 @@ const levels = {
   info: 2,
   http: 3,
   debug: 4,
+  verbose: 5, // 테스트 환경용 상세 로깅 레벨 추가
 };
 
 // Define colors for each level
@@ -170,9 +171,15 @@ const consoleFormat = format.combine(
   }),
 );
 
+// 테스트 환경인지 확인
+const isTestEnvironment = process.env.NODE_ENV === 'test';
+
+// 테스트 환경일 경우 로깅 레벨 변경
+const logLevel = isTestEnvironment ? 'verbose' : (process.env.LOG_LEVEL || 'info');
+
 // Create the logger instance
 const logger = winston.createLogger({
-  level: "info", // Use environment variable or default to info
+  level: logLevel, // 테스트 환경에서는 'verbose' 레벨 사용
   levels,
   format: logFormat,
   transports: [
@@ -247,5 +254,54 @@ module.exports = {
       console.error(`Failed to log debug: ${err.message}`);
     }
   },
+  // 테스트 환경용 상세 로깅 함수 추가
+  verbose: (message, meta = {}) => {
+    try {
+      logger.verbose(message, meta);
+    } catch (err) {
+      console.error(`Failed to log verbose: ${err.message}`);
+    }
+  },
+  // 요청/응답 상세 로깅 함수
+  logRequest: (req) => {
+    if (isTestEnvironment) {
+      try {
+        logger.verbose(`REQUEST ${req.method} ${req.url}`, {
+          headers: req.headers,
+          body: req.body,
+          query: req.query,
+          params: req.params,
+          ip: req.ip
+        });
+      } catch (err) {
+        console.error(`Failed to log request: ${err.message}`);
+      }
+    }
+  },
+  logResponse: (req, res, body) => {
+    if (isTestEnvironment) {
+      try {
+        logger.verbose(`RESPONSE ${req.method} ${req.url} [${res.statusCode}]`, {
+          headers: res.getHeaders(),
+          body: body
+        });
+      } catch (err) {
+        console.error(`Failed to log response: ${err.message}`);
+      }
+    }
+  },
+  logDbQuery: (query, bindings) => {
+    if (isTestEnvironment) {
+      try {
+        logger.verbose(`DB QUERY`, {
+          sql: query,
+          bindings: bindings
+        });
+      } catch (err) {
+        console.error(`Failed to log DB query: ${err.message}`);
+      }
+    }
+  },
+  isTestEnvironment,
   stream: logger.stream,
 };
