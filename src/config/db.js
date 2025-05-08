@@ -13,24 +13,12 @@ const options = {
   user: process.env.DB_USER,
   password: process.env.DB_PASS,
   database: process.env.DB_NAME,
-  // MySQL 연결 보안 설정
-  connectTimeout: 10000, // 10초 연결 타임아웃
-  acquireTimeout: 10000, // 연결 획득 타임아웃
-  connectionLimit: 10, // 연결 풀 크기
-  waitForConnections: true, // 연결 대기 활성화
-  queueLimit: 0, // 무제한 대기열
 };
 
 // Knex.js 데이터베이스 구성
 const dbConfig = {
   client: "mysql", // MySQL 드라이버 사용
   connection: options,
-  pool: {
-    min: 2, // 최소 연결 수
-    max: 10, // 최대 연결 수
-  },
-  // 쿼리 실행 타임아웃 설정 (초 단위)
-  acquireConnectionTimeout: 10000,
 };
 
 // 테스트 환경에서 상세 로깅 설정
