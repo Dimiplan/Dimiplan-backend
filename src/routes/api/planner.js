@@ -95,11 +95,9 @@ router.post("/delete", async (req, res) => {
     await deletePlanner(req.userId, id);
 
     logger.info(`플래너 삭제 성공 - 사용자: ${req.userId}, 플래너ID: ${id}`);
-    res
-      .status(200)
-      .json({
-        message: "플래너와 관련된 모든 플랜이 성공적으로 삭제되었습니다",
-      });
+    res.status(200).json({
+      message: "플래너와 관련된 모든 플랜이 성공적으로 삭제되었습니다",
+    });
   } catch (error) {
     if (error.message === "Planner not found") {
       logger.warn(`플래너 삭제 실패: 플래너 없음 - ${req.userId}`);
