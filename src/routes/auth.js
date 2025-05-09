@@ -177,12 +177,12 @@ router.post("/login", async (req, res) => {
     });
 
     // 세션 ID를 응답 헤더와 본문에 포함
-    res.setHeader("x-session-id", req.sessionID);
+    res.setHeader("x-session-id", req.session.id);
 
     // 모바일 앱을 위한 성공 응답
     return res.status(200).json({
       message: "로그인 성공",
-      sessionId: req.sessionID,
+      sessionId: req.session.id,
     });
   } catch (error) {
     logger.error("로그인 오류:", error);
