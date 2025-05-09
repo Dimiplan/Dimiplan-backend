@@ -10,7 +10,6 @@ const { createUser, isRegistered } = require("../models/userModel");
 const { storeUserInSession } = require("../config/sessionConfig");
 const logger = require("../utils/logger");
 
-
 const router = express.Router();
 
 router.use((req, _res, next) => {
