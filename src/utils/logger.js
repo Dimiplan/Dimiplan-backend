@@ -172,7 +172,14 @@ module.exports = {
       });
     }
   },
-
+  logDbQuery: (query, bindings) => {
+    if (isTestEnvironment) {
+      logger.verbose(`DB QUERY`, {
+        sql: query,
+        bindings: bindings,
+      });
+    }
+  },
   // 기타 유틸리티
   isTestEnvironment,
   stream: {

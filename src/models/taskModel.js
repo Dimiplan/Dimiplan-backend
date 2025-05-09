@@ -1,6 +1,6 @@
 /**
- * Plan model
- * Handles all plan-related database operations with encryption
+ * 계획 모델
+ * 암호화와 함께 모든 계획 관련 데이터베이스 작업을 처리합니다
  */
 const db = require("../config/db");
 const { getNextId } = require("../utils/dbUtils");
@@ -13,9 +13,9 @@ const {
 const logger = require("../utils/logger");
 
 /**
- * Format a date string to YYYY-MM-DD format
- * @param {string|null} dateString - Date string or null
- * @returns {string|null} - Formatted date or null
+ * 날짜 문자열을 YYYY-MM-DD 형식으로 포맷팅
+ * @param {string|null} dateString - 날짜 문자열 또는 null
+ * @returns {string|null} - 포맷팅된 날짜 또는 null
  */
 const formatDate = (dateString) => {
   if (!dateString) return null;
@@ -23,46 +23,46 @@ const formatDate = (dateString) => {
 };
 
 /**
- * Create a new task
- * @param {string} uid - User ID
- * @param {string} contents - Task contents
- * @param {number} plannerId - Planner ID
- * @param {string|null} startDate - Start date (YYYY-MM-DD)
- * @param {string|null} dueDate - Due date (YYYY-MM-DD)
- * @param {number} priority - Priority (default: 1)
- * @returns {Promise<Object>} - Created task data
+ * 새 작업 생성
+ * @param {string} uid - 사용자 ID
+ * @param {string} contents - 작업 내용
+ * @param {number} plannerId - 플래너 ID
+ * @param {string|null} startDate - 시작 날짜 (YYYY-MM-DD)
+ * @param {string|null} dueDate - 마감 날짜 (YYYY-MM-DD)
+ * @param {number} priority - 우선순위 (기본값: 1)
+ * @returns {Promise<Object>} - 생성된 작업 데이터
  */
 const createTask = async (
-  uid,
-  contents,
-  plannerId,
-  startDate = null,
-  dueDate = null,
-  priority = 1,
+    uid,
+    contents,
+    plannerId,
+    startDate = null,
+    dueDate = null,
+    priority = 1,
 ) => {
   try {
     const hashedUid = hashUserId(uid);
 
-    // Verify planner exists
+    // 플래너가 존재하는지 확인
     const planner = await db("planner")
-      .where({ owner: hashedUid, id: plannerId })
-      .first();
+        .where({ owner: hashedUid, id: plannerId })
+        .first();
 
     if (!planner) {
-      throw new Error("Planner not found");
+      throw new Error("플래너를 찾을 수 없습니다");
     }
 
-    // Get next plan ID
+    // 다음 계획 ID 가져오기
     const planId = await getNextId(hashedUid, "planId");
 
-    // Format dates
+    // 날짜 포맷팅
     const formattedStartDate = formatDate(startDate);
     const formattedDueDate = formatDate(dueDate);
 
-    // Encrypt plan contents
+    // 계획 내용 암호화
     const encryptedContents = encryptData(uid, contents);
 
-    // Create plan with encrypted data
+    // 암호화된 데이터로 계획 생성
     await db("plan").insert({
       owner: hashedUid,
       startDate: formattedStartDate,
@@ -75,7 +75,7 @@ const createTask = async (
       created_at: getTimestamp(),
     });
 
-    // Return plain data for response
+    // 응답용 평문 데이터 반환
     return {
       owner: uid,
       startDate: formattedStartDate,
@@ -87,16 +87,16 @@ const createTask = async (
       isCompleted: 0,
     };
   } catch (error) {
-    logger.error("Error creating plan:", error);
+    logger.error("계획 생성 오류:", error);
     throw error;
   }
 };
 
 /**
- * Get a task by ID with decrypted content
- * @param {string} uid - User ID
- * @param {number} id - Task ID
- * @returns {Promise<Object|null>} - Task data or null if not found
+ * 복호화된 내용과 함께 ID로 작업 가져오기
+ * @param {string} uid - 사용자 ID
+ * @param {number} id - 작업 ID
+ * @returns {Promise<Object|null>} - 작업 데이터 또는 찾지 못한 경우 null
  */
 const getTaskById = async (uid, id) => {
   try {
@@ -105,83 +105,83 @@ const getTaskById = async (uid, id) => {
 
     if (!task) return null;
 
-    // Decrypt task content
+    // 작업 내용 복호화
     return {
       ...task,
-      owner: uid, // Use original ID for application logic
+      owner: uid, // 애플리케이션 로직을 위해 원본 ID 사용
       contents: decryptData(uid, task.contents),
     };
   } catch (error) {
-    logger.error("Error getting task by ID:", error);
+    logger.error("ID로 작업 가져오기 오류:", error);
     throw error;
   }
 };
 
 /**
- * Get all tasks for a user with decrypted content
- * @param {string} uid - User ID
- * @returns {Promise<Array>} - Array of task objects
+ * 복호화된 내용과 함께 사용자의 모든 작업 가져오기
+ * @param {string} uid - 사용자 ID
+ * @returns {Promise<Array>} - 작업 객체 배열
  */
 const getAllTasks = async (uid) => {
   try {
     const hashedUid = hashUserId(uid);
     const tasks = await db("plan")
-      .where({ owner: hashedUid })
-      .orderByRaw("isCompleted ASC, priority DESC, id ASC");
+        .where({ owner: hashedUid })
+        .orderByRaw("isCompleted ASC, priority DESC, id ASC");
 
-    // Decrypt task contents
+    // 작업 내용 복호화
     return tasks.map((task) => ({
       ...task,
-      owner: uid, // Use original ID for application logic
+      owner: uid, // 애플리케이션 로직을 위해 원본 ID 사용
       contents: decryptData(uid, task.contents),
     }));
   } catch (error) {
-    logger.error("Error getting all tasks:", error);
+    logger.error("모든 작업 가져오기 오류:", error);
     throw error;
   }
 };
 
 /**
- * Get all tasks in a planner with decrypted content
- * @param {string} uid - User ID
- * @param {number} plannerId - Planner ID
- * @returns {Promise<Array>} - Array of task objects
+ * 복호화된 내용과 함께 플래너의 모든 작업 가져오기
+ * @param {string} uid - 사용자 ID
+ * @param {number} plannerId - 플래너 ID
+ * @returns {Promise<Array>} - 작업 객체 배열
  */
 const getTasksInPlanner = async (uid, plannerId) => {
   try {
     const hashedUid = hashUserId(uid);
 
-    // Verify planner exists
+    // 플래너가 존재하는지 확인
     const planner = await db("planner")
-      .where({ owner: hashedUid, id: plannerId })
-      .first();
+        .where({ owner: hashedUid, id: plannerId })
+        .first();
 
     if (!planner) {
-      throw new Error("Planner not found");
+      throw new Error("플래너를 찾을 수 없습니다");
     }
 
     const tasks = await db("plan")
-      .where({ owner: hashedUid, from: plannerId })
-      .orderByRaw("isCompleted ASC, priority DESC, id ASC");
+        .where({ owner: hashedUid, from: plannerId })
+        .orderByRaw("isCompleted ASC, priority DESC, id ASC");
 
-    // Decrypt task contents
+    // 작업 내용 복호화
     return tasks.map((task) => ({
       ...task,
-      owner: uid, // Use original ID for application logic
+      owner: uid, // 애플리케이션 로직을 위해 원본 ID 사용
       contents: decryptData(uid, task.contents),
     }));
   } catch (error) {
-    logger.error("Error getting tasks in planner:", error);
+    logger.error("플래너의 작업 가져오기 오류:", error);
     throw error;
   }
 };
 
 /**
- * Update a task
- * @param {string} uid - User ID
- * @param {number} id - Task ID
- * @param {Object} updateData - Data to update
- * @returns {Promise<Object>} - Updated task data
+ * 작업 업데이트
+ * @param {string} uid - 사용자 ID
+ * @param {number} id - 작업 ID
+ * @param {Object} updateData - 업데이트할 데이터
+ * @returns {Promise<Object>} - 업데이트된 작업 데이터
  */
 const updateTask = async (uid, id, updateData) => {
   try {
@@ -189,10 +189,10 @@ const updateTask = async (uid, id, updateData) => {
     const task = await db("plan").where({ owner: hashedUid, id: id }).first();
 
     if (!task) {
-      throw new Error("Task not found");
+      throw new Error("작업을 찾을 수 없습니다");
     }
 
-    // Format dates if provided
+    // 제공된 경우 날짜 포맷팅
     const formattedData = { ...updateData };
     if (formattedData.startDate !== undefined) {
       formattedData.startDate = formatDate(formattedData.startDate);
@@ -201,29 +201,29 @@ const updateTask = async (uid, id, updateData) => {
       formattedData.dueDate = formatDate(formattedData.dueDate);
     }
 
-    // Encrypt contents if provided
+    // 제공된 경우 내용 암호화
     if (formattedData.contents !== undefined) {
       formattedData.contents = encryptData(uid, formattedData.contents);
     }
 
-    // Add update timestamp
+    // 업데이트 타임스탬프 추가
     formattedData.updated_at = getTimestamp();
 
     await db("plan").where({ owner: hashedUid, id: id }).update(formattedData);
 
-    // Get the updated task with decrypted content
+    // 복호화된 내용과 함께 업데이트된 작업 가져오기
     return await getTaskById(uid, id);
   } catch (error) {
-    logger.error("Error updating task:", error);
+    logger.error("작업 업데이트 오류:", error);
     throw error;
   }
 };
 
 /**
- * Delete a task
- * @param {string} uid - User ID
- * @param {number} id - Task ID
- * @returns {Promise<boolean>} - Success status
+ * 작업 삭제
+ * @param {string} uid - 사용자 ID
+ * @param {number} id - 작업 ID
+ * @returns {Promise<boolean>} - 성공 상태
  */
 const deleteTask = async (uid, id) => {
   try {
@@ -231,26 +231,26 @@ const deleteTask = async (uid, id) => {
     const task = await db("plan").where({ owner: hashedUid, id: id }).first();
 
     if (!task) {
-      throw new Error("Task not found");
+      throw new Error("작업을 찾을 수 없습니다");
     }
 
     await db("plan").where({ owner: hashedUid, id: id }).del();
 
     logger.info(
-      `Task deleted: ${hashedUid.substring(0, 8)}... - Task ID: ${id}`,
+        `작업 삭제됨: ${hashedUid.substring(0, 8)}... - 작업 ID: ${id}`,
     );
     return true;
   } catch (error) {
-    logger.error("Error deleting task:", error);
+    logger.error("작업 삭제 오류:", error);
     throw error;
   }
 };
 
 /**
- * Mark a task as completed
- * @param {string} uid - User ID
- * @param {number} id - Task ID
- * @returns {Promise<Object>} - Updated plan data
+ * 작업을 완료로 표시
+ * @param {string} uid - 사용자 ID
+ * @param {number} id - 작업 ID
+ * @returns {Promise<Object>} - 업데이트된 계획 데이터
  */
 const completeTask = async (uid, id) => {
   try {
@@ -258,7 +258,7 @@ const completeTask = async (uid, id) => {
     const task = await db("plan").where({ owner: hashedUid, id: id }).first();
 
     if (!task) {
-      throw new Error("Task not found");
+      throw new Error("작업을 찾을 수 없습니다");
     }
 
     await db("plan").where({ owner: hashedUid, id: id }).update({
@@ -266,10 +266,10 @@ const completeTask = async (uid, id) => {
       updated_at: getTimestamp(),
     });
 
-    // Get the updated task with decrypted content
+    // 복호화된 내용과 함께 업데이트된 작업 가져오기
     return await getTaskById(uid, id);
   } catch (error) {
-    logger.error("Error completing task:", error);
+    logger.error("작업 완료 처리 오류:", error);
     throw error;
   }
 };
