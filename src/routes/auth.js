@@ -10,7 +10,17 @@ const { createUser, isRegistered } = require("../models/userModel");
 const { storeUserInSession } = require("../config/sessionConfig");
 const logger = require("../utils/logger");
 
+
 const router = express.Router();
+
+router.use((req, _res, next) => {
+  const headerSid = req.get("x-session-id");
+  if (headerSid) {
+    req.cookies = req.cookies || {};
+    req.cookies["dimiplan.sid"] = headerSid;
+  }
+  next();
+});
 
 // 구글 OAuth 전략 설정
 passport.use(
@@ -157,7 +167,6 @@ router.post("/login", async (req, res) => {
       profile_image: photo,
     });
 
-    // 세션에 사용자 ID 저장
     storeUserInSession(req.session, userId);
 
     // 세션 저장 및 오류 처리
