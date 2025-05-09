@@ -54,8 +54,8 @@ const getChatRooms = async (uid) => {
   try {
     const hashedUid = hashUserId(uid);
     const rooms = await db("chat_rooms")
-        .where({ owner: hashedUid })
-        .orderBy("id", "desc");
+      .where({ owner: hashedUid })
+      .orderBy("id", "desc");
 
     // 방 이름 복호화
     return rooms.map((room) => ({
@@ -111,8 +111,8 @@ const addChatMessages = async (uid, roomId, userMessage, aiMessage) => {
 
     // 채팅 ID 카운터 업데이트
     await db("userid")
-        .where({ owner: hashedUid })
-        .update({ chatId: chatId + 2 });
+      .where({ owner: hashedUid })
+      .update({ chatId: chatId + 2 });
 
     // 응답용 평문 메시지 반환
     return [
@@ -147,8 +147,8 @@ const getChatMessages = async (uid, roomId) => {
   try {
     const hashedUid = hashUserId(uid);
     const messages = await db("chat")
-        .where({ owner: hashedUid, from: roomId })
-        .orderBy("id", "asc");
+      .where({ owner: hashedUid, from: roomId })
+      .orderBy("id", "asc");
 
     // 메시지 내용 복호화
     return messages.map((message) => ({
@@ -174,8 +174,8 @@ const deleteChatRoom = async (uid, roomId) => {
 
     // 방이 존재하는지 확인
     const room = await db("chat_rooms")
-        .where({ owner: hashedUid, id: roomId })
-        .first();
+      .where({ owner: hashedUid, id: roomId })
+      .first();
 
     if (!room) {
       throw new Error("채팅방을 찾을 수 없습니다");
@@ -191,7 +191,7 @@ const deleteChatRoom = async (uid, roomId) => {
     });
 
     logger.info(
-        `채팅방 삭제됨: ${hashedUid.substring(0, 8)}... - 방 ID: ${roomId}`,
+      `채팅방 삭제됨: ${hashedUid.substring(0, 8)}... - 방 ID: ${roomId}`,
     );
     return true;
   } catch (error) {

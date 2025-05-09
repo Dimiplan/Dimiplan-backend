@@ -26,11 +26,11 @@ const createPlanner = async (uid, name, isDaily) => {
 
     // 같은 이름의 플래너가 있는지 확인
     const existingPlanner = await db("planner")
-        .where({
-          owner: hashedUid,
-          name: encryptData(uid, name), // 암호화된 이름 확인
-        })
-        .first();
+      .where({
+        owner: hashedUid,
+        name: encryptData(uid, name), // 암호화된 이름 확인
+      })
+      .first();
 
     if (existingPlanner) {
       throw new Error("같은 이름의 플래너가 이미 존재합니다");
@@ -74,8 +74,8 @@ const getPlannerById = async (uid, id) => {
 
     // 암호화된 플래너 데이터 가져오기
     const planner = await db("planner")
-        .where({ owner: hashedUid, id: id })
-        .first();
+      .where({ owner: hashedUid, id: id })
+      .first();
 
     if (!planner) {
       return null;
@@ -105,8 +105,8 @@ const getPlanners = async (uid) => {
 
     // 암호화된 플래너 데이터 가져오기
     const planners = await db("planner")
-        .where({ owner: hashedUid })
-        .orderByRaw("isDaily ASC, id ASC");
+      .where({ owner: hashedUid })
+      .orderByRaw("isDaily ASC, id ASC");
 
     // 결과에서 이름 복호화
     return planners.map((planner) => ({
@@ -134,8 +134,8 @@ const renamePlanner = async (uid, id, newName) => {
 
     // 플래너 가져오기
     const planner = await db("planner")
-        .where({ owner: hashedUid, id: id })
-        .first();
+      .where({ owner: hashedUid, id: id })
+      .first();
 
     if (!planner) {
       throw new Error("플래너를 찾을 수 없습니다");
@@ -143,12 +143,12 @@ const renamePlanner = async (uid, id, newName) => {
 
     // 새 이름이 기존 플래너와 충돌하는지 확인
     const existingPlanner = await db("planner")
-        .where({
-          owner: hashedUid,
-          name: encryptData(uid, newName),
-        })
-        .whereNot({ id: id })
-        .first();
+      .where({
+        owner: hashedUid,
+        name: encryptData(uid, newName),
+      })
+      .whereNot({ id: id })
+      .first();
 
     if (existingPlanner) {
       throw new Error("같은 이름의 플래너가 이미 존재합니다");
@@ -156,11 +156,11 @@ const renamePlanner = async (uid, id, newName) => {
 
     // 암호화된 이름으로 업데이트
     await db("planner")
-        .where({ owner: hashedUid, id: id })
-        .update({
-          name: encryptData(uid, newName),
-          updated_at: getTimestamp(),
-        });
+      .where({ owner: hashedUid, id: id })
+      .update({
+        name: encryptData(uid, newName),
+        updated_at: getTimestamp(),
+      });
 
     // 복호화된 이름으로 업데이트된 플래너 반환
     return {
@@ -187,8 +187,8 @@ const deletePlanner = async (uid, id) => {
 
     // 플래너가 존재하는지 확인
     const planner = await db("planner")
-        .where({ owner: hashedUid, id: id })
-        .first();
+      .where({ owner: hashedUid, id: id })
+      .first();
 
     if (!planner) {
       throw new Error("플래너를 찾을 수 없습니다");
@@ -204,7 +204,7 @@ const deletePlanner = async (uid, id) => {
     });
 
     logger.info(
-        `플래너 삭제됨: ID ${id}, 사용자 ${hashedUid.substring(0, 8)}...`,
+      `플래너 삭제됨: ID ${id}, 사용자 ${hashedUid.substring(0, 8)}...`,
     );
     return true;
   } catch (error) {

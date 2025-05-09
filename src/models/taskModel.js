@@ -33,20 +33,20 @@ const formatDate = (dateString) => {
  * @returns {Promise<Object>} - 생성된 작업 데이터
  */
 const createTask = async (
-    uid,
-    contents,
-    plannerId,
-    startDate = null,
-    dueDate = null,
-    priority = 1,
+  uid,
+  contents,
+  plannerId,
+  startDate = null,
+  dueDate = null,
+  priority = 1,
 ) => {
   try {
     const hashedUid = hashUserId(uid);
 
     // 플래너가 존재하는지 확인
     const planner = await db("planner")
-        .where({ owner: hashedUid, id: plannerId })
-        .first();
+      .where({ owner: hashedUid, id: plannerId })
+      .first();
 
     if (!planner) {
       throw new Error("플래너를 찾을 수 없습니다");
@@ -126,8 +126,8 @@ const getAllTasks = async (uid) => {
   try {
     const hashedUid = hashUserId(uid);
     const tasks = await db("plan")
-        .where({ owner: hashedUid })
-        .orderByRaw("isCompleted ASC, priority DESC, id ASC");
+      .where({ owner: hashedUid })
+      .orderByRaw("isCompleted ASC, priority DESC, id ASC");
 
     // 작업 내용 복호화
     return tasks.map((task) => ({
@@ -153,16 +153,16 @@ const getTasksInPlanner = async (uid, plannerId) => {
 
     // 플래너가 존재하는지 확인
     const planner = await db("planner")
-        .where({ owner: hashedUid, id: plannerId })
-        .first();
+      .where({ owner: hashedUid, id: plannerId })
+      .first();
 
     if (!planner) {
       throw new Error("플래너를 찾을 수 없습니다");
     }
 
     const tasks = await db("plan")
-        .where({ owner: hashedUid, from: plannerId })
-        .orderByRaw("isCompleted ASC, priority DESC, id ASC");
+      .where({ owner: hashedUid, from: plannerId })
+      .orderByRaw("isCompleted ASC, priority DESC, id ASC");
 
     // 작업 내용 복호화
     return tasks.map((task) => ({
@@ -237,7 +237,7 @@ const deleteTask = async (uid, id) => {
     await db("plan").where({ owner: hashedUid, id: id }).del();
 
     logger.info(
-        `작업 삭제됨: ${hashedUid.substring(0, 8)}... - 작업 ID: ${id}`,
+      `작업 삭제됨: ${hashedUid.substring(0, 8)}... - 작업 ID: ${id}`,
     );
     return true;
   } catch (error) {

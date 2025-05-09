@@ -87,14 +87,14 @@ const getUser = async (uid) => {
     let user = users[0];
 
     user.name = isEncrypted(user.name)
-        ? decryptData(uid, user.name)
-        : user.name;
+      ? decryptData(uid, user.name)
+      : user.name;
     user.email = isEncrypted(user.email)
-        ? decryptData(uid, user.email)
-        : user.email;
+      ? decryptData(uid, user.email)
+      : user.email;
     user.profile_image = isEncrypted(user.profile_image)
-        ? decryptData(uid, user.profile_image)
-        : user.profile_image;
+      ? decryptData(uid, user.profile_image)
+      : user.profile_image;
 
     if (user != users[0]) {
       updateUser(uid, user);
