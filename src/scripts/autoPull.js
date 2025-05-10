@@ -13,5 +13,5 @@ setInterval(() => {
       `[${timestamp}] 자동 pull 상태: ${stdout.trim() || "No changes"}`,
     );
   });
-}, 60000);
+}, 30000);
 console.log(`[${new Date().toISOString()}] 자동 pull 시작됨`);
