@@ -148,7 +148,7 @@ const getTasks = async (uid, plannerId = null, isCompleted = null) => {
     }
 
     if (isCompleted !== null) {
-      query = query.where({ isCompleted: isCompleted ? 1 : 0 });
+      query = query.where({ isCompleted: isCompleted === "true" ? 1 : 0 });
     }
 
     // 정렬 적용
