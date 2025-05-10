@@ -41,7 +41,7 @@ router.post("/add", async (req, res) => {
     logger.info(`작업 추가 성공 - 사용자: ${req.userId}`);
     res.status(201).json({ message: "작업이 성공적으로 추가되었습니다" });
   } catch (error) {
-    if (error.message === "Planner not found") {
+    if (error.message === "플래너를 찾을 수 없습니다") {
       logger.warn(`작업 추가 실패: 플래너 없음 - ${req.userId}`);
       return res.status(404).json({ message: "플래너를 찾을 수 없습니다" });
     }
@@ -90,7 +90,7 @@ router.post("/update", async (req, res) => {
     logger.info(`작업 업데이트 성공 - 사용자: ${req.userId}, 작업ID: ${id}`);
     res.status(200).json({ message: "작업이 성공적으로 업데이트되었습니다" });
   } catch (error) {
-    if (error.message === "Task not found") {
+    if (error.message === "작업을 찾을 수 없습니다") {
       logger.warn(`작업 업데이트 실패: 작업 없음 - ${req.userId}`);
       return res.status(404).json({ message: "작업을 찾을 수 없습니다" });
     }
@@ -121,7 +121,7 @@ router.post("/delete", async (req, res) => {
     logger.info(`작업 삭제 성공 - 사용자: ${req.userId}, 작업ID: ${id}`);
     res.status(200).json({ message: "작업이 성공적으로 삭제되었습니다" });
   } catch (error) {
-    if (error.message === "Task not found") {
+    if (error.message === "작업을 찾을 수 없습니다") {
       logger.warn(`작업 삭제 실패: 작업 없음 - ${req.userId}`);
       return res.status(404).json({ message: "작업을 찾을 수 없습니다" });
     }
@@ -152,7 +152,7 @@ router.post("/complete", async (req, res) => {
     logger.info(`작업 완료 성공 - 사용자: ${req.userId}, 작업ID: ${id}`);
     res.status(200).json({ message: "작업이 성공적으로 완료되었습니다" });
   } catch (error) {
-    if (error.message === "Task not found") {
+    if (error.message === "작업을 찾을 수 없습니다") {
       logger.warn(`작업 완료 실패: 작업 없음 - ${req.userId}`);
       return res.status(404).json({ message: "작업을 찾을 수 없습니다" });
     }
@@ -184,7 +184,7 @@ router.get("/get", async (req, res) => {
     );
     res.status(200).json(tasks);
   } catch (error) {
-    if (error.message === "Planner not found") {
+    if (error.message === "플래너를 찾을 수 없습니다") {
       logger.warn(`작업 조회 실패: 플래너 없음 - ${req.userId}`);
       return res.status(404).json({ message: "플래너를 찾을 수 없습니다" });
     }
