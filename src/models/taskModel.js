@@ -127,7 +127,7 @@ const getTaskById = async (uid, id) => {
 const getTasks = async (uid, plannerId = null, isCompleted = null) => {
   try {
     const hashedUid = hashUserId(uid);
-    
+
     // 특정 플래너의 작업을 요청한 경우, 플래너가 존재하는지 확인
     if (plannerId !== null) {
       const planner = await db("planner")
@@ -141,7 +141,7 @@ const getTasks = async (uid, plannerId = null, isCompleted = null) => {
 
     // 쿼리 구성
     let query = db("plan").where({ owner: hashedUid });
-    
+
     // 특정 플래너의 작업만 필터링
     if (plannerId !== null) {
       query = query.where({ from: plannerId });
@@ -150,9 +150,11 @@ const getTasks = async (uid, plannerId = null, isCompleted = null) => {
     if (isCompleted !== null) {
       query = query.where({ isCompleted: isCompleted ? 1 : 0 });
     }
-    
+
     // 정렬 적용
-    const tasks = await query.orderByRaw("isCompleted ASC, priority DESC, id ASC");
+    const tasks = await query.orderByRaw(
+      "isCompleted ASC, priority DESC, id ASC",
+    );
 
     // 작업 내용 복호화
     return tasks.map((task) => ({
@@ -161,7 +163,9 @@ const getTasks = async (uid, plannerId = null, isCompleted = null) => {
       contents: decryptData(uid, task.contents),
     }));
   } catch (error) {
-    const errorMsg = plannerId ? "플래너의 작업 가져오기 오류:" : "모든 작업 가져오기 오류:";
+    const errorMsg = plannerId
+      ? "플래너의 작업 가져오기 오류:"
+      : "모든 작업 가져오기 오류:";
     logger.error(errorMsg, error);
     throw error;
   }
