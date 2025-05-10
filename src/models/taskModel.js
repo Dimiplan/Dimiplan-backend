@@ -118,51 +118,41 @@ const getTaskById = async (uid, id) => {
 };
 
 /**
- * 복호화된 내용과 함께 사용자의 모든 작업 가져오기
+ * 복호화된 내용과 함께 작업 가져오기 (특정 플래너 또는 전체)
  * @param {string} uid - 사용자 ID
+ * @param {number|null} plannerId - 플래너 ID (없으면 모든 작업 가져옴)
+ * @param {boolean|null} isCompleted - 완료 상태 (null이면 모든 상태 가져옴)
  * @returns {Promise<Array>} - 작업 객체 배열
  */
-const getAllTasks = async (uid) => {
+const getTasks = async (uid, plannerId = null, isCompleted = null) => {
   try {
     const hashedUid = hashUserId(uid);
-    const tasks = await db("plan")
-      .where({ owner: hashedUid })
-      .orderByRaw("isCompleted ASC, priority DESC, id ASC");
+    
+    // 특정 플래너의 작업을 요청한 경우, 플래너가 존재하는지 확인
+    if (plannerId !== null) {
+      const planner = await db("planner")
+        .where({ owner: hashedUid, id: plannerId })
+        .first();
 
-    // 작업 내용 복호화
-    return tasks.map((task) => ({
-      ...task,
-      owner: uid, // 애플리케이션 로직을 위해 원본 ID 사용
-      contents: decryptData(uid, task.contents),
-    }));
-  } catch (error) {
-    logger.error("모든 작업 가져오기 오류:", error);
-    throw error;
-  }
-};
-
-/**
- * 복호화된 내용과 함께 플래너의 모든 작업 가져오기
- * @param {string} uid - 사용자 ID
- * @param {number} plannerId - 플래너 ID
- * @returns {Promise<Array>} - 작업 객체 배열
- */
-const getTasksInPlanner = async (uid, plannerId) => {
-  try {
-    const hashedUid = hashUserId(uid);
-
-    // 플래너가 존재하는지 확인
-    const planner = await db("planner")
-      .where({ owner: hashedUid, id: plannerId })
-      .first();
-
-    if (!planner) {
-      throw new Error("플래너를 찾을 수 없습니다");
+      if (!planner) {
+        throw new Error("플래너를 찾을 수 없습니다");
+      }
     }
 
-    const tasks = await db("plan")
-      .where({ owner: hashedUid, from: plannerId })
-      .orderByRaw("isCompleted ASC, priority DESC, id ASC");
+    // 쿼리 구성
+    let query = db("plan").where({ owner: hashedUid });
+    
+    // 특정 플래너의 작업만 필터링
+    if (plannerId !== null) {
+      query = query.where({ from: plannerId });
+    }
+
+    if (isCompleted !== null) {
+      query = query.where({ isCompleted: isCompleted ? 1 : 0 });
+    }
+    
+    // 정렬 적용
+    const tasks = await query.orderByRaw("isCompleted ASC, priority DESC, id ASC");
 
     // 작업 내용 복호화
     return tasks.map((task) => ({
@@ -171,7 +161,8 @@ const getTasksInPlanner = async (uid, plannerId) => {
       contents: decryptData(uid, task.contents),
     }));
   } catch (error) {
-    logger.error("플래너의 작업 가져오기 오류:", error);
+    const errorMsg = plannerId ? "플래너의 작업 가져오기 오류:" : "모든 작업 가져오기 오류:";
+    logger.error(errorMsg, error);
     throw error;
   }
 };
@@ -277,8 +268,7 @@ const completeTask = async (uid, id) => {
 module.exports = {
   createTask,
   getTaskById,
-  getAllTasks,
-  getTasksInPlanner,
+  getTasks,
   updateTask,
   deleteTask,
   completeTask,

@@ -6,8 +6,7 @@ const express = require("express");
 const { isAuthenticated, isUserRegistered } = require("../../middleware/auth");
 const {
   createTask,
-  getAllTasks,
-  getTasksInPlanner,
+  getTasks,
   updateTask,
   deleteTask,
   completeTask,
@@ -170,26 +169,18 @@ router.post("/complete", async (req, res) => {
  */
 router.get("/get", async (req, res) => {
   try {
-    const { id } = req.query;
-
-    if (!id) {
-      // 전체 작업 조회
-      const tasks = await getAllTasks(req.userId);
-
-      if (tasks.length === 0) {
-        logger.warn(`작업 조회 실패: 작업 없음 - ${req.userId}`);
-        return res.status(404).json({ message: "작업을 찾을 수 없습니다" });
-      }
-
-      logger.info(`전체 작업 조회 성공 - 사용자: ${req.userId}`);
-      return res.status(200).json(tasks);
-    }
+    const { id, isCompleted } = req.query;
 
     // 특정 플래너의 작업 조회
-    const tasks = await getTasksInPlanner(req.userId, id);
+    const tasks = await getTasks(req.userId, id, isCompleted);
+
+    if (tasks.length === 0) {
+      logger.warn(`작업 조회 실패: 작업 없음 - ${req.userId}`);
+      return res.status(404).json({ message: "작업을 찾을 수 없습니다" });
+    }
 
     logger.info(
-      `플래너 작업 조회 성공 - 사용자: ${req.userId}, 플래너ID: ${id}`,
+      `작업 조회 성공 - 사용자: ${req.userId}, 플래너ID: ${id}, isCompleted: ${isCompleted}`,
     );
     res.status(200).json(tasks);
   } catch (error) {
