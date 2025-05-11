@@ -6,6 +6,7 @@ const { generateSecureToken } = require("../utils/cryptoUtils");
 const logger = require("../utils/logger");
 const { RedisStore } = require("connect-redis");
 const { createClient } = require("redis");
+const { promisify } = require("util");
 
 require("./dotenv"); // 환경 변수 로드
 
@@ -33,6 +34,10 @@ const initRedisClient = async () => {
   redisClient.on("connect", () => {
     logger.info("Redis 서버에 연결되었습니다");
   });
+
+  redisClient.getAsync = promisify(redisClient.get).bind(redisClient);
+  redisClient.setAsync = promisify(redisClient.set).bind(redisClient);
+  redisClient.delAsync = promisify(redisClient.del).bind(redisClient);
 
   // Redis 연결
   await redisClient
@@ -105,5 +110,5 @@ module.exports = {
   getSessionConfig,
   getUserFromSession,
   closeRedisConnection,
-  redisStore,
+  redisClient
 };
