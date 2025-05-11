@@ -5,7 +5,7 @@
 const { isRegistered } = require("../models/userModel");
 const logger = require("../utils/logger");
 const { hashUserId } = require("../utils/cryptoUtils");
-const { getUserFromSession, redisClient } = require("../config/sessionConfig");
+const { getUserFromSession, redisStore } = require("../config/sessionConfig");
 
 /**
  * 사용자 인증 여부를 확인하는 미들웨어
@@ -17,8 +17,8 @@ const isAuthenticated = (req, res, next) => {
     if (sessionIdHeader) {
       // Redis에서 직접 세션 가져오기
       const sessionKey = `dimiplan:sess:${sessionIdHeader}`; // Redis 세션 키 포맷 (일반적인 형태)
-
-      redisClient.get(sessionKey, (err, sessionData) => {
+      
+      redisStore.get(sessionKey, (err, sessionData) => {
         if (err) {
           logger.error("Redis 세션 조회 오류:", err);
           return res.status(500).json({ message: "세션 조회 오류" });
