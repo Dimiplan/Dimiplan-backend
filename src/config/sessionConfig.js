@@ -22,7 +22,7 @@ const getSessionConfig = () => {
   return {
     secret: SESSION_SECRET, // 세션 암호화 비밀 키
     resave: false, // 세션 변경되지 않아도 다시 저장하지 않음
-    saveUninitialized: false, // 초기화되지 않은 세션 저장하지 않음
+    saveUninitialized: true, // 초기화되지 않은 세션 저장
     name: "dimiplan.sid", // 세션 쿠키 이름
     cookie: {
       httpOnly: true, // 클라이언트 측 JavaScript 접근 방지

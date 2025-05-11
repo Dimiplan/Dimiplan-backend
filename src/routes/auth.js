@@ -188,33 +188,43 @@ router.post("/login", (req, res, next) => {
       return res.status(400).json({ message: info.message || "인증 실패" });
     }
 
-    req.login(user, async (err) => {
-      if (err) {
-        logger.error("세션 저장 오류:", err);
+    req.login(user, (loginErr) => {
+      if (loginErr) {
+        logger.error("세션 저장 오류:", loginErr);
         return res.status(500).json({ message: "세션 오류" });
       }
 
-      try {
-        // 세션 저장 및 오류 처리
-        req.session.save((err) => {
-          if (err) {
-            logger.error("세션 저장 중 오류:", err);
-            return next(err);
+      // Promise로 세션 저장을 명시적으로 기다림
+      new Promise((resolve, reject) => {
+        req.session.save((saveErr) => {
+          if (saveErr) {
+            logger.error("세션 저장 중 오류:", saveErr);
+            reject(saveErr);
+          } else {
+            resolve();
           }
-          next();
         });
-        // 세션 ID를 응답 헤더와 본문에 포함
-        res.setHeader("x-session-id", req.sessionID);
-
-        // 모바일 앱을 위한 성공 응답
-        return res.status(200).json({
-          message: "로그인 성공",
-          sessionId: req.sessionID,
+      })
+        .then(() => {
+          // 세션이 성공적으로 저장된 후에만 응답 전송
+          logger.verbose(`세션 생성 성공: ${req.sessionID}`);
+          
+          // 세션 ID를 응답 헤더와 본문에 포함
+          res.setHeader("x-session-id", req.sessionID);
+          
+          // 모바일 앱을 위한 성공 응답
+          return res.status(200).json({
+            message: "로그인 성공",
+            sessionId: req.sessionID,
+            user: {
+              id: user.id,
+            },
+          });
+        })
+        .catch((error) => {
+          logger.error("세션 처리 중 오류:", error);
+          return res.status(500).json({ message: "세션 오류" });
         });
-      } catch (error) {
-        logger.error("세션 저장 오류:", error);
-        return res.status(500).json({ message: "세션 오류" });
-      }
     });
   })(req, res, next);
 });
