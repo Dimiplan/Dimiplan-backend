@@ -110,5 +110,5 @@ module.exports = {
   getSessionConfig,
   getUserFromSession,
   closeRedisConnection,
-  redisClient
+  redisClient,
 };
