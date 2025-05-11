@@ -203,6 +203,12 @@ router.post("/login", (req, res, next) => {
           }
           next();
         });
+        req.session.regenerate((err) => {
+          if (err) {
+            logger.error("세션 재생성 오류:", err);
+            return res.status(500).json({ message: "세션 오류" });
+          }
+        });
         // 세션 ID를 응답 헤더와 본문에 포함
         res.setHeader("x-session-id", req.sessionID);
 
