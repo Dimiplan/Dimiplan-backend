@@ -26,9 +26,7 @@ router.get("/getRoomList", async (req, res) => {
   try {
     const roomData = await getChatRooms(req.userId);
 
-    logger.verbose(
-      `채팅방 목록 조회 성공, 채팅방 수: ${roomData.length}`,
-    );
+    logger.verbose(`채팅방 목록 조회 성공, 채팅방 수: ${roomData.length}`);
     res.status(200).json({ roomData });
   } catch (error) {
     logger.error(`채팅방 목록 조회 중 오류`, error);
@@ -119,7 +117,9 @@ const autoAiRequest = async (req, res) => {
     // 메시지 데이터베이스에 저장
     await addChatMessages(req.userId, room, prompt, aiResponseText);
 
-    logger.verbose(`AI 응답 생성 성공 - 사용자: ${req.userId}, 채팅방ID: ${room}`);
+    logger.verbose(
+      `AI 응답 생성 성공 - 사용자: ${req.userId}, 채팅방ID: ${room}`,
+    );
     res.status(200).json({ message: aiResponseText });
   } catch (error) {
     logger.error(`AI 응답 생성 중 오류`, error);

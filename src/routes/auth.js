@@ -28,8 +28,7 @@ passport.use(
     {
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL:
-        process.env.GOOGLE_CALLBACK_URL,
+      callbackURL: process.env.GOOGLE_CALLBACK_URL,
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
@@ -58,34 +57,32 @@ passport.use(
 
 // 모바일 로그인을 위한 커스텀 전략 설정
 passport.use(
-  'mobile',
-  new LocalStrategy(
-    async function(req, done) {
-      try {
-        const { userId, email, photo, name } = req.body;
+  "mobile",
+  new LocalStrategy(async function (req, done) {
+    try {
+      const { userId, email, photo, name } = req.body;
 
-        if (!userId) {
-          return done(null, false, { message: "사용자 ID 필요" });
-        }
-
-        // 사용자 생성 (userModel에서 암호화)
-        await createUser({
-          id: userId,
-          name: name,
-          grade: null,
-          class: null,
-          email: email,
-          profile_image: photo,
-        });
-
-        // 인증 성공: 사용자 정보 반환
-        return done(null, { id: userId });
-      } catch (error) {
-        logger.error("모바일 인증 전략 오류:", error);
-        return done(error);
+      if (!userId) {
+        return done(null, false, { message: "사용자 ID 필요" });
       }
+
+      // 사용자 생성 (userModel에서 암호화)
+      await createUser({
+        id: userId,
+        name: name,
+        grade: null,
+        class: null,
+        email: email,
+        profile_image: photo,
+      });
+
+      // 인증 성공: 사용자 정보 반환
+      return done(null, { id: userId });
+    } catch (error) {
+      logger.error("모바일 인증 전략 오류:", error);
+      return done(error);
     }
-  )
+  }),
 );
 
 // 사용자 세션 직렬화 및 역직렬화
@@ -181,16 +178,16 @@ router.get("/google/callback/failure", (req, res) => {
  * 사용자 생성 및 세션 관리 (Passport 커스텀 전략 사용)
  */
 router.post("/login", (req, res, next) => {
-  passport.authenticate('mobile', (err, user, info) => {
+  passport.authenticate("mobile", (err, user, info) => {
     if (err) {
       logger.error("모바일 로그인 오류:", err);
       return res.status(500).json({ message: "서버 오류" });
     }
-    
+
     if (!user) {
       return res.status(400).json({ message: info.message || "인증 실패" });
     }
-    
+
     req.login(user, async (err) => {
       if (err) {
         logger.error("세션 저장 오류:", err);
