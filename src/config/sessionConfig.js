@@ -1,9 +1,11 @@
 /**
  * 세션 구성 모듈
- * 안전한 세션 설정 및 관리를 위한 유틸리티 제공
+ * 안전한 세션 설정 및 Redis 기반 세션 관리를 위한 유틸리티 제공
  */
 const { generateSecureToken } = require("../utils/cryptoUtils");
 const logger = require("../utils/logger");
+const RedisStore = require("connect-redis").default;
+const { createClient } = require("redis");
 
 require("./dotenv"); // 환경 변수 로드
 
@@ -13,17 +15,65 @@ const SESSION_SECRET = process.env.SESSION_SECRET || generateSecureToken();
 // 세션 최대 유지 시간 (기본값: 24시간, 밀리초 단위)
 const SESSION_MAX_AGE = parseInt(process.env.SESSION_MAX_AGE || 86400000, 10);
 
+// Redis 클라이언트 생성
+let redisClient;
+let redisStore;
+
 /**
- * 메모리 기반 세션 저장소 구성
- * 주의: 프로덕션 환경에서는 Redis 등 분산 세션 저장소 고려
+ * Redis 클라이언트 초기화
+ * @returns {Promise<Object>} Redis 클라이언트 객체
+ */
+const initRedisClient = async () => {
+  if (redisClient) return redisClient;
+  
+  // Redis 연결 설정
+  redisClient = createClient({
+    url: process.env.REDIS_URL || 'redis://localhost:6379',
+    password: process.env.REDIS_PASSWORD || undefined,
+    legacyMode: false
+  });
+  
+  redisClient.on('error', (err) => {
+    logger.error('Redis 클라이언트 오류:', err);
+  });
+  
+  redisClient.on('connect', () => {
+    logger.info('Redis 서버에 연결되었습니다');
+  });
+  
+  // Redis 연결
+  await redisClient.connect().catch((err) => {
+    logger.error('Redis 연결 실패:', err);
+    throw err;
+  });
+  
+  // Redis 세션 저장소 생성
+  redisStore = new RedisStore({ 
+    client: redisClient,
+    prefix: 'dimiplan:sess:'
+  });
+  
+  return redisClient;
+};
+
+/**
+ * Redis 기반 세션 저장소 구성
  * @returns {Object} 세션 구성 옵션 객체
  */
-const getSessionConfig = () => {
+const getSessionConfig = async () => {
+  // Redis 클라이언트 초기화
+  await initRedisClient().catch(err => {
+    logger.error('Redis 초기화 실패, 메모리 세션으로 폴백합니다:', err);
+    // Redis 사용 불가 시 기본 메모리 세션 사용
+    return null;
+  });
+  
   return {
     secret: SESSION_SECRET, // 세션 암호화 비밀 키
     resave: false, // 세션 변경되지 않아도 다시 저장하지 않음
     saveUninitialized: false, // 초기화되지 않은 세션 저장하지 않음
     name: "dimiplan.sid", // 세션 쿠키 이름
+    store: redisStore, // Redis 세션 저장소
     cookie: {
       httpOnly: true, // 클라이언트 측 JavaScript 접근 방지
       secure: true, // HTTPS에서만 쿠키 전송
@@ -56,8 +106,19 @@ const getUserFromSession = (session) => {
   return session?.passport?.user?.id || null;
 };
 
+/**
+ * 애플리케이션 종료 시 Redis 연결 해제
+ */
+const closeRedisConnection = async () => {
+  if (redisClient) {
+    await redisClient.quit();
+    logger.info('Redis 연결이 종료되었습니다');
+  }
+};
+
 module.exports = {
   getSessionConfig,
   storeUserInSession,
   getUserFromSession,
+  closeRedisConnection,
 };
