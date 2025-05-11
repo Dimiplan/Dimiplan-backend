@@ -87,7 +87,7 @@ app.use(express.urlencoded({ extended: true, limit: "1mb" })); // URL 인코딩�
 const initializeSession = async (app) => {
   const config = await getSessionConfig();
   app.use(session(config));
-  
+
   // Passport 초기화 (세션 설정 후)
   app.use(passport.initialize());
   app.use(passport.session());
@@ -103,35 +103,35 @@ app.use((req, res, next) => {
 const initializeApp = async () => {
   // 앱 기본 설정
   // ...
-  
+
   // 세션 초기화
   await initializeSession(app);
-  
+
   // 라우트 설정
   app.use("/auth", authRouter); // 인증 관련 라우터
   app.use("/api", apiRouter); // API 관련 라우터
-  
+
   // 전역 에러 핸들링 미들웨어
   app.use((err, req, res, next) => {
     logger.error("애플리케이션 오류:", err);
     res.status(500).json({ message: "내부 서버 오류" });
   });
-  
+
   return app;
 };
 
 // 앱 시작
 let server;
 initializeApp()
-  .then(app => {
+  .then((app) => {
     const PORT = process.env.PORT;
     server = https.createServer(sslOptions, app);
     server.listen(PORT, () => {
       logger.info(`서버가 ${PORT} 포트에서 실행 중입니다`);
     });
   })
-  .catch(err => {
-    logger.error('앱 초기화 오류:', err);
+  .catch((err) => {
+    logger.error("앱 초기화 오류:", err);
     process.exit(1);
   });
 
