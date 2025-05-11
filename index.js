@@ -12,7 +12,6 @@ const fs = require("fs");
 
 require("./src/config/dotenv");
 
-
 const sslOptions = {
   key: fs.readFileSync("./keys/private.pem"),
   cert: fs.readFileSync("./keys/public.pem"),
