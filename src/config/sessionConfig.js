@@ -4,7 +4,7 @@
  */
 const { generateSecureToken } = require("../utils/cryptoUtils");
 const logger = require("../utils/logger");
-const RedisStore = require("connect-redis").default;
+const RedisStore = require("connect-redis");
 const { createClient } = require("redis");
 
 require("./dotenv"); // 환경 변수 로드
