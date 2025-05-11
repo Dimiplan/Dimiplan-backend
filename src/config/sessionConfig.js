@@ -38,13 +38,14 @@ const initRedisClient = async () => {
   await redisClient.connect().catch((err) => {
     logger.error("Redis 연결 실패:", err);
     throw err;
-  });
-
-  // Redis 세션 저장소 생성
-  redisStore = new RedisStore({
-    client: redisClient,
-    ttl: 86400, // Redis에 저장되는 세션의 TTL (초 단위)
-    prefix: "dimiplan:sess:",
+  }).then(() => {
+    logger.info("Redis 서버에 연결되었습니다");
+    // Redis 세션 저장소 초기화
+    redisStore = new RedisStore({
+      client: redisClient,
+      ttl: 86400, // Redis에 저장되는 세션의 TTL (초 단위)
+      prefix: "dimiplan:sess:",
+    });
   });
 
   return redisClient;
