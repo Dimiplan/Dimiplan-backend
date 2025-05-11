@@ -113,20 +113,12 @@ router.post("/auto", async (req, res) => {
     }
 
     // AI 응답 생성
-    const response = await generateAutoResponse(prompt);
-
-    // AI 응답 텍스트 추출
-    const aiResponseText =
-      response.choices[0].message.content ||
-      "죄송합니다. 응답을 생성하는 데 문제가 발생했습니다. 다시 시도해 주세요.";
-
-    // 메시지 데이터베이스에 저장
-    await addChatMessages(req.userId, room, prompt, aiResponseText);
+    const response = await generateAutoResponse(req.userId, prompt, room);
 
     logger.verbose(
       `AI 응답 생성 성공 - 사용자: ${req.userId}, 채팅방ID: ${room}`,
     );
-    res.status(200).json({ message: aiResponseText });
+    res.status(200).json({ message: response });
   } catch (error) {
     logger.error(`AI 응답 생성 중 오류`, error);
     res.status(500).json({ message: "서버 내부 오류" });
@@ -158,20 +150,12 @@ router.post("/custom", async (req, res) => {
     }
 
     // AI 응답 생성
-    const response = await generateCustomResponse(prompt, model);
-
-    // AI 응답 텍스트 추출
-    const aiResponseText =
-      response.choices[0].message.content ||
-      "죄송합니다. 응답을 생성하는 데 문제가 발생했습니다. 다시 시도해 주세요.";
-
-    // 메시지 데이터베이스에 저장
-    await addChatMessages(req.userId, room, prompt, aiResponseText);
+    const response = await generateCustomResponse(req.userId, prompt, model, room);
 
     logger.verbose(
       `AI 응답 생성 성공 - 사용자: ${req.userId}, 채팅방ID: ${room}`,
     );
-    res.status(200).json({ message: aiResponseText });
+    res.status(200).json({ message: response });
   } catch (error) {
     logger.error(`AI 응답 생성 중 오류`, error);
     res.status(500).json({ message: "서버 내부 오류" });

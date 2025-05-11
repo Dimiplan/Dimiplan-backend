@@ -6,6 +6,7 @@
 const OpenAI = require("openai");
 require("../config/dotenv"); // 환경 변수 로드
 const logger = require("../utils/logger");
+const { addChatMessages } = require("../models/chatModel");
 
 // OpenRouter API 클라이언트 초기화
 const openRouter = new OpenAI({
@@ -34,7 +35,7 @@ const PAID_MODELS = {
  * @param {string} prompt - 사용자 입력 프롬프트
  * @returns {Promise<Object>} AI 응답 객체
  */
-const generateAutoResponse = async (prompt) => {
+const generateAutoResponse = async (userId, prompt, room) => {
   try {
     // 모델 선택 로직
     const modelSelection = await openRouter.chat.completions
@@ -85,7 +86,16 @@ const generateAutoResponse = async (prompt) => {
       });
 
     logger.info("AI 응답 생성 완료");
-    return response;
+
+    // AI 응답 텍스트 추출
+    const aiResponseText =
+      response.choices[0].message.content ||
+      "죄송합니다. 응답을 생성하는 데 문제가 발생했습니다. 다시 시도해 주세요.";
+
+    // 메시지 데이터베이스에 저장
+    await addChatMessages(userId, room, prompt, aiResponseText);
+
+    return aiResponseText;
   } catch (error) {
     logger.error("AI 응답 생성 중 에러:", error);
     throw error;
@@ -100,7 +110,7 @@ const generateAutoResponse = async (prompt) => {
  * @param {string} model - 사용자가 선택한 AI 모델
  * @returns {Promise<Object>} AI 응답 객체
  */
-const generateCustomResponse = async (prompt, model) => {
+const generateCustomResponse = async (userId, prompt, model, room) => {
   try {
     if (model in FREE_MODELS === false) {
       logger.warn(`선택된 모델이 모델 목록에 없습니다: ${model}`);
@@ -124,7 +134,16 @@ const generateCustomResponse = async (prompt, model) => {
       });
 
     logger.info("AI 응답 생성 완료");
-    return response;
+
+     // AI 응답 텍스트 추출
+     const aiResponseText =
+      response.choices[0].message.content ||
+      "죄송합니다. 응답을 생성하는 데 문제가 발생했습니다. 다시 시도해 주세요.";
+
+    // 메시지 데이터베이스에 저장
+    await addChatMessages(userId, room, prompt, aiResponseText);
+
+    return aiResponseText;
   } catch (error) {
     logger.error("AI 응답 생성 중 에러:", error);
     throw error;
