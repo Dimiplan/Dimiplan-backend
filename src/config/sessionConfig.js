@@ -50,7 +50,8 @@ const initRedisClient = async () => {
   // Redis 세션 저장소 생성
   redisStore = new RedisStore({
     client: redisClient,
-    prefix: "dimiplan:sess:",
+    ttl: SESSION_MAX_AGE / 1000, // Redis에 저장되는 세션의 TTL (초 단위)
+    prefix: 'dimiplan:sess:'
   });
 
   return redisClient;
