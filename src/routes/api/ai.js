@@ -96,7 +96,7 @@ router.get("/getChatInRoom", async (req, res) => {
  * @desc AI 자동 응답 생성
  * 사용자가 입력한 프롬프트에 대한 AI 응답 생성 및 메시지 저장
  * @param {string} prompt - 사용자가 입력한 프롬프트
- * @param {string} room - 채팅방 ID
+ * @param {string | undefined} room - 채팅방 ID (미입력시 자동 생성)
  * @returns {string} message - AI 응답 메시지
  */
 router.post("/auto", async (req, res) => {
@@ -127,7 +127,7 @@ router.post("/auto", async (req, res) => {
  * @desc 수동 AI 모델 선택 후 응답 생성
  * 사용자가 입력한 프롬프트에 대한 AI 응답 생성 및 메시지 저장
  * @param {string} prompt - 사용자가 입력한 프롬프트
- * @param {string} room - 채팅방 ID
+ * @param {string | undefined} room - 채팅방 ID (미입력시 자동 생성)
  * @param {string} model - 사용자가 선택한 AI 모델
  * @returns {string} message - AI 응답 메시지
  */
