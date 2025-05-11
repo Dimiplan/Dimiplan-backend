@@ -92,6 +92,46 @@ const generateAutoResponse = async (prompt) => {
   }
 };
 
+/**
+ * 수동 AI 모델로 응답 생성
+ * 프롬프트의 복잡성에 따라 적절한 AI 모델 선택
+ *
+ * @param {string} prompt - 사용자 입력 프롬프트
+ * @param {string} model - 사용자가 선택한 AI 모델
+ * @returns {Promise<Object>} AI 응답 객체
+ */
+const generateCustomResponse = async (prompt, model) => {
+  try {
+    if (model in FREE_MODELS === false) {
+      logger.warn(`선택된 모델이 모델 목록에 없습니다: ${model}`);
+      throw new Error("선택된 모델이 모델 목록에 없습니다");
+    }
+    // 선택된 모델로 응답 생성
+    const response = await openRouter.chat.completions
+      .create({
+        model: model,
+        messages: [
+          {
+            role: "system",
+            content: "불필요한 경우 1000 토큰 이내로 응답하세요",
+          },
+          { role: "user", content: prompt },
+        ],
+      })
+      .catch((error) => {
+        logger.error(`응답 생성 중 오류: ${error.status}, ${error.name}`);
+        throw error;
+      });
+
+    logger.info("AI 응답 생성 완료");
+    return response;
+  } catch (error) {
+    logger.error("AI 응답 생성 중 에러:", error);
+    throw error;
+  }
+};
+
 module.exports = {
   generateAutoResponse,
+  generateCustomResponse
 };

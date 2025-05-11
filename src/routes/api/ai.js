@@ -10,7 +10,7 @@ const {
   addChatMessages,
   getChatMessages,
 } = require("../../models/chatModel");
-const { generateAutoResponse } = require("../../services/aiService");
+const { generateAutoResponse, generateCustomResponse } = require("../../services/aiService");
 const logger = require("../../utils/logger");
 
 const router = express.Router();
@@ -87,11 +87,14 @@ router.get("/getChatInRoom", async (req, res) => {
 });
 
 /**
- * 자동 AI 응답 생성 및 채팅 메시지 저장 헬퍼 함수
- * @param {Object} req - Express 요청 객체
- * @param {Object} res - Express 응답 객체
+ * @route POST /api/ai/auto
+ * @desc AI 자동 응답 생성
+ * 사용자가 입력한 프롬프트에 대한 AI 응답 생성 및 메시지 저장
+ * @param {string} prompt - 사용자가 입력한 프롬프트
+ * @param {string} room - 채팅방 ID
+ * @returns {string} message - AI 응답 메시지
  */
-const autoAiRequest = async (req, res) => {
+router.post("/auto", async (req, res) => {
   try {
     const { prompt, room } = req.body;
 
@@ -125,13 +128,50 @@ const autoAiRequest = async (req, res) => {
     logger.error(`AI 응답 생성 중 오류`, error);
     res.status(500).json({ message: "서버 내부 오류" });
   }
-};
+});
 
-// 호환성을 위해 여러 엔드포인트에 동일한 자동 AI 응답 생성 함수 적용
-router.post("/auto", autoAiRequest);
-router.post("/gpt4o_m", autoAiRequest);
-router.post("/gpt4o", autoAiRequest);
-router.post("/gpt41", autoAiRequest);
-router.post("/o4-mini", autoAiRequest);
+/**
+ * @route POST /api/ai/custom
+ * @desc 수동 AI 모델 선택 후 응답 생성
+ * 사용자가 입력한 프롬프트에 대한 AI 응답 생성 및 메시지 저장
+ * @param {string} prompt - 사용자가 입력한 프롬프트
+ * @param {string} room - 채팅방 ID
+ * @returns {string} message - AI 응답 메시지
+ */
+router.post("/custom", async (req, res) => {
+  try {
+    const { prompt, room, model } = req.body;
+
+    // 필수 필드 검증
+    if (!prompt) {
+      logger.warn(`AI 응답 생성 실패: 프롬프트 누락`);
+      return res.status(400).json({ message: "프롬프트는 필수입니다" });
+    }
+
+    if (!room) {
+      logger.warn(`AI 응답 생성 실패: 채팅방 ID 누락`);
+      return res.status(400).json({ message: "채팅방 ID는 필수입니다" });
+    }
+
+    // AI 응답 생성
+    const response = await generateCustomResponse(prompt, model);
+
+    // AI 응답 텍스트 추출
+    const aiResponseText =
+      response.choices[0].message.content ||
+      "죄송합니다. 응답을 생성하는 데 문제가 발생했습니다. 다시 시도해 주세요.";
+
+    // 메시지 데이터베이스에 저장
+    await addChatMessages(req.userId, room, prompt, aiResponseText);
+
+    logger.verbose(
+      `AI 응답 생성 성공 - 사용자: ${req.userId}, 채팅방ID: ${room}`,
+    );
+    res.status(200).json({ message: aiResponseText });
+  } catch (error) {
+    logger.error(`AI 응답 생성 중 오류`, error);
+    res.status(500).json({ message: "서버 내부 오류" });
+  }
+});
 
 module.exports = router;
