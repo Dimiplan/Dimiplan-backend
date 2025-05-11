@@ -6,17 +6,7 @@ const passport = require("passport");
 const helmet = require("helmet");
 const { getSessionConfig } = require("./src/config/sessionConfig");
 const logger = require("./src/utils/logger");
-
-const https = require("https");
-const fs = require("fs");
-
 require("./src/config/dotenv");
-
-
-const sslOptions = {
-  key: fs.readFileSync("./keys/private.pem"),
-  cert: fs.readFileSync("./keys/public.pem"),
-};
 
 // 라우터 모듈 불러오기
 const authRouter = require("./src/routes/auth");
@@ -108,10 +98,8 @@ app.use((err, req, res, next) => {
 });
 
 // 서버 시작
-const PORT = process.env.PORT;
-
-const server = https.createServer(sslOptions, app);
-server.listen(PORT, () => {
+const PORT = process.env.PORT || 8080;
+app.listen(PORT, () => {
   logger.info(`서버가 ${PORT} 포트에서 실행 중입니다`);
 });
 
@@ -119,10 +107,7 @@ server.listen(PORT, () => {
 process.on("SIGTERM", () => {
   logger.info("SIGTERM 신호 수신, 안전하게 서버 종료 중");
   // 데이터베이스 연결 종료 등 정리 작업 수행
-  server.close(() => {
-    logger.info("서버가 안전하게 종료되었습니다");
-    process.exit(0);
-  });
+  process.exit(0);
 });
 
 module.exports = app;
