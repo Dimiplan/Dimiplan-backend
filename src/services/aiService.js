@@ -6,7 +6,7 @@
 const OpenAI = require("openai");
 require("../config/dotenv"); // 환경 변수 로드
 const logger = require("../utils/logger");
-const { addChatMessages } = require("../models/chatModel");
+const { addChatMessages, createChatRoom } = require("../models/chatModel");
 
 // OpenRouter API 클라이언트 초기화
 const openRouter = new OpenAI({
@@ -45,12 +45,12 @@ const generateAutoResponse = async (userId, prompt, room) => {
           {
             role: "system",
             content:
-              "다음 프롬프트의 복잡성을 평가하고 적절한 모델을 선택하세요:\n" +
+              !room ? "다음 프롬프트의 복잡성을 평가하고 적절한 모델을 선택하며, 프롬프트를 요약하여 채팅방 이름을 작성하세요:\n" : "다음 프롬프트의 복잡성을 평가하고 적절한 모델을 선택하세요:\n" +
               "- 단순한 질문: 0 (작은 모델)\n" +
               "- 복잡한 추론 필요: 1 (중간 모델)\n" +
               "- 프로그래밍 또는 심화 지식 필요: 2 (고급 모델)\n" +
               "- 광범위한 정보 및 큰 모델 필요: 3 (대규모 모델)\n" +
-              "결과는 {model: X} 형식으로 반환",
+              !room ? "결과는 {model: n, title: t} 형식으로 반환" : "결과는 {model: n} 형식으로 반환",
           },
           { role: "user", content: prompt },
         ],
@@ -60,10 +60,9 @@ const generateAutoResponse = async (userId, prompt, room) => {
         throw error;
       });
 
-    // 선택된 모델 인덱스 추출
-    const selectedModelIndex = parseInt(
-      modelSelection.choices[0].message.content.match(/\d+/)[0],
-    );
+    // 선택된 모델 인덱스 및 제목 추출
+    const { model: selectedModelIndex, title } = JSON.parse(modelSelection.choices[0].message.content);
+    room = room || (await createChatRoom(userId, title)).id;
     const model = FREE_MODELS[selectedModelIndex];
 
     logger.info(`선택된 모델: ${model}`);
@@ -112,6 +111,29 @@ const generateAutoResponse = async (userId, prompt, room) => {
  */
 const generateCustomResponse = async (userId, prompt, model, room) => {
   try {
+    if (!room) {
+      const modelSelection = await openRouter.chat.completions
+        .create({
+          model: "openai/gpt-4.1-nano",
+          messages: [
+            {
+              role: "system",
+              content:
+                "다음 프롬프트를 요약하여 적절한 채팅방 이름을 작성하세요:\n" +
+                "결과는 {title: t} 형식으로 반환",
+            },
+            { role: "user", content: prompt },
+          ],
+        })
+        .catch((error) => {
+          logger.error(`모델 선택 중 오류: ${error.status}, ${error.name}`);
+          throw error;
+        });
+
+      // 선택된 모델 인덱스 및 제목 추출
+      const { title } = JSON.parse(modelSelection.choices[0].message.content);
+      room = await createChatRoom(userId, title).id;
+    }
     if (model in FREE_MODELS === false) {
       logger.warn(`선택된 모델이 모델 목록에 없습니다: ${model}`);
       throw new Error("선택된 모델이 모델 목록에 없습니다");
