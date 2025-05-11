@@ -12,9 +12,6 @@ require("./dotenv"); // 환경 변수 로드
 // 세션 비밀 키 (프로덕션에서는 환경 변수로 관리)
 const SESSION_SECRET = process.env.SESSION_SECRET || generateSecureToken();
 
-// 세션 최대 유지 시간 (기본값: 24시간, 밀리초 단위)
-const SESSION_MAX_AGE = parseInt(process.env.SESSION_MAX_AGE || 86400000, 10);
-
 // Redis 클라이언트 생성
 let redisClient;
 let redisStore;
@@ -46,7 +43,7 @@ const initRedisClient = async () => {
   // Redis 세션 저장소 생성
   redisStore = new RedisStore({
     client: redisClient,
-    ttl: SESSION_MAX_AGE / 1000, // Redis에 저장되는 세션의 TTL (초 단위)
+    ttl: 86400, // Redis에 저장되는 세션의 TTL (초 단위)
     prefix: "dimiplan:sess:",
   });
 
@@ -75,7 +72,7 @@ const getSessionConfig = async () => {
       httpOnly: true, // 클라이언트 측 JavaScript 접근 방지
       secure: true, // HTTPS에서만 쿠키 전송
       sameSite: "none", // 크로스 사이트 요청 허용
-      maxAge: SESSION_MAX_AGE, // 쿠키 최대 유지 시간
+      maxAge: 86400000, // 쿠키 최대 유지 시간
     },
   };
 };
