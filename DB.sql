@@ -102,6 +102,7 @@ CREATE TABLE `userid` (
   `plannerId` int(11) NOT NULL DEFAULT 1,
   `chatId` int(11) NOT NULL DEFAULT 1,
   `roomId` int(11) NOT NULL DEFAULT 1,
+  `knownWords` json DEFAULT NULL,
   `created_at` datetime DEFAULT current_timestamp(),
   `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -137,3 +138,31 @@ CREATE TABLE `users` (
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
 -- Dump completed on 2025-05-06  1:14:10
+
+--
+-- Table structure for table `wordLists`
+--
+
+DROP TABLE IF EXISTS `wordLists`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `wordLists` (
+  `id` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `wordId` int(11) NOT NULL DEFAULT 0,
+  `name` text DEFAULT NULL,
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Table structure for table `words`
+--
+
+DROP TABLE IF EXISTS `words`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `words` (
+  `wordListId` int(11) NOT NULL DEFAULT 0,
+  `id` int(11) NOT NULL DEFAULT 1,
+  `word` text DEFAULT NULL,
+  `partOfSpeech` text DEFAULT NULL,
+  `meta` json DEFAULT NULL,
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
