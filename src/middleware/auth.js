@@ -27,6 +27,9 @@ const isAuthenticated = (req, res, next) => {
             logger.warn(
               `인증 실패 - 세션 존재하나 사용자 ID 없음: ${sessionIdHeader}`,
             );
+            logger.verbose(
+              `세션 정보: ${JSON.stringify(session, null, 2)}`,
+            );
             return res.status(401).json({ message: "인증되지 않음" });
           }
 
