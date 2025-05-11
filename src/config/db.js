@@ -28,7 +28,6 @@ if (logger.isTestEnvironment) {
     warn: (message) => logger.warn(message),
     error: (message) => logger.error(message),
     deprecate: (message) => logger.warn(message),
-    debug: (message) => logger.debug(message),
   };
 
   // 쿼리 후처리 및 식별자 래핑

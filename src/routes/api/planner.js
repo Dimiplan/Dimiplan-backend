@@ -29,7 +29,7 @@ router.post("/add", async (req, res) => {
 
     // 필수 필드 검증
     if (name === undefined || from === undefined) {
-      logger.warn(`플래너 추가 실패: 필수 필드 누락 - ${req.userId}`);
+      logger.warn(`플래너 추가 실패: 필수 필드 누락`);
       return res
         .status(400)
         .json({ message: "이름과 출처는 필수 입력 항목입니다" });
@@ -38,10 +38,10 @@ router.post("/add", async (req, res) => {
     // 플래너 생성
     await createPlanner(req.userId, name, isDaily, from);
 
-    logger.info(`플래너 추가 성공 - 사용자: ${req.userId}`);
+    logger.verbose(`플래너 추가 성공 - 사용자: ${req.userId}`);
     res.status(201).json({ message: "플래너가 성공적으로 추가되었습니다" });
   } catch (error) {
-    logger.error(`플래너 추가 중 오류 - 사용자: ${req.userId}`, error);
+    logger.error(`플래너 추가 중 오류`, error);
     res.status(500).json({ message: "서버 내부 오류" });
   }
 });
@@ -57,21 +57,21 @@ router.post("/rename", async (req, res) => {
 
     // 필수 필드 검증
     if (!id || !name) {
-      logger.warn(`플래너 이름 변경 실패: 필수 필드 누락 - ${req.userId}`);
+      logger.warn(`플래너 이름 변경 실패: 필수 필드 누락`);
       return res.status(400).json({ message: "플래너 ID와 이름은 필수입니다" });
     }
 
     // 플래너 이름 변경
     await renamePlanner(req.userId, id, name);
 
-    logger.info(
+    logger.verbose(
       `플래너 이름 변경 성공 - 사용자: ${req.userId}, 플래너ID: ${id}`,
     );
     res
       .status(200)
       .json({ message: "플래너 이름이 성공적으로 변경되었습니다" });
   } catch (error) {
-    logger.error(`플래너 이름 변경 중 오류 - 사용자: ${req.userId}`, error);
+    logger.error(`플래너 이름 변경 중 오류`, error);
     res.status(500).json({ message: "서버 내부 오류" });
   }
 });
@@ -87,24 +87,24 @@ router.post("/delete", async (req, res) => {
 
     // 필수 필드 검증
     if (!id) {
-      logger.warn(`플래너 삭제 실패: ID 누락 - ${req.userId}`);
+      logger.warn(`플래너 삭제 실패: ID 누락`);
       return res.status(400).json({ message: "플래너 ID는 필수입니다" });
     }
 
     // 플래너 삭제
     await deletePlanner(req.userId, id);
 
-    logger.info(`플래너 삭제 성공 - 사용자: ${req.userId}, 플래너ID: ${id}`);
+    logger.verbose(`플래너 삭제 성공 - 사용자: ${req.userId}, 플래너ID: ${id}`);
     res.status(200).json({
       message: "플래너와 관련된 모든 플랜이 성공적으로 삭제되었습니다",
     });
   } catch (error) {
     if (error.message === "플래너를 찾을 수 없습니다") {
-      logger.warn(`플래너 삭제 실패: 플래너 없음 - ${req.userId}`);
+      logger.warn(`플래너 삭제 실패: 플래너 없음`);
       return res.status(404).json({ message: "플래너를 찾을 수 없습니다" });
     }
 
-    logger.error(`플래너 삭제 중 오류 - 사용자: ${req.userId}`, error);
+    logger.error(`플래너 삭제 중 오류`, error);
     res
       .status(500)
       .json({ message: "플래너 삭제 중 오류 발생", error: error.message });
@@ -122,7 +122,7 @@ router.get("/getInfo", async (req, res) => {
 
     // 필수 필드 검증
     if (!id) {
-      logger.warn(`플래너 정보 조회 실패: ID 누락 - ${req.userId}`);
+      logger.warn(`플래너 정보 조회 실패: ID 누락`);
       return res.status(400).json({ message: "잘못된 요청" });
     }
 
@@ -130,18 +130,16 @@ router.get("/getInfo", async (req, res) => {
     const planner = await getPlannerById(req.userId, id);
 
     if (!planner) {
-      logger.warn(
-        `플래너 정보 조회 실패: 플래너 없음 - 사용자: ${req.userId}, 플래너ID: ${id}`,
-      );
+      logger.warn(`플래너 정보 조회 실패: 플래너 없음`);
       return res.status(404).json({ message: "플래너를 찾을 수 없습니다" });
     }
 
-    logger.info(
+    logger.verbose(
       `플래너 정보 조회 성공 - 사용자: ${req.userId}, 플래너ID: ${id}`,
     );
     res.status(200).json(planner);
   } catch (error) {
-    logger.error(`플래너 정보 조회 중 오류 - 사용자: ${req.userId}`, error);
+    logger.error(`플래너 정보 조회 중 오류`, error);
     res
       .status(500)
       .json({ message: "플래너 정보 조회 중 오류 발생", error: error.message });
@@ -163,12 +161,12 @@ router.get("/getPlanners", async (req, res) => {
       return res.status(404).json({ message: "플래너를 찾을 수 없습니다" });
     }
 
-    logger.info(
+    logger.verbose(
       `플래너 목록 조회 성공 - 사용자: ${req.userId}, 플래너 수: ${planners.length}`,
     );
     res.status(200).json(planners);
   } catch (error) {
-    logger.error(`플래너 목록 조회 중 오류 - 사용자: ${req.userId}`, error);
+    logger.error(`플래너 목록 조회 중 오류`, error);
     res
       .status(500)
       .json({ message: "플래너 목록 조회 중 오류 발생", error: error.message });

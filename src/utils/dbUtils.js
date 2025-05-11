@@ -58,7 +58,7 @@ const getNextId = async (uid, idType) => {
       .where({ owner: uid })
       .update({ [idType]: currentId + 1 });
 
-    logger.debug(`다음 ${idType} ID 발급 - 사용자: ${uid}, ID: ${currentId}`);
+    logger.verbose(`다음 ${idType} ID 발급 - 사용자: ${uid}, ID: ${currentId}`);
     return currentId;
   } catch (error) {
     logger.error(`다음 ${idType} ID 조회 중 오류 - 사용자: ${uid}`, error);

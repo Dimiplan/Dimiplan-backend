@@ -29,7 +29,7 @@ router.post("/add", async (req, res) => {
 
     // 필수 필드 검증
     if (!contents || !from) {
-      logger.warn(`작업 추가 실패: 필수 필드 누락 - ${req.userId}`);
+      logger.warn(`작업 추가 실패: 필수 필드 누락`);
       return res
         .status(400)
         .json({ message: "내용과 출처는 필수 입력 항목입니다" });
@@ -38,15 +38,15 @@ router.post("/add", async (req, res) => {
     // 작업 생성
     await createTask(req.userId, contents, from, startDate, dueDate, priority);
 
-    logger.info(`작업 추가 성공 - 사용자: ${req.userId}`);
+    logger.verbose(`작업 추가 성공 - 사용자: ${req.userId}`);
     res.status(201).json({ message: "작업이 성공적으로 추가되었습니다" });
   } catch (error) {
     if (error.message === "플래너를 찾을 수 없습니다") {
-      logger.warn(`작업 추가 실패: 플래너 없음 - ${req.userId}`);
+      logger.warn(`작업 추가 실패: 플래너 없음`);
       return res.status(404).json({ message: "플래너를 찾을 수 없습니다" });
     }
 
-    logger.error(`작업 추가 중 오류 - 사용자: ${req.userId}`, error);
+    logger.error(`작업 추가 중 오류`, error);
     res.status(500).json({ message: "서버 내부 오류" });
   }
 });
@@ -63,7 +63,7 @@ router.post("/update", async (req, res) => {
 
     // ID 필수 검증
     if (!id) {
-      logger.warn(`작업 업데이트 실패: ID 누락 - ${req.userId}`);
+      logger.warn(`작업 업데이트 실패: ID 누락`);
       return res.status(400).json({ message: "작업 ID는 필수입니다" });
     }
 
@@ -78,7 +78,7 @@ router.post("/update", async (req, res) => {
 
     // 업데이트할 데이터 검증
     if (Object.keys(updateData).length === 0) {
-      logger.warn(`작업 업데이트 실패: 업데이트 데이터 없음 - ${req.userId}`);
+      logger.warn(`작업 업데이트 실패: 업데이트 데이터 없음`);
       return res
         .status(400)
         .json({ message: "업데이트할 데이터가 필요합니다" });
@@ -87,15 +87,15 @@ router.post("/update", async (req, res) => {
     // 작업 업데이트
     await updateTask(req.userId, id, updateData);
 
-    logger.info(`작업 업데이트 성공 - 사용자: ${req.userId}, 작업ID: ${id}`);
+    logger.verbose(`작업 업데이트 성공 - 사용자: ${req.userId}, 작업ID: ${id}`);
     res.status(200).json({ message: "작업이 성공적으로 업데이트되었습니다" });
   } catch (error) {
     if (error.message === "작업을 찾을 수 없습니다") {
-      logger.warn(`작업 업데이트 실패: 작업 없음 - ${req.userId}`);
+      logger.warn(`작업 업데이트 실패: 작업 없음`);
       return res.status(404).json({ message: "작업을 찾을 수 없습니다" });
     }
 
-    logger.error(`작업 업데이트 중 오류 - 사용자: ${req.userId}`, error);
+    logger.error(`작업 업데이트 중 오류`, error);
     res.status(500).json({ message: "서버 내부 오류" });
   }
 });
@@ -111,22 +111,22 @@ router.post("/delete", async (req, res) => {
 
     // ID 필수 검증
     if (!id) {
-      logger.warn(`작업 삭제 실패: ID 누락 - ${req.userId}`);
+      logger.warn(`작업 삭제 실패: ID 누락`);
       return res.status(400).json({ message: "작업 ID는 필수입니다" });
     }
 
     // 작업 삭제
     await deleteTask(req.userId, id);
 
-    logger.info(`작업 삭제 성공 - 사용자: ${req.userId}, 작업ID: ${id}`);
+    logger.verbose(`작업 삭제 성공 - 사용자: ${req.userId}, 작업ID: ${id}`);
     res.status(200).json({ message: "작업이 성공적으로 삭제되었습니다" });
   } catch (error) {
     if (error.message === "작업을 찾을 수 없습니다") {
-      logger.warn(`작업 삭제 실패: 작업 없음 - ${req.userId}`);
+      logger.warn(`작업 삭제 실패: 작업 없음`);
       return res.status(404).json({ message: "작업을 찾을 수 없습니다" });
     }
 
-    logger.error(`작업 삭제 중 오류 - 사용자: ${req.userId}`, error);
+    logger.error(`작업 삭제 중 오류`, error);
     res.status(500).json({ message: "서버 내부 오류" });
   }
 });
@@ -142,22 +142,22 @@ router.post("/complete", async (req, res) => {
 
     // ID 필수 검증
     if (!id) {
-      logger.warn(`작업 완료 실패: ID 누락 - ${req.userId}`);
+      logger.warn(`작업 완료 실패: ID 누락`);
       return res.status(400).json({ message: "작업 ID는 필수입니다" });
     }
 
     // 작업 완료 처리
     await completeTask(req.userId, id);
 
-    logger.info(`작업 완료 성공 - 사용자: ${req.userId}, 작업ID: ${id}`);
+    logger.verbose(`작업 완료 성공 - 사용자: ${req.userId}, 작업ID: ${id}`);
     res.status(200).json({ message: "작업이 성공적으로 완료되었습니다" });
   } catch (error) {
     if (error.message === "작업을 찾을 수 없습니다") {
-      logger.warn(`작업 완료 실패: 작업 없음 - ${req.userId}`);
+      logger.warn(`작업 완료 실패: 작업 없음`);
       return res.status(404).json({ message: "작업을 찾을 수 없습니다" });
     }
 
-    logger.error(`작업 완료 중 오류 - 사용자: ${req.userId}`, error);
+    logger.error(`작업 완료 중 오류`, error);
     res.status(500).json({ message: "서버 내부 오류" });
   }
 });
@@ -175,21 +175,21 @@ router.get("/get", async (req, res) => {
     const tasks = await getTasks(req.userId, id, isCompleted);
 
     if (tasks.length === 0) {
-      logger.warn(`작업 조회 실패: 작업 없음 - ${req.userId}`);
+      logger.warn(`작업 조회 실패: 작업 없음`);
       return res.status(404).json({ message: "작업을 찾을 수 없습니다" });
     }
 
-    logger.info(
+    logger.verbose(
       `작업 조회 성공 - 사용자: ${req.userId}, 플래너ID: ${id}, isCompleted: ${isCompleted}`,
     );
     res.status(200).json(tasks);
   } catch (error) {
     if (error.message === "플래너를 찾을 수 없습니다") {
-      logger.warn(`작업 조회 실패: 플래너 없음 - ${req.userId}`);
+      logger.warn(`작업 조회 실패: 플래너 없음`);
       return res.status(404).json({ message: "플래너를 찾을 수 없습니다" });
     }
 
-    logger.error(`작업 조회 중 오류 - 사용자: ${req.userId}`, error);
+    logger.error(`작업 조회 중 오류`, error);
     res.status(500).json({ message: "서버 내부 오류" });
   }
 });

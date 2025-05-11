@@ -13,9 +13,7 @@ const levels = {
   error: 0, // 치명적인 오류
   warn: 1, // 경고성 메시지
   info: 2, // 일반 정보
-  http: 3, // HTTP 요청 로그
-  debug: 4, // 디버깅 정보
-  verbose: 5, // 상세 로깅 (테스트 환경용)
+  verbose: 3, // 상세 로깅 (테스트 환경용)
 };
 
 // 각 레벨별 색상 정의
@@ -23,8 +21,7 @@ const colors = {
   error: "red",
   warn: "yellow",
   info: "green",
-  http: "magenta",
-  debug: "blue",
+  verbose: "cyan",
 };
 
 winston.addColors(colors);
@@ -149,8 +146,6 @@ module.exports = {
   error: (message, meta = {}) => logger.error(message, meta),
   warn: (message, meta = {}) => logger.warn(message, meta),
   info: (message, meta = {}) => logger.info(message, meta),
-  debug: (message, meta = {}) => logger.debug(message, meta),
-  http: (message, meta = {}) => logger.http(message, meta),
   verbose: (message, meta = {}) => logger.verbose(message, meta),
 
   // 테스트 환경용 추가 로깅 함수
@@ -183,6 +178,6 @@ module.exports = {
   // 기타 유틸리티
   isTestEnvironment,
   stream: {
-    write: (message) => logger.http(message.trim()),
+    write: (message) => logger.verbose(message.trim()),
   },
 };

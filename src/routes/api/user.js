@@ -84,7 +84,7 @@ router.post("/update", isAuthenticated, async (req, res) => {
     // 사용자 정보 업데이트
     await updateUser(req.userId, cleanedData);
 
-    logger.info(`사용자 ${req.userId} 정보 업데이트 완료`);
+    logger.verbose(`사용자 ${req.userId} 정보 업데이트 완료`);
     res.status(200).json({ message: "업데이트 완료" });
   } catch (error) {
     logger.error("사용자 정보 업데이트 중 오류:", error);
@@ -100,7 +100,7 @@ router.post("/update", isAuthenticated, async (req, res) => {
 router.get("/registered", isAuthenticated, async (req, res) => {
   try {
     const registered = await isRegistered(req.userId);
-    logger.info(`사용자 ${req.userId} 등록 상태: ${registered}`);
+    logger.verbose(`사용자 ${req.userId} 등록 상태: ${registered}`);
     res.status(registered ? 200 : 410).json({ registered });
   } catch (error) {
     logger.error("등록 상태 확인 중 오류:", error);
@@ -122,7 +122,7 @@ router.get("/get", isAuthenticated, async (req, res) => {
       return res.status(404).json({ message: "사용자를 찾을 수 없음" });
     }
 
-    logger.info(`사용자 ${req.userId} 정보 조회 성공`);
+    logger.verbose(`사용자 ${req.userId} 정보 조회 성공`);
     res.status(200).json(user);
   } catch (error) {
     logger.error("사용자 정보 조회 중 오류:", error);

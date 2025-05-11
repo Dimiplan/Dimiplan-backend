@@ -52,7 +52,7 @@ const storeUserInSession = (session, userId) => {
  * @returns {string|null} 사용자 ID 또는 null
  */
 const getUserFromSession = (session) => {
-  logger.debug("세션 정보:", session);
+  logger.verbose("세션 정보:", session);
   return session?.passport?.user?.id || null;
 };
 
