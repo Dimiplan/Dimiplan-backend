@@ -55,7 +55,9 @@ router.post("/addRoom", async (req, res) => {
     const data = await createChatRoom(req.userId, name);
 
     logger.verbose(`채팅방 생성 성공 - 사용자: ${req.userId}, 이름: ${name}`);
-    res.status(200).json({ message: "채팅방이 성공적으로 생성되었습니다", ...data });
+    res
+      .status(200)
+      .json({ message: "채팅방이 성공적으로 생성되었습니다", ...data });
   } catch (error) {
     logger.error(`채팅방 생성 중 오류`, error);
     res.status(500).json({ message: "서버 내부 오류" });
