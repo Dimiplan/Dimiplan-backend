@@ -135,8 +135,8 @@ const generateCustomResponse = async (userId, prompt, model, room) => {
 
     logger.info("AI 응답 생성 완료");
 
-     // AI 응답 텍스트 추출
-     const aiResponseText =
+    // AI 응답 텍스트 추출
+    const aiResponseText =
       response.choices[0].message.content ||
       "죄송합니다. 응답을 생성하는 데 문제가 발생했습니다. 다시 시도해 주세요.";
 

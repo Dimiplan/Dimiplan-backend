@@ -150,7 +150,12 @@ router.post("/custom", async (req, res) => {
     }
 
     // AI 응답 생성
-    const response = await generateCustomResponse(req.userId, prompt, model, room);
+    const response = await generateCustomResponse(
+      req.userId,
+      prompt,
+      model,
+      room,
+    );
 
     logger.verbose(
       `AI 응답 생성 성공 - 사용자: ${req.userId}, 채팅방ID: ${room}`,
