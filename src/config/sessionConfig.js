@@ -87,6 +87,19 @@ const getSessionConfig = async () => {
 };
 
 /**
+ * 세션에 사용자 ID 저장
+ * @param {Object} session - 세션 객체
+ * @param {string} userId - 저장할 평문 사용자 ID
+ */
+const storeUserInSession = (session, userId) => {
+  // Passport 형식으로 사용자 ID 저장
+  if (!session.passport) {
+    session.passport = {};
+  }
+  session.passport.user = { id: userId };
+};
+
+/**
  * 세션에서 사용자 ID 추출
  * @param {Object} session - 세션 객체
  * @returns {string|null} 사용자 ID 또는 null
@@ -108,7 +121,7 @@ const closeRedisConnection = async () => {
 
 module.exports = {
   getSessionConfig,
+  storeUserInSession,
   getUserFromSession,
   closeRedisConnection,
-  redisClient,
 };
