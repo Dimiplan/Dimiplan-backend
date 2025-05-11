@@ -208,10 +208,10 @@ router.post("/login", (req, res, next) => {
         .then(() => {
           // 세션이 성공적으로 저장된 후에만 응답 전송
           logger.verbose(`세션 생성 성공: ${req.sessionID}`);
-          
+
           // 세션 ID를 응답 헤더와 본문에 포함
           res.setHeader("x-session-id", req.sessionID);
-          
+
           // 모바일 앱을 위한 성공 응답
           return res.status(200).json({
             message: "로그인 성공",
