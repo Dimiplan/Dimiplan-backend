@@ -83,8 +83,15 @@ app.use(cors(corsOptions));
 app.use(express.json({ limit: "1mb" })); // JSON 페이로드 크기 제한
 app.use(express.urlencoded({ extended: true, limit: "1mb" })); // URL 인코딩된 페이로드 크기 제한
 
-// 세션 미들웨어 설정 (메모리 기반 세션 저장소 사용)
-app.use(session(getSessionConfig()));
+// 세션 미들웨어 비동기 초기화
+const initializeSession = async (app) => {
+  const config = await getSessionConfig();
+  app.use(session(config));
+  
+  // Passport 초기화 (세션 설정 후)
+  app.use(passport.initialize());
+  app.use(passport.session());
+};
 
 // 모든 요청에 대한 기본 로깅 미들웨어
 app.use((req, res, next) => {
@@ -92,27 +99,41 @@ app.use((req, res, next) => {
   next();
 });
 
-// Passport 인증 미들웨어 초기화
-app.use(passport.initialize());
-app.use(passport.session());
+// 앱 초기화 함수
+const initializeApp = async () => {
+  // 앱 기본 설정
+  // ...
+  
+  // 세션 초기화
+  await initializeSession(app);
+  
+  // 라우트 설정
+  app.use("/auth", authRouter); // 인증 관련 라우터
+  app.use("/api", apiRouter); // API 관련 라우터
+  
+  // 전역 에러 핸들링 미들웨어
+  app.use((err, req, res, next) => {
+    logger.error("애플리케이션 오류:", err);
+    res.status(500).json({ message: "내부 서버 오류" });
+  });
+  
+  return app;
+};
 
-// 라우터 연결
-app.use("/auth", authRouter); // 인증 관련 라우터
-app.use("/api", apiRouter); // API 관련 라우터
-
-// 전역 에러 핸들링 미들웨어
-app.use((err, req, res, next) => {
-  logger.error("애플리케이션 오류:", err);
-  res.status(500).json({ message: "내부 서버 오류" });
-});
-
-// 서버 시작
-const PORT = process.env.PORT;
-
-const server = https.createServer(sslOptions, app);
-server.listen(PORT, () => {
-  logger.info(`서버가 ${PORT} 포트에서 실행 중입니다`);
-});
+// 앱 시작
+let server;
+initializeApp()
+  .then(app => {
+    const PORT = process.env.PORT;
+    server = https.createServer(sslOptions, app);
+    server.listen(PORT, () => {
+      logger.info(`서버가 ${PORT} 포트에서 실행 중입니다`);
+    });
+  })
+  .catch(err => {
+    logger.error('앱 초기화 오류:', err);
+    process.exit(1);
+  });
 
 // 프로세스 종료 신호 처리 (정상 종료)
 process.on("SIGTERM", () => {
