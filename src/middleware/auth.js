@@ -17,7 +17,7 @@ const isAuthenticated = async (req, res, next) => {
     if (sessionIdHeader) {
       // 세션 ID 헤더를 사용한 인증 (프로미스 기반으로 변경)
       const sessionStore = req.sessionStore;
-      
+
       // sessionStore.get을 프로미스로 변환
       const getSessionAsync = (sid) => {
         return new Promise((resolve, reject) => {
@@ -27,16 +27,16 @@ const isAuthenticated = async (req, res, next) => {
           });
         });
       };
-      
+
       try {
         // 세션 비동기 조회
         const session = await getSessionAsync(sessionIdHeader);
-        
+
         if (!session) {
           logger.warn(`인증 실패 - 세션을 찾을 수 없음: ${sessionIdHeader}`);
           return res.status(401).json({ message: "인증되지 않음" });
         }
-        
+
         // 세션에서 사용자 ID 추출
         const uid = getUserFromSession(session);
 
@@ -51,7 +51,7 @@ const isAuthenticated = async (req, res, next) => {
         // 요청 객체에 사용자 정보 추가
         req.userId = uid; // 평문 사용자 ID
         req.hashedUserId = hashUserId(uid); // 해시된 사용자 ID
-        
+
         // 사용자의 세션 유지를 위해 세션 갱신
         sessionStore.touch(sessionIdHeader, session, (err) => {
           if (err) {
@@ -60,9 +60,7 @@ const isAuthenticated = async (req, res, next) => {
         });
 
         // 인증 성공 로깅
-        logger.info(
-          `사용자 인증 성공: ${req.hashedUserId.substring(0, 8)}...`,
-        );
+        logger.info(`사용자 인증 성공: ${req.hashedUserId.substring(0, 8)}...`);
 
         next();
       } catch (err) {
