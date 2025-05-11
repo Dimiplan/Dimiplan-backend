@@ -11,42 +11,64 @@ const { getUserFromSession } = require("../config/sessionConfig");
  * 사용자 인증 여부를 확인하는 미들웨어
  * 세션 ID 헤더 또는 세션을 통해 사용자 인증
  */
-const isAuthenticated = (req, res, next) => {
+const isAuthenticated = async (req, res, next) => {
   try {
     const sessionIdHeader = req.headers["x-session-id"];
     if (sessionIdHeader) {
+      // 세션 ID 헤더를 사용한 인증 (프로미스 기반으로 변경)
       const sessionStore = req.sessionStore;
-      // 세션 ID 헤더를 사용한 인증
-      return sessionStore.get(
-        sessionIdHeader,
-        (session) => {
-          // 세션에서 사용자 ID 추출
-          const uid = getUserFromSession(session);
+      
+      // sessionStore.get을 프로미스로 변환
+      const getSessionAsync = (sid) => {
+        return new Promise((resolve, reject) => {
+          sessionStore.get(sid, (error, session) => {
+            if (error) reject(error);
+            else resolve(session);
+          });
+        });
+      };
+      
+      try {
+        // 세션 비동기 조회
+        const session = await getSessionAsync(sessionIdHeader);
+        
+        if (!session) {
+          logger.warn(`인증 실패 - 세션을 찾을 수 없음: ${sessionIdHeader}`);
+          return res.status(401).json({ message: "인증되지 않음" });
+        }
+        
+        // 세션에서 사용자 ID 추출
+        const uid = getUserFromSession(session);
 
-          if (!uid) {
-            logger.warn(
-              `인증 실패 - 세션 존재하나 사용자 ID 없음: ${sessionIdHeader}`,
-            );
-            logger.verbose(`세션 정보: ${session}`);
-            return res.status(401).json({ message: "인증되지 않음" });
-          }
-
-          // 요청 객체에 사용자 정보 추가
-          req.userId = uid; // 평문 사용자 ID
-          req.hashedUserId = hashUserId(uid); // 해시된 사용자 ID
-
-          // 인증 성공 로깅
-          logger.info(
-            `사용자 인증 성공: ${req.hashedUserId.substring(0, 8)}...`,
+        if (!uid) {
+          logger.warn(
+            `인증 실패 - 세션 존재하나 사용자 ID 없음: ${sessionIdHeader}`,
           );
+          logger.verbose(`세션 정보:`, session);
+          return res.status(401).json({ message: "인증되지 않음" });
+        }
 
-          next();
-        },
-        (err) => {
-          logger.error("세션 조회 오류:", err);
-          return res.status(500).json({ message: "세션 조회 오류" });
-        },
-      );
+        // 요청 객체에 사용자 정보 추가
+        req.userId = uid; // 평문 사용자 ID
+        req.hashedUserId = hashUserId(uid); // 해시된 사용자 ID
+        
+        // 사용자의 세션 유지를 위해 세션 갱신
+        sessionStore.touch(sessionIdHeader, session, (err) => {
+          if (err) {
+            logger.warn(`세션 갱신 실패: ${err.message}`);
+          }
+        });
+
+        // 인증 성공 로깅
+        logger.info(
+          `사용자 인증 성공: ${req.hashedUserId.substring(0, 8)}...`,
+        );
+
+        next();
+      } catch (err) {
+        logger.error("세션 조회 오류:", err);
+        return res.status(500).json({ message: "세션 조회 오류" });
+      }
     } else {
       // 기본 세션을 사용한 인증
       const uid = getUserFromSession(req.session);
