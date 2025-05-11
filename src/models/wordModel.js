@@ -18,7 +18,6 @@
 
 const createWordList = async (name) => {
   try {
-
     // 같은 이름의 단어장 존재 여부 확인
     const existingWordList = await db("wordLists")
       .where({ name: name })
@@ -40,12 +39,9 @@ const createWordList = async (name) => {
 
 const deleteWordList = async (id) => {
   try {
-    
     // 단어장 존재 여부 확인
-    const existingWordList = await db("wordLists")
-      .where({ id: id })
-      .first();
-    
+    const existingWordList = await db("wordLists").where({ id: id }).first();
+
     if (!existingWordList) {
       throw new Error("단어장이 존재하지 않습니다");
     }
@@ -56,7 +52,7 @@ const deleteWordList = async (id) => {
     logger.error("단어장 삭제 오류:", error);
     throw error;
   }
-}
+};
 
 module.exports = {
   createWordList,
