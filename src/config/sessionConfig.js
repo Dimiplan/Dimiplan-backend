@@ -24,7 +24,7 @@ const initRedisClient = async () => {
   if (redisClient) return redisClient;
 
   // Redis 연결 설정
-  redisClient = createClient(6379, "localhost");
+  redisClient = createClient(6379, "127.0.0.1");
 
   redisClient.on("error", (err) => {
     logger.error("Redis 클라이언트 오류:", err);
