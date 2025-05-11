@@ -17,7 +17,7 @@ const isAuthenticated = (req, res, next) => {
     if (sessionIdHeader) {
       // Redis에서 직접 세션 가져오기
       const sessionKey = `dimiplan:sess:${sessionIdHeader}`; // Redis 세션 키 포맷 (일반적인 형태)
-      
+
       redisStore.get(sessionKey, (err, sessionData) => {
         if (err) {
           logger.error("Redis 세션 조회 오류:", err);
