@@ -25,34 +25,34 @@ let redisStore;
  */
 const initRedisClient = async () => {
   if (redisClient) return redisClient;
-  
+
   // Redis 연결 설정
   redisClient = createClient({
-    url: process.env.REDIS_URL || 'redis://localhost:6379',
+    url: process.env.REDIS_URL || "redis://localhost:6379",
     password: process.env.REDIS_PASSWORD || undefined,
-    legacyMode: false
+    legacyMode: false,
   });
-  
-  redisClient.on('error', (err) => {
-    logger.error('Redis 클라이언트 오류:', err);
+
+  redisClient.on("error", (err) => {
+    logger.error("Redis 클라이언트 오류:", err);
   });
-  
-  redisClient.on('connect', () => {
-    logger.info('Redis 서버에 연결되었습니다');
+
+  redisClient.on("connect", () => {
+    logger.info("Redis 서버에 연결되었습니다");
   });
-  
+
   // Redis 연결
   await redisClient.connect().catch((err) => {
-    logger.error('Redis 연결 실패:', err);
+    logger.error("Redis 연결 실패:", err);
     throw err;
   });
-  
+
   // Redis 세션 저장소 생성
-  redisStore = new RedisStore({ 
+  redisStore = new RedisStore({
     client: redisClient,
-    prefix: 'dimiplan:sess:'
+    prefix: "dimiplan:sess:",
   });
-  
+
   return redisClient;
 };
 
@@ -62,12 +62,12 @@ const initRedisClient = async () => {
  */
 const getSessionConfig = async () => {
   // Redis 클라이언트 초기화
-  await initRedisClient().catch(err => {
-    logger.error('Redis 초기화 실패, 메모리 세션으로 폴백합니다:', err);
+  await initRedisClient().catch((err) => {
+    logger.error("Redis 초기화 실패, 메모리 세션으로 폴백합니다:", err);
     // Redis 사용 불가 시 기본 메모리 세션 사용
     return null;
   });
-  
+
   return {
     secret: SESSION_SECRET, // 세션 암호화 비밀 키
     resave: false, // 세션 변경되지 않아도 다시 저장하지 않음
@@ -112,7 +112,7 @@ const getUserFromSession = (session) => {
 const closeRedisConnection = async () => {
   if (redisClient) {
     await redisClient.quit();
-    logger.info('Redis 연결이 종료되었습니다');
+    logger.info("Redis 연결이 종료되었습니다");
   }
 };
 
