@@ -133,5 +133,5 @@ const generateCustomResponse = async (prompt, model) => {
 
 module.exports = {
   generateAutoResponse,
-  generateCustomResponse
+  generateCustomResponse,
 };

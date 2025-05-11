@@ -10,7 +10,10 @@ const {
   addChatMessages,
   getChatMessages,
 } = require("../../models/chatModel");
-const { generateAutoResponse, generateCustomResponse } = require("../../services/aiService");
+const {
+  generateAutoResponse,
+  generateCustomResponse,
+} = require("../../services/aiService");
 const logger = require("../../utils/logger");
 
 const router = express.Router();
