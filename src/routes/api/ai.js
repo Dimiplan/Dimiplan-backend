@@ -139,6 +139,7 @@ router.post("/auto", async (req, res) => {
  * 사용자가 입력한 프롬프트에 대한 AI 응답 생성 및 메시지 저장
  * @param {string} prompt - 사용자가 입력한 프롬프트
  * @param {string} room - 채팅방 ID
+ * @param {string} model - 사용자가 선택한 AI 모델
  * @returns {string} message - AI 응답 메시지
  */
 router.post("/custom", async (req, res) => {
