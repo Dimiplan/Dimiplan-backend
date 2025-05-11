@@ -17,28 +17,28 @@ const isAuthenticated = (req, res, next) => {
     if (sessionIdHeader) {
       // Redis에서 직접 세션 가져오기
       const sessionKey = `dimiplan:sess:${sessionIdHeader}`; // Redis 세션 키 포맷 (일반적인 형태)
-      
+
       redisClient.get(sessionKey, (err, sessionData) => {
         if (err) {
           logger.error("Redis 세션 조회 오류:", err);
           return res.status(500).json({ message: "세션 조회 오류" });
         }
-        
+
         if (!sessionData) {
           logger.warn(`인증 실패 - 유효하지 않은 세션 ID: ${sessionIdHeader}`);
           return res.status(401).json({ message: "인증되지 않음" });
         }
-        
+
         try {
           // 세션 데이터를 JSON으로 파싱
           const session = JSON.parse(sessionData);
-          
+
           // 세션에서 사용자 ID 추출
           const uid = getUserFromSession(session);
 
           if (!uid) {
             logger.warn(
-              `인증 실패 - 세션 존재하나 사용자 ID 없음: ${sessionIdHeader}`
+              `인증 실패 - 세션 존재하나 사용자 ID 없음: ${sessionIdHeader}`,
             );
             logger.verbose(`세션 정보: ${JSON.stringify(session)}`);
             return res.status(401).json({ message: "인증되지 않음" });
@@ -50,7 +50,7 @@ const isAuthenticated = (req, res, next) => {
 
           // 인증 성공 로깅
           logger.info(
-            `사용자 인증 성공: ${req.hashedUserId.substring(0, 8)}...`
+            `사용자 인증 성공: ${req.hashedUserId.substring(0, 8)}...`,
           );
 
           next();
