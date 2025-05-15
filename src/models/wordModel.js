@@ -1,12 +1,12 @@
-// const db = require("../config/db");
-// const { getNextId, executeTransaction } = require("../utils/dbUtils");
-// const {
-//   hashUserId,
-//   encryptData,
-//   decryptData,
-//   getTimestamp,
-// } = require("../utils/cryptoUtils");
-// const logger = require("../utils/logger");
+const db = require("../config/db");
+const { getNextId, executeTransaction } = require("../utils/dbUtils");
+const {
+    hashUserId,
+    encryptData,
+    decryptData,
+    getTimestamp,
+} = require("../utils/cryptoUtils");
+const logger = require("../utils/logger");
 
 /**
  * 새 wordList 생성
