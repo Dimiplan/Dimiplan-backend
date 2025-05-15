@@ -71,7 +71,7 @@ const generateAutoResponse = async (userId, prompt, room) => {
     // 모델 선택 로직
     const modelSelection = await openRouter.chat.completions
       .create({
-        model: "openai/gpt-4.1-nano",
+        model: "openai/gpt-4.1-mini",
         messages: [
           {
             role: "system",
@@ -82,9 +82,9 @@ const generateAutoResponse = async (userId, prompt, room) => {
                   "- 복잡한 추론 필요: 1 (중간 모델)\n" +
                   "- 프로그래밍 또는 심화 지식 필요: 2 (고급 모델)\n" +
                   "- 광범위한 정보 및 큰 모델 필요: 3 (대규모 모델)\n" +
-                  !room
+                  (!room
                 ? "결과는 {model: integer, title: string}의 JSON 형식으로 반환"
-                : "결과는 {model: integer}의 JSON 형식으로 반환",
+                : "결과는 {model: integer}의 JSON 형식으로 반환"),
           },
           { role: "user", content: prompt },
         ],
