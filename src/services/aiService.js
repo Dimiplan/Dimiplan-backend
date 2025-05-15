@@ -83,8 +83,8 @@ const generateAutoResponse = async (userId, prompt, room) => {
                   "- 프로그래밍 또는 심화 지식 필요: 2 (고급 모델)\n" +
                   "- 광범위한 정보 및 큰 모델 필요: 3 (대규모 모델)\n" +
                   !room
-                ? "결과는 {model: n, title: t} 형식으로 반환"
-                : "결과는 {model: n} 형식으로 반환",
+                ? "결과는 {model: integer, title: string}의 JSON 형식으로 반환"
+                : "결과는 {model: integer}의 JSON 형식으로 반환",
           },
           { role: "user", content: prompt },
         ],
