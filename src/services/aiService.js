@@ -71,7 +71,7 @@ const generateAutoResponse = async (userId, prompt, room) => {
     // 모델 선택 로직
     const modelSelection = await openRouter.chat.completions
       .create({
-        model: "openai/gpt-4.1-nano" ,
+        model: "openai/gpt-4.1-nano",
         messages: [
           {
             role: "system",
@@ -96,7 +96,7 @@ const generateAutoResponse = async (userId, prompt, room) => {
     let selectedModelIndex = 0;
     let title = undefined;
     try {
-    // 선택된 모델 인덱스 및 제목 추출
+      // 선택된 모델 인덱스 및 제목 추출
       const parsedResponse = JSON.parse(
         modelSelection.choices[0].message.content,
       );
