@@ -33,6 +33,7 @@ const PAID_MODELS = {
 };
 
 const summarizeMemory = async (userId, room) => {
+  if (!room) return "No previous messages";
   try {
     const response = await openRouter.chat.completions
       .create({
