@@ -7,7 +7,6 @@ const { isAuthenticated, isUserRegistered } = require("../../middleware/auth");
 const {
   createChatRoom,
   getChatRooms,
-  addChatMessages,
   getChatMessages,
 } = require("../../models/chatModel");
 const {

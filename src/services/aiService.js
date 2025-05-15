@@ -6,7 +6,7 @@
 const OpenAI = require("openai");
 require("../config/dotenv"); // 환경 변수 로드
 const logger = require("../utils/logger");
-const { addChatMessages, createChatRoom } = require("../models/chatModel");
+const { addChatMessages, createChatRoom, getChatMessages } = require("../models/chatModel");
 
 // OpenRouter API 클라이언트 초기화
 const openRouter = new OpenAI({
@@ -28,6 +28,33 @@ const PAID_MODELS = {
   O3: "openai/o3",
 };
 
+const summarizeMemory = async (userId, room) => {
+  try {
+    const response = await openRouter.chat.completions
+      .create({
+        model: "google/gemini-flash-1.5-8b",
+        messages: [
+          {
+            role: "system",
+            content:
+              "다음 대화 내용을 요약하여 AI가 쉽게 이해할 수 있도록 작성하세요:\n" +
+              "결과는 {summary: t} 형식으로 반환",
+          },
+          { role: "user", content: await getChatMessages(userId, room) },
+        ],
+      })
+      .catch((error) => {
+        logger.error(`메모리 요약 중 오류: ${error.status}, ${error.name}`);
+        throw error;
+      });
+
+    return JSON.parse(response.choices[0].message.content)["summary"];
+  } catch (error) {
+    logger.error("메모리 요약 중 에러:", error);
+    throw error;
+  }
+}
+
 /**
  * 자동 AI 모델 선택 및 응답 생성
  * 프롬프트의 복잡성에 따라 적절한 AI 모델 선택
@@ -40,7 +67,7 @@ const generateAutoResponse = async (userId, prompt, room) => {
     // 모델 선택 로직
     const modelSelection = await openRouter.chat.completions
       .create({
-        model: "openai/gpt-4.1-nano",
+        model: "google/gemini-flash-1.5-8b",
         messages: [
           {
             role: "system",
@@ -67,7 +94,6 @@ const generateAutoResponse = async (userId, prompt, room) => {
     const { model: selectedModelIndex, title } = JSON.parse(
       modelSelection.choices[0].message.content,
     );
-    room = room || (await createChatRoom(userId, title)).id;
     const model = FREE_MODELS[selectedModelIndex];
 
     logger.info(`선택된 모델: ${model}`);
@@ -81,6 +107,7 @@ const generateAutoResponse = async (userId, prompt, room) => {
             role: "system",
             content: "불필요한 경우 1000 토큰 이내로 응답하세요",
           },
+          { role: "system", content: "기존 채팅내용 요약: " + (await summarizeMemory(userId, room)) },
           { role: "user", content: prompt },
         ],
       })
@@ -97,7 +124,7 @@ const generateAutoResponse = async (userId, prompt, room) => {
       "죄송합니다. 응답을 생성하는 데 문제가 발생했습니다. 다시 시도해 주세요.";
 
     // 메시지 데이터베이스에 저장
-    await addChatMessages(userId, room, prompt, aiResponseText);
+    await addChatMessages(userId, room || (await createChatRoom(userId, title)).id, prompt, aiResponseText);
 
     return aiResponseText;
   } catch (error) {
@@ -116,10 +143,11 @@ const generateAutoResponse = async (userId, prompt, room) => {
  */
 const generateCustomResponse = async (userId, prompt, model, room) => {
   try {
+    let message_to_ai = [];
     if (!room) {
       const modelSelection = await openRouter.chat.completions
         .create({
-          model: "openai/gpt-4.1-nano",
+          model: "google/gemini-flash-1.5-8b",
           messages: [
             {
               role: "system",
@@ -138,6 +166,22 @@ const generateCustomResponse = async (userId, prompt, model, room) => {
       // 선택된 모델 인덱스 및 제목 추출
       const { title } = JSON.parse(modelSelection.choices[0].message.content);
       room = await createChatRoom(userId, title).id;
+      message_to_ai = [
+          {
+            role: "system",
+            content: "불필요한 경우 1000 토큰 이내로 응답하세요",
+          },
+          { role: "user", content: prompt },
+      ];
+    } else {
+      message_to_ai = [
+          {
+            role: "system",
+            content: "불필요한 경우 1000 토큰 이내로 응답하세요",
+          },
+          { role: "user", content: "기존 채팅내용 요약: " + (await summarizeMemory(userId, room)) },
+          { role: "user", content: prompt },
+        ];
     }
     if (model in FREE_MODELS === false) {
       logger.warn(`선택된 모델이 모델 목록에 없습니다: ${model}`);
@@ -147,13 +191,7 @@ const generateCustomResponse = async (userId, prompt, model, room) => {
     const response = await openRouter.chat.completions
       .create({
         model: model,
-        messages: [
-          {
-            role: "system",
-            content: "불필요한 경우 1000 토큰 이내로 응답하세요",
-          },
-          { role: "user", content: prompt },
-        ],
+        messages: message_to_ai,
       })
       .catch((error) => {
         logger.error(`응답 생성 중 오류: ${error.status}, ${error.name}`);
