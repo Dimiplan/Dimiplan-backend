@@ -36,7 +36,7 @@ const summarizeMemory = async (userId, room) => {
   try {
     const response = await openRouter.chat.completions
       .create({
-        model: "google/gemini-flash-1.5-8b",
+        model: "openai/gpt-4.1-nano",
         messages: [
           {
             role: "system",
@@ -71,7 +71,7 @@ const generateAutoResponse = async (userId, prompt, room) => {
     // 모델 선택 로직
     const modelSelection = await openRouter.chat.completions
       .create({
-        model: "google/gemini-flash-1.5-8b",
+        model: "openai/gpt-4.1-nano" ,
         messages: [
           {
             role: "system",
@@ -93,11 +93,20 @@ const generateAutoResponse = async (userId, prompt, room) => {
         logger.error(`모델 선택 중 오류: ${error.status}, ${error.name}`);
         throw error;
       });
-
+    let selectedModelIndex = 0;
+    let title = undefined;
+    try {
     // 선택된 모델 인덱스 및 제목 추출
-    const { model: selectedModelIndex, title } = JSON.parse(
-      modelSelection.choices[0].message.content,
-    );
+      const parsedResponse = JSON.parse(
+        modelSelection.choices[0].message.content,
+      );
+      selectedModelIndex = parsedResponse.model;
+      title = parsedResponse.title;
+    } catch (error) {
+      logger.error("모델 선택 중 에러:", error);
+      logger.verbose(modelSelection.choices[0].message.content);
+      throw error;
+    }
     const model = FREE_MODELS[selectedModelIndex];
 
     logger.info(`선택된 모델: ${model}`);
@@ -160,7 +169,7 @@ const generateCustomResponse = async (userId, prompt, model, room) => {
     if (!room) {
       const modelSelection = await openRouter.chat.completions
         .create({
-          model: "google/gemini-flash-1.5-8b",
+          model: "openai/gpt-4.1-nano",
           messages: [
             {
               role: "system",
