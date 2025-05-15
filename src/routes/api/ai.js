@@ -114,7 +114,6 @@ router.post("/auto", async (req, res) => {
     logger.verbose(
       `AI 응답 생성 성공 - 사용자: ${req.userId}, 채팅방ID: ${room}`,
     );
-    console.log(response);
     res.status(200).json({ message: response });
   } catch (error) {
     logger.error(`AI 응답 생성 중 오류`, error);

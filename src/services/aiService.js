@@ -81,7 +81,6 @@ const generateAutoResponse = async (userId, prompt, room) => {
       (!room
         ? "결과는 {model: integer, title: string}의 JSON 형식으로 반환"
         : "결과는 {model: integer}의 JSON 형식으로 반환");
-    console.log("^ " + systemPrompt);
     const modelSelection = await openRouter.chat.completions
       .create({
         model: "openai/gpt-4.1-mini",
