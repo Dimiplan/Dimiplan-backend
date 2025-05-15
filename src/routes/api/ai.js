@@ -111,7 +111,6 @@ router.post("/auto", async (req, res) => {
     // AI 응답 생성
     const response = await generateAutoResponse(req.userId, prompt, room);
 
-
     logger.verbose(
       `AI 응답 생성 성공 - 사용자: ${req.userId}, 채팅방ID: ${room}`,
     );
