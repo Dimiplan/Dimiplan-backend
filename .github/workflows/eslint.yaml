@@ -16,9 +16,9 @@ jobs:
     name: Validate Linting
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
       security-events: write
-      actions: read
+      actions: write
     steps:
       - uses: actions/checkout@v4
 
