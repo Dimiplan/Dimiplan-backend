@@ -7,7 +7,7 @@ import AdminJSExpress from '@adminjs/express';
 import { ComponentLoader } from 'adminjs';
 import session from 'express-session';
 import { createClient } from 'redis';
-import ConnectRedis from 'connect-redis';
+import { RedisStore } from 'connect-redis';
 import logger from '../utils/logger.mjs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -232,14 +232,13 @@ const pages = {
  */
 const initAdminRouter = async (app) => {
   // Set up Redis session store (reuse existing Redis connection)
-  const RedisStore = ConnectRedis(session);
   const redisClient = createClient({ url: 'redis://127.0.0.1:6379' });
   await redisClient.connect().catch(err => {
     logger.error('Admin Redis connection error:', err);
     throw err;
   });
-  
-  const sessionStore = new RedisStore({
+
+  const redisStore = new RedisStore({
     client: redisClient,
     prefix: 'dimiplan:admin:',
   });
@@ -280,7 +279,7 @@ const initAdminRouter = async (app) => {
       cookiePassword: process.env.ADMIN_COOKIE_PASSWORD || 'secure-admin-password-12345'
     },
     {
-      store: sessionStore,
+      store: redisStore,
       resave: false,
       saveUninitialized: false,
       secret: process.env.ADMIN_SESSION_SECRET || 'secure-admin-session-12345',

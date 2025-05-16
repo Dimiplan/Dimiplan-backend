@@ -20,7 +20,7 @@
     "@adminjs/bundler": "^3.0.0",
     "@adminjs/design-system": "^4.1.1",
     "@adminjs/express": "^6.1.1",
-    "@adminjs/sql": "^2.2.1",
+    "@adminjs/sql": "^2.2.6",
     "adminjs": "^7.5.5",
     "connect-redis": "^8.0.3",
     "connect-session-knex": "^5.0.0",
