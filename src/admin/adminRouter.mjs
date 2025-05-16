@@ -154,7 +154,7 @@ const logFileHandler = async (request, response, context) => {
 // Define resources using Knex adapter
 const resources = [
   {
-    resource: new Resource({ db, database: new Database(db, {type: "mysql"}), table: 'users' }),
+    resource: { database: new Database(db, {type: "mysql"}), table: 'users' },
     options: {
       properties: {
         id: { isVisible: true },
@@ -173,7 +173,7 @@ const resources = [
     }
   },
   {
-    resource: new Resource({ db, database: new Database(db, {type: "mysql"}), table: 'planner' }),
+    resource: { database: new Database(db, {type: "mysql"}), table: 'planner' },
     options: {
       properties: {
         owner: { isVisible: true },
@@ -186,7 +186,7 @@ const resources = [
     }
   },
   {
-    resource: new Resource({ db, database: new Database(db, {type: "mysql"}), table: 'plan' }),
+    resource: { database: new Database(db, {type: "mysql"}), table: 'plan' },
     options: {
       properties: {
         owner: { isVisible: true },
@@ -203,7 +203,7 @@ const resources = [
     }
   },
   {
-    resource: new Resource({ db, database: new Database(db, {type: "mysql"}), table: 'chat_rooms' }),
+    resource: { database: new Database(db, {type: "mysql"}), table: 'chat_rooms' },
     options: {
       properties: {
         owner: { isVisible: true },
