@@ -37,13 +37,13 @@ const summarizeMemory = async (userId, room) => {
   try {
     const response = await openRouter.chat.completions
       .create({
-        model: "openai/gpt-4.1-nano",
+        model: "openai/gpt-4.1-mini",
         messages: [
           {
             role: "system",
             content:
-              "다음 대화 내용을 요약하여 AI가 쉽게 이해할 수 있도록 작성하세요:\n" +
-              "결과는 {summary: t} 형식으로 반환",
+              "다음 대화 내용을 요약하여 이후 AI가 쉽게 이해할 수 있도록 작성하세요, 디테일한 값을 잃지 않아야 합니다.:\n" +
+              "결과는 {summary: string}의 JSON 형식으로 반환",
           },
           { role: "user", content: await getChatMessages(userId, room) },
         ],
@@ -151,7 +151,7 @@ const generateAutoResponse = async (userId, prompt, room) => {
       aiResponseText,
     );
 
-    return aiResponseText;
+    return {message: aiResponseText, room};
   } catch (error) {
     logger.error("AI 응답 생성 중 에러:", error);
     throw error;
