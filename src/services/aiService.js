@@ -66,6 +66,7 @@ const summarizeMemory = async (userId, room) => {
 
     // OpenAI 응답에서 JSON 파싱 및 요약 추출
     const { summary } = JSON.parse(response.choices[0].message.content.trim());
+    logger.verbose("메모리 요약:", summary);
     return summary;
   } catch (error) {
     logger.error("메모리 요약 중 에러:", error);
