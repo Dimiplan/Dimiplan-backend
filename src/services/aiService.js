@@ -32,28 +32,41 @@ const PAID_MODELS = {
   O3: "openai/o3",
 };
 
+/**
+ * 채팅 이력을 요약해 메모리로 전달
+ *
+ * @param {string} userId - 사용자 ID
+ * @param {number|string} room - 채팅방 ID
+ * @returns {Promise<string>} 요약 문자열
+ */
 const summarizeMemory = async (userId, room) => {
   if (!room) return "No previous messages";
+
+  // 1) 데이터베이스에서 기존 메시지들을 가져온 후 문자열로 직렬화
+  //    (배열로 올 수 있으므로 안전하게 처리)
+  const rawMessages = await getChatMessages(userId, room);
+  const history = Array.isArray(rawMessages)
+    ? rawMessages.join("\n")
+    : String(rawMessages);
+
   try {
-    const response = await openRouter.chat.completions
-      .create({
-        model: "openai/gpt-4.1-mini",
-        messages: [
-          {
-            role: "system",
-            content:
-              "다음 대화 내용을 요약하여 이후 AI가 쉽게 이해할 수 있도록 작성하세요, 디테일한 값을 잃지 않아야 합니다.:\n" +
-              "결과는 {summary: string}의 JSON 형식으로 반환",
-          },
-          { role: "user", content: await getChatMessages(userId, room) },
-        ],
-      })
-      .catch((error) => {
-        logger.error(`메모리 요약 중 오류: ${error.status}, ${error.name}`);
-        throw error;
-      });
-    console.log(response);
-    return JSON.parse(response.choices[0].message.content)["summary"];
+    const response = await openRouter.chat.completions.create({
+      model: "openai/gpt-4.1-mini",
+      messages: [
+        {
+          role: "system",
+          content:
+            "다음 대화 내용을 요약하여 이후 AI가 쉽게 이해할 수 있도록 작성하세요. " +
+            "디테일을 잃지 말고 결과를 다음 JSON 형식 **한 줄**로만 응답하세요:\n" +
+            '{"summary":"..."}',
+        },
+        { role: "user", content: history },
+      ],
+    });
+
+    // OpenAI 응답에서 JSON 파싱 및 요약 추출
+    const { summary } = JSON.parse(response.choices[0].message.content.trim());
+    return summary;
   } catch (error) {
     logger.error("메모리 요약 중 에러:", error);
     throw error;
