@@ -268,15 +268,13 @@ const initAdminRouter = async (app) => {
 
   const admin = new AdminJS(adminOptions);
 
-  // Set up authentication for admin panel
+  // Build authenticated router: pass undefined as predefinedRouter to ensure express.Router is used
   const adminRouter = buildAuthenticatedRouter(
     admin,
     {
       authenticate: async (email, password) => {
-        // Admin credentials should be stored securely in environment variables
         const adminEmail = process.env.ADMIN_EMAIL || 'admin@dimiplan.com';
         const adminPassword = process.env.ADMIN_PASSWORD || 'admin123';
-        
         if (email === adminEmail && password === adminPassword) {
           return { email: adminEmail };
         }
@@ -285,6 +283,7 @@ const initAdminRouter = async (app) => {
       cookieName: 'dimiplan.admin',
       cookiePassword: process.env.ADMIN_COOKIE_PASSWORD || 'secure-admin-password-12345'
     },
+    undefined,
     {
       store: redisStore,
       resave: false,
@@ -293,7 +292,7 @@ const initAdminRouter = async (app) => {
       cookie: {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        maxAge: 24 * 60 * 60 * 1000 // 24 hours
+        maxAge: 24 * 60 * 60 * 1000
       },
       name: 'dimiplan.admin.sid'
     }
