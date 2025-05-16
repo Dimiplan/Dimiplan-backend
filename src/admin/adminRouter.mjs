@@ -15,7 +15,7 @@ import fs from 'fs';
 import express from 'express';
 
 // Import Knex adapter
-import { Database, Resource } from '@adminjs/sql';
+import Adapter, { Database, Resource } from '@adminjs/sql';
 
 // Models
 import db from '../config/db.mjs';
@@ -151,10 +151,17 @@ const logFileHandler = async (request, response, context) => {
   }
 };
 
+const db_for_resources = await new Adapter('mysql', {
+  host: process.env.DB_HOST,
+  port: parseInt(process.env.DB_PORT, 10),
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME
+}).init();
 // Define resources using Knex adapter
 const resources = [
   {
-    resource: { database: new Database(db, {type: "mysql"}), table: 'users' },
+    resource: db_for_resources.table('users'),
     options: {
       properties: {
         id: { isVisible: true },
@@ -173,7 +180,7 @@ const resources = [
     }
   },
   {
-    resource: { database: new Database(db, {type: "mysql"}), table: 'planner' },
+    resource: db_for_resources.table('planner'),
     options: {
       properties: {
         owner: { isVisible: true },
@@ -186,7 +193,7 @@ const resources = [
     }
   },
   {
-    resource: { database: new Database(db, {type: "mysql"}), table: 'plan' },
+    resource: db_for_resources.table('plan'),
     options: {
       properties: {
         owner: { isVisible: true },
@@ -203,7 +210,7 @@ const resources = [
     }
   },
   {
-    resource: { database: new Database(db, {type: "mysql"}), table: 'chat_rooms' },
+    resource: db_for_resources.table('chat_rooms'),
     options: {
       properties: {
         owner: { isVisible: true },
