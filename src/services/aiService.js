@@ -151,7 +151,7 @@ const generateAutoResponse = async (userId, prompt, room) => {
       aiResponseText,
     );
 
-    return {message: aiResponseText, room};
+    return { message: aiResponseText, room };
   } catch (error) {
     logger.error("AI 응답 생성 중 에러:", error);
     throw error;
