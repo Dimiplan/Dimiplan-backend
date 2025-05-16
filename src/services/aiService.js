@@ -1,3 +1,4 @@
+/Users/coder/Desktop/WebProjects/Dimiplan-backend/src/services/aiService.js
 /**
  * AI 서비스
  * OpenRouter AI API와의 상호작용 관리
@@ -45,9 +46,12 @@ const summarizeMemory = async (userId, room) => {
 
   // 1) 데이터베이스에서 기존 메시지들을 가져온 후 문자열로 직렬화
   //    (배열로 올 수 있으므로 안전하게 처리)
+  // getChatMessages는 [{ owner, message, ... }, ...] 형태를 반환
   const rawMessages = await getChatMessages(userId, room);
+
+  // 메시지 본문만 추출해 한 줄씩 이어붙임
   const history = Array.isArray(rawMessages)
-    ? rawMessages.join("\n")
+    ? rawMessages.map((m) => m.message).join("\n")
     : String(rawMessages);
 
   try {
@@ -58,14 +62,13 @@ const summarizeMemory = async (userId, room) => {
           role: "system",
           content:
             "다음 대화 내용을 요약하여 이후 AI가 쉽게 이해할 수 있도록 작성하세요. " +
-            "디테일을 잃지 말고 결과를 다음 JSON 형식 **한 줄**로만 응답하세요:\n" +
-            '{"summary":"..."}',
+            "디테일과 구체적 내용을 잃지 말고 요약하세요",
         },
         { role: "user", content: history },
       ],
     });
-    logger.verbose("메모리 요약 응답:", response);
-    const { summary } = JSON.parse(response.choices[0].message.content.trim());
+    logger.verbose("메모리 요약 응답:", response.choices[0].message.content.trim());
+    const { summary } = response.choices[0].message.content.trim();
     logger.verbose("메모리 요약:", summary);
     return summary;
   } catch (error) {
