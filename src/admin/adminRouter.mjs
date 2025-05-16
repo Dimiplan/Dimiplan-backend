@@ -152,7 +152,7 @@ const logFileHandler = async (request, response, context) => {
 };
 
 const db_for_resources = await new Adapter('mysql', {
-  host: process.env.DB_HOST,
+  host: "127.0.0.1",
   port: parseInt(process.env.DB_PORT, 10),
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
