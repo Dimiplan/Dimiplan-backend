@@ -224,7 +224,6 @@ const pages = {
  */
 const initAdminRouter = async (app) => {
   // Set up Redis session store (reuse existing Redis connection)
-  const RedisStore = RedisStore(session);
   const redisClient = createClient({ url: "redis://127.0.0.1:6379" });
   await redisClient.connect().catch((err) => {
     logger.error("Admin Redis connection error:", err);

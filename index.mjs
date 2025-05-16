@@ -6,9 +6,9 @@ import cors from "cors";
 import session from "express-session";
 import passport from "passport";
 import helmet from "helmet";
-import { getSessionConfig } from "./src/config/sessionConfig";
+import { getSessionConfig } from "./src/config/sessionConfig.mjs";
 import logger from "./src/utils/logger.mjs";
-import initAdminRouter from "./src/admin/adminRouter"; // 새로 추가
+import initAdminRouter from "./src/admin/adminRouter.mjs"; // 새로 추가
 
 import { createServer } from "https";
 import { readFileSync } from "fs";
@@ -115,20 +115,20 @@ const initializeApp = async () => {
   // ...
 
   // 세션 초기화
-  await initializeSession(app);
+  await initializeSession(app).then(async ()=>{
+    // AdminJS 라우터 초기화 및 등록
+    try {
+      const { admin, adminRouter } = await initAdminRouter(app);
+      app.use(admin.options.rootPath, adminRouter);
+      logger.info(`AdminJS 패널 초기화 완료: ${admin.options.rootPath}`);
+    } catch (error) {
+      logger.error("AdminJS 초기화 오류:", error);
+    }
+  });
 
   // 라우트 설정
   app.use("/auth", authRouter); // 인증 관련 라우터
   app.use("/api", apiRouter); // API 관련 라우터
-
-  // AdminJS 라우터 초기화 및 등록
-  try {
-    const { admin, adminRouter } = await initAdminRouter(app);
-    app.use(admin.options.rootPath, adminRouter);
-    logger.info(`AdminJS 패널 초기화 완료: ${admin.options.rootPath}`);
-  } catch (error) {
-    logger.error("AdminJS 초기화 오류:", error);
-  }
 
   // 전역 에러 핸들링 미들웨어
   app.use((err, req, res, next) => {
