@@ -66,7 +66,10 @@ const summarizeMemory = async (userId, room) => {
         { role: "user", content: history },
       ],
     });
-    logger.verbose("메모리 요약 응답:", response.choices[0].message.content.trim());
+    logger.verbose(
+      "메모리 요약 응답:",
+      response.choices[0].message.content.trim(),
+    );
     const { summary } = response.choices[0].message.content.trim();
     logger.verbose("메모리 요약:", summary);
     return summary;
