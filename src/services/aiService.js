@@ -52,7 +52,7 @@ const summarizeMemory = async (userId, room) => {
         logger.error(`메모리 요약 중 오류: ${error.status}, ${error.name}`);
         throw error;
       });
-
+    console.log(response);
     return JSON.parse(response.choices[0].message.content)["summary"];
   } catch (error) {
     logger.error("메모리 요약 중 에러:", error);
