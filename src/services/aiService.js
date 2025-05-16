@@ -73,7 +73,10 @@ const summarizeMemory = async (userId, room) => {
     try {
       summaryText = JSON.parse(raw).summary;
     } catch (e) {
-      logger.warn("요약 응답 JSON 파싱 실패, 원본 문자열을 그대로 사용합니다:", e);
+      logger.warn(
+        "요약 응답 JSON 파싱 실패, 원본 문자열을 그대로 사용합니다:",
+        e,
+      );
       summaryText = raw;
     }
 
