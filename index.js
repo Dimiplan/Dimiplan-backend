@@ -104,7 +104,10 @@ app.use((req, res, next) => {
 });
 
 // 정적 파일 서빙
-app.use('/admin/public', express.static(path.join(__dirname, 'src/admin/public')));
+app.use(
+  "/admin/public",
+  express.static(path.join(__dirname, "src/admin/public")),
+);
 
 // 앱 초기화 함수
 const initializeApp = async () => {
@@ -117,7 +120,7 @@ const initializeApp = async () => {
   // 라우트 설정
   app.use("/auth", authRouter); // 인증 관련 라우터
   app.use("/api", apiRouter); // API 관련 라우터
-  
+
   // AdminJS 라우터 초기화 및 등록
   try {
     const { admin, adminRouter } = await initAdminRouter(app);
