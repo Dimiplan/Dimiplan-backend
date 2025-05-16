@@ -3,14 +3,10 @@
  * OpenRouter AI API와의 상호작용 관리
  * 자동 모델 선택 및 AI 응답 생성 기능 제공
  */
-const OpenAI = require("openai");
-require("../config/dotenv"); // 환경 변수 로드
-const logger = require("../utils/logger");
-const {
-  addChatMessages,
-  createChatRoom,
-  getChatMessages,
-} = require("../models/chatModel");
+import OpenAI from "openai";
+import "../config/dotenv.mjs"; // 환경 변수 로드
+import logger from "../utils/logger.mjs";
+import { addChatMessages, createChatRoom, getChatMessages } from "../models/chatModel.mjs";
 
 // OpenRouter API 클라이언트 초기화
 const openRouter = new OpenAI({
@@ -95,7 +91,7 @@ const summarizeMemory = async (userId, room) => {
  * @param {string} prompt - 사용자 입력 프롬프트
  * @returns {Promise<Object>} AI 응답 객체
  */
-const generateAutoResponse = async (userId, prompt, room) => {
+export const generateAutoResponse = async (userId, prompt, room) => {
   try {
     // 모델 선택 로직
     const systemPrompt =
@@ -194,7 +190,7 @@ const generateAutoResponse = async (userId, prompt, room) => {
  * @param {string} model - 사용자가 선택한 AI 모델
  * @returns {Promise<Object>} AI 응답 객체
  */
-const generateCustomResponse = async (userId, prompt, model, room) => {
+export const generateCustomResponse = async (userId, prompt, model, room) => {
   try {
     let message_to_ai = [];
     if (!room) {
@@ -272,7 +268,3 @@ const generateCustomResponse = async (userId, prompt, model, room) => {
   }
 };
 
-module.exports = {
-  generateAutoResponse,
-  generateCustomResponse,
-};

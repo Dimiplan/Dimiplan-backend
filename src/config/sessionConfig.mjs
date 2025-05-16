@@ -2,13 +2,13 @@
  * 세션 구성 모듈
  * 안전한 세션 설정 및 Redis 기반 세션 관리를 위한 유틸리티 제공
  */
-const { generateSecureToken } = require("../utils/cryptoUtils");
-const logger = require("../utils/logger");
-const { RedisStore } = require("connect-redis");
-const { createClient } = require("redis");
-const { promisify } = require("util");
+import { generateSecureToken } from "../utils/cryptoUtils.mjs";
+import logger from "../utils/logger.mjs";
+import { RedisStore } from "connect-redis";
+import { createClient } from "redis";
+import { promisify } from "util";
 
-require("./dotenv"); // 환경 변수 로드
+import "./dotenv.mjs"; // 환경 변수 로드
 
 // 세션 비밀 키 (프로덕션에서는 환경 변수로 관리)
 const SESSION_SECRET = process.env.SESSION_SECRET || generateSecureToken();
@@ -21,7 +21,7 @@ let redisStore;
  * Redis 클라이언트 초기화
  * @returns {Promise<Object>} Redis 클라이언트 객체
  */
-const initRedisClient = async () => {
+export const initRedisClient = async () => {
   if (redisClient) return redisClient;
 
   // Redis 연결 설정
@@ -63,7 +63,7 @@ const initRedisClient = async () => {
  * Redis 기반 세션 저장소 구성
  * @returns {Object} 세션 구성 옵션 객체
  */
-const getSessionConfig = async () => {
+export const getSessionConfig = async () => {
   // Redis 클라이언트 초기화
   await initRedisClient().catch((err) => {
     logger.error("Redis 초기화 실패, 메모리 세션으로 폴백합니다:", err);
@@ -91,7 +91,7 @@ const getSessionConfig = async () => {
  * @param {Object} session - 세션 객체
  * @param {string} userId - 저장할 평문 사용자 ID
  */
-const storeUserInSession = (session, userId) => {
+export const storeUserInSession = (session, userId) => {
   // Passport 형식으로 사용자 ID 저장
   if (!session.passport) {
     session.passport = {};
@@ -104,7 +104,7 @@ const storeUserInSession = (session, userId) => {
  * @param {Object} session - 세션 객체
  * @returns {string|null} 사용자 ID 또는 null
  */
-const getUserFromSession = (session) => {
+export const getUserFromSession = (session) => {
   logger.verbose("세션 정보:", session);
   return session?.passport?.user?.id || null;
 };
@@ -112,16 +112,9 @@ const getUserFromSession = (session) => {
 /**
  * 애플리케이션 종료 시 Redis 연결 해제
  */
-const closeRedisConnection = async () => {
+export const closeRedisConnection = async () => {
   if (redisClient) {
     await redisClient.quit();
     logger.info("Redis 연결이 종료되었습니다");
   }
-};
-
-module.exports = {
-  getSessionConfig,
-  storeUserInSession,
-  getUserFromSession,
-  closeRedisConnection,
 };

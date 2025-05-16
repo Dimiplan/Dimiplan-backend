@@ -2,47 +2,46 @@
  * AdminJS Dashboard Router
  * Provides administrative interface with secured access
  */
-const AdminJS = require("adminjs");
-const AdminJSExpress = require("@adminjs/express");
-const { ComponentLoader } = require("adminjs");
-const session = require("express-session");
-const ConnectRedis = require("connect-redis");
-const { createClient } = require("redis");
-const logger = require("../utils/logger");
-const path = require("path");
-const fs = require("fs");
-const express = require("express");
+import AdminJS from "adminjs";
+import AdminJS_Express from "@adminjs/express";
+import { ComponentLoader } from "adminjs";
+import session from "express-session";
+import { RedisStore } from "connect-redis";
+import { createClient } from "redis";
+import logger from "../utils/logger.mjs";
+import { join, normalize } from "path";
+import { existsSync, readdirSync, statSync, openSync, readSync, closeSync } from "fs";
+import { static as staticMiddleware } from "express";
 
 // Models
-const db = require("../config/db");
-const { hashUserId } = require("../utils/cryptoUtils");
+import db from "../config/db.mjs";
+import { hashUserId } from "../utils/cryptoUtils.mjs";
 
 // Custom dashboard components
 const componentLoader = new ComponentLoader();
 const Components = {
   Dashboard: componentLoader.add(
     "Dashboard",
-    path.join(__dirname, "./components/dashboard"),
+    join(__dirname, "./components/dashboard"),
   ),
   LogViewer: componentLoader.add(
     "LogViewer",
-    path.join(__dirname, "./components/logViewer"),
+    join(__dirname, "./components/logViewer"),
   ),
 };
 
 // Helper to get log file stats
 const getLogFiles = () => {
-  const logDir = path.join(process.cwd(), "logs");
-  if (!fs.existsSync(logDir)) {
+  const logDir = join(process.cwd(), "logs");
+  if (!existsSync(logDir)) {
     return [];
   }
 
-  return fs
-    .readdirSync(logDir)
+  return readdirSync(logDir)
     .filter((file) => file.endsWith(".log"))
     .map((file) => {
-      const filePath = path.join(logDir, file);
-      const stats = fs.statSync(filePath);
+      const filePath = join(logDir, file);
+      const stats = statSync(filePath);
       return {
         name: file,
         path: filePath,
@@ -55,19 +54,19 @@ const getLogFiles = () => {
 
 // Read log file content
 const readLogFile = (filePath, limit = 1000) => {
-  if (!fs.existsSync(filePath)) {
+  if (!existsSync(filePath)) {
     return { error: "File not found" };
   }
 
   try {
     // Read the last part of the file (most recent logs)
-    const fileSize = fs.statSync(filePath).size;
+    const fileSize = statSync(filePath).size;
     const readSize = Math.min(fileSize, 1024 * 1024); // Max 1MB at a time
     const buffer = Buffer.alloc(readSize);
 
-    const fd = fs.openSync(filePath, "r");
-    fs.readSync(fd, buffer, 0, readSize, fileSize - readSize);
-    fs.closeSync(fd);
+    const fd = openSync(filePath, "r");
+    readSync(fd, buffer, 0, readSize, fileSize - readSize);
+    closeSync(fd);
 
     const content = buffer.toString("utf8");
 
@@ -104,7 +103,7 @@ const dashboardHandler = async () => {
     const chatRoomsCount = await db("chat_rooms").count("* as count").first();
 
     // Get recent log entries
-    const combinedLogPath = path.join(process.cwd(), "logs", "combined.log");
+    const combinedLogPath = join(process.cwd(), "logs", "combined.log");
     const recentLogs = readLogFile(combinedLogPath, 10);
 
     return {
@@ -128,11 +127,11 @@ const logFileHandler = async (request, response, context) => {
   try {
     const { params } = context;
     const fileName = params.fileName;
-    const filePath = path.join(process.cwd(), "logs", fileName);
+    const filePath = join(process.cwd(), "logs", fileName);
 
     // Security check - ensure the file is within logs directory
-    const normalizedPath = path.normalize(filePath);
-    if (!normalizedPath.startsWith(path.join(process.cwd(), "logs"))) {
+    const normalizedPath = normalize(filePath);
+    if (!normalizedPath.startsWith(join(process.cwd(), "logs"))) {
       return { error: "Invalid file path" };
     }
 
@@ -225,7 +224,7 @@ const pages = {
  */
 const initAdminRouter = async (app) => {
   // Set up Redis session store (reuse existing Redis connection)
-  const RedisStore = ConnectRedis(session);
+  const RedisStore = RedisStore(session);
   const redisClient = createClient({ url: "redis://127.0.0.1:6379" });
   await redisClient.connect().catch((err) => {
     logger.error("Admin Redis connection error:", err);
@@ -262,7 +261,7 @@ const initAdminRouter = async (app) => {
   const admin = new AdminJS(adminOptions);
 
   // Set up authentication for admin panel
-  const adminRouter = AdminJSExpress.buildAuthenticatedRouter(
+  const adminRouter = AdminJS_Express.buildAuthenticatedRouter(
     admin,
     {
       authenticate: async (email, password) => {
@@ -294,7 +293,7 @@ const initAdminRouter = async (app) => {
   );
 
   // Serve static files for admin
-  app.use("/admin/assets", express.static(path.join(__dirname, "public")));
+  app.use("/admin/assets", staticMiddleware(join(__dirname, "public")));
 
   // Watch for component changes in development
   if (process.env.NODE_ENV === "development") {
@@ -304,4 +303,4 @@ const initAdminRouter = async (app) => {
   return { admin, adminRouter };
 };
 
-module.exports = initAdminRouter;
+export default initAdminRouter;

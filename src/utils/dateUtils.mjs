@@ -8,7 +8,7 @@
  * @param {Date|string} date - 날짜(Date 객체 또는 ISO 문자열)
  * @returns {string} MySQL 호환 날짜 문자열 (YYYY-MM-DD HH:MM:SS)
  */
-function formatDateForMySQL(date) {
+export function formatDateForMySQL(date) {
   // 입력값을 Date 객체로 변환
   const dateObj = date instanceof Date ? date : new Date(date);
 
@@ -27,7 +27,7 @@ function formatDateForMySQL(date) {
  * 현재 시간을 MySQL datetime 형식으로 반환
  * @returns {string} MySQL 호환 현재 시간 문자열
  */
-function getCurrentMySQLDateTime() {
+export function getCurrentMySQLDateTime() {
   return formatDateForMySQL(new Date());
 }
 
@@ -36,7 +36,7 @@ function getCurrentMySQLDateTime() {
  * @param {Date} [date=현재 날짜] - 기준 날짜
  * @returns {Date} 연도의 첫째 날
  */
-function getYearStartDate(date = new Date()) {
+export function getYearStartDate(date = new Date()) {
   return new Date(date.getFullYear(), 0, 1);
 }
 
@@ -45,13 +45,6 @@ function getYearStartDate(date = new Date()) {
  * @param {Date} [date=현재 날짜] - 기준 날짜
  * @returns {Date} 연도의 마지막 날
  */
-function getYearEndDate(date = new Date()) {
+export function getYearEndDate(date = new Date()) {
   return new Date(date.getFullYear(), 11, 31, 23, 59, 59, 999);
 }
-
-module.exports = {
-  formatDateForMySQL, // MySQL 날짜 형식 변환
-  getCurrentMySQLDateTime, // 현재 MySQL 날짜/시간
-  getYearStartDate, // 연도 시작일
-  getYearEndDate, // 연도 마지막일
-};

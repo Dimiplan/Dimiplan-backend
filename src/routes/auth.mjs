@@ -2,16 +2,16 @@
  * 인증 관련 라우터
  * 구글 OAuth를 사용한 로그인 및 사용자 인증 처리
  */
-const express = require("express");
-const passport = require("passport");
-const { Strategy: GoogleStrategy } = require("passport-google-oauth20");
-const LocalStrategy = require("passport-custom").Strategy; // 추가: 커스텀 전략
-require("../config/dotenv");
-const { createUser, isRegistered } = require("../models/userModel");
-const { storeUserInSession } = require("../config/sessionConfig");
-const logger = require("../utils/logger");
+import { Router } from "express";
+import passport from "passport";
+import { Strategy as GoogleStrategy } from "passport-google-oauth20";
+import { Strategy as LocalStrategy } from "passport-custom"; // 추가: 커스텀 전략
+import "../config/dotenv";
+import { createUser, isRegistered } from "../models/userModel";
+import { storeUserInSession } from "../config/sessionConfig";
+import logger from "../utils/logger.mjs";
 
-const router = express.Router();
+const router = Router();
 
 router.use((req, _res, next) => {
   const headerSid = req.get("x-session-id");
@@ -242,4 +242,4 @@ router.get("/logout", (req, res) => {
   });
 });
 
-module.exports = router;
+export default router;

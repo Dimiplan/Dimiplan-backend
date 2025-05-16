@@ -1,29 +1,29 @@
 // Modified index.js to include AdminJS integration
 
 // 필요한 모듈 불러오기
-const express = require("express");
-const cors = require("cors");
-const session = require("express-session");
-const passport = require("passport");
-const helmet = require("helmet");
-const { getSessionConfig } = require("./src/config/sessionConfig");
-const logger = require("./src/utils/logger");
-const initAdminRouter = require("./src/admin/adminRouter"); // 새로 추가
+import express, { json, urlencoded, static as staticMiddleware } from "express";
+import cors from "cors";
+import session from "express-session";
+import passport from "passport";
+import helmet from "helmet";
+import { getSessionConfig } from "./src/config/sessionConfig";
+import logger from "./src/utils/logger.mjs";
+import initAdminRouter from "./src/admin/adminRouter"; // 새로 추가
 
-const https = require("https");
-const fs = require("fs");
-const path = require("path");
+import { createServer } from "https";
+import { readFileSync } from "fs";
+import { join } from "path";
 
-require("./src/config/dotenv");
+import "./src/config/dotenv";
 
 const sslOptions = {
-  key: fs.readFileSync("./keys/private.pem"),
-  cert: fs.readFileSync("./keys/public.pem"),
+  key: readFileSync("./keys/private.pem"),
+  cert: readFileSync("./keys/public.pem"),
 };
 
 // 라우터 모듈 불러오기
-const authRouter = require("./src/routes/auth");
-const apiRouter = require("./src/routes/api");
+import authRouter from "./src/routes/auth.mjs";
+import apiRouter from "./src/routes/api/index.mjs";
 
 const app = express();
 
@@ -84,8 +84,8 @@ const corsOptions = {
 app.use(cors(corsOptions));
 
 // 요청 본문 크기 제한 설정
-app.use(express.json({ limit: "1mb" })); // JSON 페이로드 크기 제한
-app.use(express.urlencoded({ extended: true, limit: "1mb" })); // URL 인코딩된 페이로드 크기 제한
+app.use(json({ limit: "1mb" })); // JSON 페이로드 크기 제한
+app.use(urlencoded({ extended: true, limit: "1mb" })); // URL 인코딩된 페이로드 크기 제한
 
 // 세션 미들웨어 비동기 초기화
 const initializeSession = async (app) => {
@@ -106,7 +106,7 @@ app.use((req, res, next) => {
 // 정적 파일 서빙
 app.use(
   "/admin/public",
-  express.static(path.join(__dirname, "src/admin/public")),
+  staticMiddleware(join(__dirname, "src/admin/public")),
 );
 
 // 앱 초기화 함수
@@ -144,7 +144,7 @@ let server;
 initializeApp()
   .then((app) => {
     const PORT = process.env.PORT;
-    server = https.createServer(sslOptions, app);
+    server = createServer(sslOptions, app);
     server.listen(PORT, () => {
       logger.info(`서버가 ${PORT} 포트에서 실행 중입니다`);
       logger.info(`AdminJS 대시보드: https://localhost:${PORT}/admin`);
@@ -165,4 +165,4 @@ process.on("SIGTERM", () => {
   });
 });
 
-module.exports = app;
+export default app;

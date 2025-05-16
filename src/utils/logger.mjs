@@ -2,11 +2,11 @@
  * 로깅 유틸리티
  * 민감한 데이터 필터링과 구조화된 로깅 기능 제공
  */
-const winston = require("winston");
+import winston, { addColors, createLogger } from "winston";
 const { format, transports } = winston;
-const fs = require("fs");
-const path = require("path");
-require("../config/dotenv"); // 환경 변수 로드
+import { existsSync, mkdirSync } from "fs";
+import { join } from "path";
+import "../config/dotenv.mjs"; // 환경 변수 로드
 
 // 로그 레벨 정의
 const levels = {
@@ -24,7 +24,7 @@ const colors = {
   verbose: "cyan",
 };
 
-winston.addColors(colors);
+addColors(colors);
 
 /**
  * 안전한 JSON 직렬화 함수
@@ -80,12 +80,12 @@ const safeStringify = (obj) => {
 };
 
 // 로그 디렉토리 정의
-const logDir = path.join(process.cwd(), "logs");
+const logDir = join(process.cwd(), "logs");
 
 // 로그 디렉토리 생성
 try {
-  if (!fs.existsSync(logDir)) {
-    fs.mkdirSync(logDir, { recursive: true, mode: 0o755 });
+  if (!existsSync(logDir)) {
+    mkdirSync(logDir, { recursive: true, mode: 0o755 });
   }
 } catch (err) {
   console.error(`로그 디렉토리 생성 실패: ${err.message}`);
@@ -100,7 +100,7 @@ const logLevel = isTestEnvironment
   : process.env.LOG_LEVEL || "info";
 
 // 로거 생성
-const logger = winston.createLogger({
+export const logger = createLogger({
   level: logLevel,
   levels,
   format: format.combine(
@@ -127,12 +127,12 @@ const logger = winston.createLogger({
       ),
     }),
     new transports.File({
-      filename: path.join(logDir, "combined.log"),
+      filename: join(logDir, "combined.log"),
       maxsize: 5242880, // 5MB
       maxFiles: 5,
     }),
     new transports.File({
-      filename: path.join(logDir, "errors.log"),
+      filename: join(logDir, "errors.log"),
       level: "error",
       maxsize: 5242880, // 5MB
       maxFiles: 5,
@@ -142,7 +142,7 @@ const logger = winston.createLogger({
 });
 
 // 외부 노출 로깅 함수
-module.exports = {
+export default {
   error: (message, meta = {}) => logger.error(message, meta),
   warn: (message, meta = {}) => logger.warn(message, meta),
   info: (message, meta = {}) => logger.info(message, meta),

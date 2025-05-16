@@ -3,9 +3,9 @@
  * 보안 데이터 저장 및 검색을 위한 암호화 기능 제공
  * SHA3 해싱 및 AES 암호화/복호화
  */
-const crypto = require("crypto");
-const { formatDateForMySQL } = require("./dateUtils");
-require("../config/dotenv"); // 환경 변수 로드
+import { createHmac, createHash, timingSafeEqual, createCipheriv, createDecipheriv, randomBytes } from "crypto";
+import { formatDateForMySQL } from "./dateUtils.mjs";
+import "../config/dotenv.mjs"; // 환경 변수 로드
 
 // 마스터 암호화 키 (프로덕션에서는 안전한 저장소에 보관)
 const MASTER_KEY = process.env.CRYPTO_MASTER_KEY;
@@ -21,8 +21,7 @@ const UID_SALT = process.env.UID_SALT;
  */
 const getUserEncryptionKey = (userId) => {
   // 마스터 키와 사용자 ID로부터 결정론적이지만 안전한 키 파생
-  const keyMaterial = crypto
-    .createHmac("sha256", MASTER_KEY)
+  const keyMaterial = createHmac("sha256", MASTER_KEY)
     .update(userId)
     .digest();
 
@@ -30,8 +29,7 @@ const getUserEncryptionKey = (userId) => {
   const key = keyMaterial.slice(0, 32);
 
   // 사용자별 결정론적 초기화 벡터 생성
-  const iv = crypto
-    .createHmac("sha256", MASTER_IV)
+  const iv = createHmac("sha256", MASTER_IV)
     .update(userId)
     .digest()
     .slice(0, 16); // AES는 16바이트 IV 필요
@@ -44,10 +42,9 @@ const getUserEncryptionKey = (userId) => {
  * @param {string} userId - 원본 사용자 ID
  * @returns {string} 해시된 사용자 ID
  */
-const hashUserId = (userId) => {
+export const hashUserId = (userId) => {
   // 레인보우 테이블 공격 방지를 위해 솔트 추가
-  return crypto
-    .createHash("sha3-256")
+  return createHash("sha3-256")
     .update(userId + UID_SALT)
     .digest("hex");
 };
@@ -58,9 +55,9 @@ const hashUserId = (userId) => {
  * @param {string} hashedUserId - 비교할 해시된 사용자 ID
  * @returns {boolean} 일치 여부
  */
-const verifyUserId = (plainUserId, hashedUserId) => {
+export const verifyUserId = (plainUserId, hashedUserId) => {
   const computedHash = hashUserId(plainUserId);
-  return crypto.timingSafeEqual(
+  return timingSafeEqual(
     Buffer.from(computedHash, "hex"),
     Buffer.from(hashedUserId, "hex"),
   );
@@ -72,7 +69,7 @@ const verifyUserId = (plainUserId, hashedUserId) => {
  * @param {string|Object} data - 암호화할 데이터 (객체는 JSON 문자열로 변환)
  * @returns {string} 16진수 문자열로 암호화된 데이터
  */
-const encryptData = (userId, data) => {
+export const encryptData = (userId, data) => {
   try {
     // 데이터 준비
     const dataStr =
@@ -82,7 +79,7 @@ const encryptData = (userId, data) => {
     const { key, iv } = getUserEncryptionKey(userId);
 
     // 암호화 수행
-    const cipher = crypto.createCipheriv("aes-256-cbc", key, iv);
+    const cipher = createCipheriv("aes-256-cbc", key, iv);
     let encrypted = cipher.update(dataStr, "utf8", "hex");
     encrypted += cipher.final("hex");
 
@@ -100,13 +97,13 @@ const encryptData = (userId, data) => {
  * @param {boolean} parseJson - JSON 파싱 여부
  * @returns {string|Object} 복호화된 데이터
  */
-const decryptData = (userId, encryptedData, parseJson = false) => {
+export const decryptData = (userId, encryptedData, parseJson = false) => {
   try {
     // 사용자별 암호화 키 가져오기
     const { key, iv } = getUserEncryptionKey(userId);
 
     // 복호화 수행
-    const decipher = crypto.createDecipheriv("aes-256-cbc", key, iv);
+    const decipher = createDecipheriv("aes-256-cbc", key, iv);
     let decrypted = decipher.update(encryptedData, "hex", "utf8");
     decrypted += decipher.final("utf8");
 
@@ -123,7 +120,7 @@ const decryptData = (userId, encryptedData, parseJson = false) => {
  * @param {string} data - 확인할 데이터
  * @returns {boolean} 암호화된 데이터로 보이는지 여부
  */
-const isEncrypted = (data) => {
+export const isEncrypted = (data) => {
   // AES 암호화 데이터의 최소 길이 및 16진수 형식 확인
   return (
     typeof data === "string" && /^[0-9a-f]+$/i.test(data) && data.length >= 32
@@ -135,24 +132,14 @@ const isEncrypted = (data) => {
  * @param {number} length - 생성할 문자열 길이
  * @returns {string} 랜덤 문자열
  */
-const generateSecureToken = (length = 32) => {
-  return crypto.randomBytes(length).toString("hex");
+export const generateSecureToken = (length = 32) => {
+  return randomBytes(length).toString("hex");
 };
 
 /**
  * MySQL 호환 타임스탬프 생성
  * @returns {string} MySQL 호환 타임스탬프
  */
-const getTimestamp = () => {
+export const getTimestamp = () => {
   return formatDateForMySQL(new Date());
-};
-
-module.exports = {
-  hashUserId, // 사용자 ID 해시
-  verifyUserId, // 사용자 ID 검증
-  encryptData, // 데이터 암호화
-  decryptData, // 데이터 복호화
-  isEncrypted, // 암호화 여부 확인
-  generateSecureToken, // 안전한 토큰 생성
-  getTimestamp, // 타임스탬프 생성
 };

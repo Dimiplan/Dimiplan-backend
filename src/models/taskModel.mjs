@@ -2,22 +2,17 @@
  * 계획 모델
  * 암호화와 함께 모든 계획 관련 데이터베이스 작업을 처리합니다
  */
-const db = require("../config/db");
-const { getNextId } = require("../utils/dbUtils");
-const {
-  hashUserId,
-  encryptData,
-  decryptData,
-  getTimestamp,
-} = require("../utils/cryptoUtils");
-const logger = require("../utils/logger");
+import db from "../config/db.mjs";
+import { getNextId } from "../utils/dbUtils.mjs";
+import {hashUserId, encryptData, decryptData, getTimestamp} from "../utils/cryptoUtils.mjs";
+import logger from "../utils/logger.mjs";
 
 /**
  * 날짜 문자열을 YYYY-MM-DD 형식으로 포맷팅
  * @param {string|null} dateString - 날짜 문자열 또는 null
  * @returns {string|null} - 포맷팅된 날짜 또는 null
  */
-const formatDate = (dateString) => {
+export const formatDate = (dateString) => {
   if (!dateString) return null;
   return new Date(dateString).toISOString().slice(0, 10);
 };
@@ -32,7 +27,7 @@ const formatDate = (dateString) => {
  * @param {number} priority - 우선순위 (기본값: 1)
  * @returns {Promise<Object>} - 생성된 작업 데이터
  */
-const createTask = async (
+export const createTask = async (
   uid,
   contents,
   plannerId,
@@ -98,7 +93,7 @@ const createTask = async (
  * @param {number} id - 작업 ID
  * @returns {Promise<Object|null>} - 작업 데이터 또는 찾지 못한 경우 null
  */
-const getTaskById = async (uid, id) => {
+export const getTaskById = async (uid, id) => {
   try {
     const hashedUid = hashUserId(uid);
     const task = await db("plan").where({ owner: hashedUid, id: id }).first();
@@ -124,7 +119,7 @@ const getTaskById = async (uid, id) => {
  * @param {boolean|null} isCompleted - 완료 상태 (null이면 모든 상태 가져옴)
  * @returns {Promise<Array>} - 작업 객체 배열
  */
-const getTasks = async (uid, plannerId = null, isCompleted = null) => {
+export const getTasks = async (uid, plannerId = null, isCompleted = null) => {
   try {
     const hashedUid = hashUserId(uid);
 
@@ -178,7 +173,7 @@ const getTasks = async (uid, plannerId = null, isCompleted = null) => {
  * @param {Object} updateData - 업데이트할 데이터
  * @returns {Promise<Object>} - 업데이트된 작업 데이터
  */
-const updateTask = async (uid, id, updateData) => {
+export const updateTask = async (uid, id, updateData) => {
   try {
     const hashedUid = hashUserId(uid);
     const task = await db("plan").where({ owner: hashedUid, id: id }).first();
@@ -220,7 +215,7 @@ const updateTask = async (uid, id, updateData) => {
  * @param {number} id - 작업 ID
  * @returns {Promise<boolean>} - 성공 상태
  */
-const deleteTask = async (uid, id) => {
+export const deleteTask = async (uid, id) => {
   try {
     const hashedUid = hashUserId(uid);
     const task = await db("plan").where({ owner: hashedUid, id: id }).first();
@@ -247,7 +242,7 @@ const deleteTask = async (uid, id) => {
  * @param {number} id - 작업 ID
  * @returns {Promise<Object>} - 업데이트된 계획 데이터
  */
-const completeTask = async (uid, id) => {
+export const completeTask = async (uid, id) => {
   try {
     const hashedUid = hashUserId(uid);
     const task = await db("plan").where({ owner: hashedUid, id: id }).first();
@@ -269,11 +264,3 @@ const completeTask = async (uid, id) => {
   }
 };
 
-module.exports = {
-  createTask,
-  getTaskById,
-  getTasks,
-  updateTask,
-  deleteTask,
-  completeTask,
-};

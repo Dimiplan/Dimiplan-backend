@@ -2,16 +2,16 @@
  * 인증 미들웨어
  * 사용자 인증 및 등록 상태를 검증하는 공통 함수 제공
  */
-const { isRegistered } = require("../models/userModel");
-const logger = require("../utils/logger");
-const { hashUserId } = require("../utils/cryptoUtils");
-const { getUserFromSession } = require("../config/sessionConfig");
+import { isRegistered } from "../models/userModel.mjs";
+import logger from "../utils/logger.mjs";
+import { hashUserId } from "../utils/cryptoUtils.mjs";
+import { getUserFromSession } from "../config/sessionConfig.mjs";
 
 /**
  * 사용자 인증 여부를 확인하는 미들웨어
  * 세션 ID 헤더 또는 세션을 통해 사용자 인증
  */
-const isAuthenticated = async (req, res, next) => {
+export const isAuthenticated = async (req, res, next) => {
   try {
     const sessionIdHeader = req.headers["x-session-id"];
     if (sessionIdHeader) {
@@ -95,7 +95,7 @@ const isAuthenticated = async (req, res, next) => {
  * 사용자 등록 여부를 확인하는 미들웨어
  * isAuthenticated 미들웨어 이후에 사용해야 함
  */
-const isUserRegistered = async (req, res, next) => {
+export const isUserRegistered = async (req, res, next) => {
   try {
     // 사용자 등록 상태 확인
     const registered = await isRegistered(req.userId);
@@ -119,7 +119,7 @@ const isUserRegistered = async (req, res, next) => {
  * @param {number} options.maxRequests - 최대 허용 요청 수 (기본값: 100회)
  * @param {string} options.message - 제한 초과 시 메시지 (기본값: 나중에 다시 시도)
  */
-const rateLimit = (options = {}) => {
+export const rateLimit = (options = {}) => {
   const {
     windowMs = 60 * 1000, // 1분
     maxRequests = 100, // 1분당 100회 요청
@@ -163,8 +163,3 @@ const rateLimit = (options = {}) => {
   };
 };
 
-module.exports = {
-  isAuthenticated,
-  isUserRegistered,
-  rateLimit,
-};

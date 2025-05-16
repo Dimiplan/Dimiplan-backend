@@ -2,19 +2,20 @@
   "name": "backend",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "exports": {
+    ".": "./index.mjs",
+    "./admin": "./src/admin/index.mjs",
+    "./auto-pull": "./src/scripts/autoPull.mjs"
+  },
   "scripts": {
-    "dev:node": "nodemon index.js",
-    "dev": "bun --watch index.js",
-    "dev:bun": "bun --watch index.js",
-    "auto-pull": "bun src/scripts/autoPull.js",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "admin:bundle": "bun src/scripts/adminBundle.js"
+    "dev": "bun --watch index.mjs",
+    "auto-pull": "bun src/scripts/autoPull.mjs",
+    "admin:bundle": "bun src/scripts/adminBundle.mjs"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
+  "type": "module",
   "dependencies": {
     "adminjs": "^7.5.5",
     "@adminjs/express": "^6.1.1",

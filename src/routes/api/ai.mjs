@@ -2,20 +2,15 @@
  * AI 채팅 라우터
  * AI 채팅 기능 및 대화방 관리 API 제공
  */
-const express = require("express");
-const { isAuthenticated, isUserRegistered } = require("../../middleware/auth");
-const {
-  createChatRoom,
-  getChatRooms,
-  getChatMessages,
-} = require("../../models/chatModel");
-const {
-  generateAutoResponse,
-  generateCustomResponse,
-} = require("../../services/aiService");
-const logger = require("../../utils/logger");
+import { Router } from "express";
+import { isAuthenticated, isUserRegistered } from "../../middleware/auth.mjs";
+import { createChatRoom, getChatRooms, getChatMessages } from "../../models/chatModel.mjs";
+import {
+  generateAutoResponse, generateCustomResponse,
+}  from "../../services/aiService.mjs";
+import logger from "../../utils/logger.mjs";
 
-const router = express.Router();
+const router = Router();
 
 // 모든 라우트에 인증 및 등록 확인 미들웨어 적용
 router.use(isAuthenticated, isUserRegistered);
@@ -159,4 +154,4 @@ router.post("/custom", async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

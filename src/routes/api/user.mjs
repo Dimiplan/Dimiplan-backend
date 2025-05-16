@@ -2,12 +2,12 @@
  * 사용자 라우터
  * 사용자 정보 관리 및 업데이트 API
  */
-const express = require("express");
-const { getUser, isRegistered, updateUser } = require("../../models/userModel");
-const { isAuthenticated } = require("../../middleware/auth");
-const logger = require("../../utils/logger");
+import { Router } from "express";
+import { getUser, isRegistered, updateUser } from "../../models/userModel.mjs";
+import { isAuthenticated } from "../../middleware/auth.mjs";
+import logger from "../../utils/logger.mjs";
 
-const router = express.Router();
+const router = Router();
 
 /**
  * 사용자 데이터 유효성 검사
@@ -130,4 +130,4 @@ router.get("/get", isAuthenticated, async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

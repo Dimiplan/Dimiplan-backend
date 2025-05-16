@@ -2,18 +2,12 @@
  * 플래너 관리 라우터
  * 플래너 생성, 조회, 수정, 삭제 API 제공
  */
-const express = require("express");
-const { isAuthenticated, isUserRegistered } = require("../../middleware/auth");
-const {
-  createPlanner,
-  getPlannerById,
-  getPlanners,
-  renamePlanner,
-  deletePlanner,
-} = require("../../models/plannerModel");
-const logger = require("../../utils/logger");
+import { Router } from "express";
+import { isAuthenticated, isUserRegistered } from "../../middleware/auth.mjs";
+import { createPlanner, getPlannerById, getPlanners, renamePlanner, deletePlanner } from "../../models/plannerModel.mjs";
+import logger from "../../utils/logger.mjs";
 
-const router = express.Router();
+const router = Router();
 
 // 모든 라우트에 인증 및 등록 확인 미들웨어 적용
 router.use(isAuthenticated, isUserRegistered);
@@ -173,4 +167,4 @@ router.get("/getPlanners", async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

@@ -2,15 +2,10 @@
  * 플래너 모델
  * 암호화와 함께 모든 플래너 관련 데이터베이스 작업을 처리합니다
  */
-const db = require("../config/db");
-const { getNextId, executeTransaction } = require("../utils/dbUtils");
-const {
-  hashUserId,
-  encryptData,
-  decryptData,
-  getTimestamp,
-} = require("../utils/cryptoUtils");
-const logger = require("../utils/logger");
+import db from "../config/db.mjs";
+import { getNextId, executeTransaction } from "../utils/dbUtils.mjs";
+import {hashUserId, encryptData, decryptData, getTimestamp,} from "../utils/cryptoUtils.mjs";
+import logger from "../utils/logger.mjs";
 
 /**
  * 새 플래너 생성
@@ -19,7 +14,7 @@ const logger = require("../utils/logger");
  * @param {number} isDaily - 일일 플래너 여부 (0 또는 1)
  * @returns {Promise<Object>} - 생성된 플래너 데이터
  */
-const createPlanner = async (uid, name, isDaily) => {
+export const createPlanner = async (uid, name, isDaily) => {
   try {
     // 데이터베이스 쿼리를 위해 사용자 ID 해시
     const hashedUid = hashUserId(uid);
@@ -67,7 +62,7 @@ const createPlanner = async (uid, name, isDaily) => {
  * @param {number} id - 플래너 ID
  * @returns {Promise<Object|null>} - 플래너 데이터 또는 찾지 못한 경우 null
  */
-const getPlannerById = async (uid, id) => {
+export const getPlannerById = async (uid, id) => {
   try {
     // 데이터베이스 쿼리를 위해 사용자 ID 해시
     const hashedUid = hashUserId(uid);
@@ -98,7 +93,7 @@ const getPlannerById = async (uid, id) => {
  * @param {string} uid - 사용자 ID
  * @returns {Promise<Array>} - 플래너 객체 배열
  */
-const getPlanners = async (uid) => {
+export const getPlanners = async (uid) => {
   try {
     // 데이터베이스 쿼리를 위해 사용자 ID 해시
     const hashedUid = hashUserId(uid);
@@ -127,7 +122,7 @@ const getPlanners = async (uid) => {
  * @param {string} newName - 새 플래너 이름
  * @returns {Promise<Object>} - 업데이트된 플래너 데이터
  */
-const renamePlanner = async (uid, id, newName) => {
+export const renamePlanner = async (uid, id, newName) => {
   try {
     // 데이터베이스 쿼리를 위해 사용자 ID 해시
     const hashedUid = hashUserId(uid);
@@ -180,7 +175,7 @@ const renamePlanner = async (uid, id, newName) => {
  * @param {number} id - 플래너 ID
  * @returns {Promise<boolean>} - 성공 상태
  */
-const deletePlanner = async (uid, id) => {
+export const deletePlanner = async (uid, id) => {
   try {
     // 데이터베이스 작업을 위해 사용자 ID 해시
     const hashedUid = hashUserId(uid);
@@ -211,12 +206,4 @@ const deletePlanner = async (uid, id) => {
     logger.error("플래너 삭제 오류:", error);
     throw error;
   }
-};
-
-module.exports = {
-  createPlanner,
-  getPlannerById,
-  getPlanners,
-  renamePlanner,
-  deletePlanner,
 };

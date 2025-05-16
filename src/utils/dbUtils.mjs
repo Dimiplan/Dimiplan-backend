@@ -2,8 +2,8 @@
  * 데이터베이스 유틸리티 함수
  * 오류 처리 및 트랜잭션 관리를 위한 공통 데이터베이스 작업 제공
  */
-const db = require("../config/db");
-const logger = require("./logger");
+import db from "../config/db.mjs";
+import logger from "./logger.mjs";
 
 /**
  * 안전한 데이터베이스 트랜잭션 실행
@@ -12,7 +12,7 @@ const logger = require("./logger");
  * @param {Function} transactionFn - 트랜잭션 작업을 포함하는 함수
  * @returns {Promise} 트랜잭션 결과
  */
-const executeTransaction = async (transactionFn) => {
+export const executeTransaction = async (transactionFn) => {
   try {
     return await db.transaction(transactionFn);
   } catch (error) {
@@ -29,7 +29,7 @@ const executeTransaction = async (transactionFn) => {
  * @param {string} idType - ID 유형 (plannerId, planId, roomId, chatId)
  * @returns {Promise<number>} 다음 사용 가능한 ID
  */
-const getNextId = async (uid, idType) => {
+export const getNextId = async (uid, idType) => {
   try {
     // 사용자의 userid 테이블 존재 여부 확인
     const userData = await db("userid")
@@ -72,7 +72,7 @@ const getNextId = async (uid, idType) => {
  *
  * @returns {Promise<boolean>} 데이터베이스 연결 상태
  */
-const testDatabaseConnection = async () => {
+export const testDatabaseConnection = async () => {
   try {
     await db.raw("SELECT 1");
     logger.info("데이터베이스 연결 성공");
@@ -81,10 +81,4 @@ const testDatabaseConnection = async () => {
     logger.error("데이터베이스 연결 실패:", error);
     return false;
   }
-};
-
-module.exports = {
-  executeTransaction, // 트랜잭션 실행
-  getNextId, // 다음 ID 발급
-  testDatabaseConnection, // 데이터베이스 연결 테스트
 };

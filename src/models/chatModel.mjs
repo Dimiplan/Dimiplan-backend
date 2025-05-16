@@ -2,15 +2,10 @@
  * 채팅 모델
  * 암호화와 함께 모든 채팅/AI 관련 데이터베이스 작업을 처리합니다
  */
-const db = require("../config/db");
-const { getNextId } = require("../utils/dbUtils");
-const {
-  hashUserId,
-  encryptData,
-  decryptData,
-  getTimestamp,
-} = require("../utils/cryptoUtils");
-const logger = require("../utils/logger");
+import { db } from "../config/db.mjs";
+import { getNextId } from "../utils/dbUtils.mjs";
+import {hashUserId, encryptData, decryptData, getTimestamp,} from "../utils/cryptoUtils.mjs";
+import logger from "../utils/logger.mjs";
 
 /**
  * 새로운 채팅방 생성
@@ -18,7 +13,7 @@ const logger = require("../utils/logger");
  * @param {string} name - 방 이름
  * @returns {Promise<Object>} - 생성된 방 데이터
  */
-const createChatRoom = async (uid, name) => {
+export const createChatRoom = async (uid, name) => {
   try {
     const hashedUid = hashUserId(uid);
     const roomId = await getNextId(hashedUid, "roomId");
@@ -50,7 +45,7 @@ const createChatRoom = async (uid, name) => {
  * @param {string} uid - 사용자 ID
  * @returns {Promise<Array>} - 채팅방 객체 배열
  */
-const getChatRooms = async (uid) => {
+export const getChatRooms = async (uid) => {
   try {
     const hashedUid = hashUserId(uid);
     const rooms = await db("chat_rooms")
@@ -77,7 +72,7 @@ const getChatRooms = async (uid) => {
  * @param {string} aiMessage - AI 응답 메시지
  * @returns {Promise<Array>} - 추가된 메시지 객체
  */
-const addChatMessages = async (uid, roomId, userMessage, aiMessage) => {
+export const addChatMessages = async (uid, roomId, userMessage, aiMessage) => {
   try {
     const hashedUid = hashUserId(uid);
 
@@ -143,7 +138,7 @@ const addChatMessages = async (uid, roomId, userMessage, aiMessage) => {
  * @param {number} roomId - 방 ID
  * @returns {Promise<Array>} - 채팅 메시지 객체 배열
  */
-const getChatMessages = async (uid, roomId) => {
+export const getChatMessages = async (uid, roomId) => {
   try {
     const hashedUid = hashUserId(uid);
     const messages = await db("chat")
@@ -168,7 +163,7 @@ const getChatMessages = async (uid, roomId) => {
  * @param {number} roomId - 방 ID
  * @returns {Promise<boolean>} - 성공 상태
  */
-const deleteChatRoom = async (uid, roomId) => {
+export const deleteChatRoom = async (uid, roomId) => {
   try {
     const hashedUid = hashUserId(uid);
 
@@ -198,12 +193,4 @@ const deleteChatRoom = async (uid, roomId) => {
     logger.error("채팅방 삭제 오류:", error);
     throw error;
   }
-};
-
-module.exports = {
-  createChatRoom,
-  getChatRooms,
-  addChatMessages,
-  getChatMessages,
-  deleteChatRoom,
 };

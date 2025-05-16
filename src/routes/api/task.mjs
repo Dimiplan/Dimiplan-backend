@@ -2,18 +2,12 @@
  * 작업(Task) 관련 라우터
  * 작업 생성, 조회, 수정, 삭제 API 제공
  */
-const express = require("express");
-const { isAuthenticated, isUserRegistered } = require("../../middleware/auth");
-const {
-  createTask,
-  getTasks,
-  updateTask,
-  deleteTask,
-  completeTask,
-} = require("../../models/taskModel");
-const logger = require("../../utils/logger");
+import { Router } from "express";
+import { isAuthenticated, isUserRegistered } from "../../middleware/auth.mjs";
+import { createTask, getTasks, updateTask, deleteTask, completeTask } from "../../models/taskModel.mjs";
+import logger from "../../utils/logger.mjs";
 
-const router = express.Router();
+const router = Router();
 
 // 모든 라우트에 인증 및 등록 확인 미들웨어 적용
 router.use(isAuthenticated, isUserRegistered);
@@ -194,4 +188,4 @@ router.get("/get", async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

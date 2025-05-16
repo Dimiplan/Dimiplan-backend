@@ -2,12 +2,12 @@
  * 데이터베이스 연결 구성
  * MySQL 데이터베이스 연결 및 Knex.js 설정 관리
  */
-const knex = require("knex");
-require("./dotenv"); // 환경 변수 로드
-const logger = require("../utils/logger");
+import knex from "knex";
+import "./dotenv.mjs"; // 환경 변수 로드
+import logger from "../utils/logger.mjs";
 
 // 데이터베이스 연결 옵션
-const options = {
+export const options = {
   host: process.env.DB_HOST,
   port: parseInt(process.env.DB_PORT, 10),
   user: process.env.DB_USER,
@@ -36,7 +36,7 @@ if (logger.isTestEnvironment) {
 }
 
 // Knex.js 데이터베이스 인스턴스 생성
-const db = knex(dbConfig);
+export const db = knex(dbConfig);
 
 // 테스트 환경에서 쿼리 로깅
 if (logger.isTestEnvironment) {
@@ -50,5 +50,4 @@ db.on("error", (error) => {
   logger.error("데이터베이스 연결 오류:", error);
 });
 
-module.exports = db;
-module.exports.options = options;
+export default db;

@@ -1,12 +1,7 @@
-const db = require("../config/db");
-const { getNextId, executeTransaction } = require("../utils/dbUtils");
-const {
-  hashUserId,
-  encryptData,
-  decryptData,
-  getTimestamp,
-} = require("../utils/cryptoUtils");
-const logger = require("../utils/logger");
+import db from "../config/db.mjs";
+import { getNextId, executeTransaction } from "../utils/dbUtils.mjs";
+import { hashUserId, encryptData, decryptData, getTimestamp } from "../utils/cryptoUtils.mjs";
+import { error as _error } from "../utils/logger.mjs";
 
 /**
  * 새 wordList 생성
@@ -16,7 +11,7 @@ const logger = require("../utils/logger");
  * @returns {Promise<Object>} - 생성된 단어장 데이터
  */
 
-const createWordList = async (name) => {
+export const createWordList = async (name) => {
   try {
     // 같은 이름의 단어장 존재 여부 확인
     const existingWordList = await db("wordLists")
@@ -32,12 +27,12 @@ const createWordList = async (name) => {
 
     return { name: name };
   } catch (error) {
-    logger.error("단어장 생성 오류:", error);
+    _error("단어장 생성 오류:", error);
     throw error;
   }
 };
 
-const deleteWordList = async (id) => {
+export const deleteWordList = async (id) => {
   try {
     // 단어장 존재 여부 확인
     const existingWordList = await db("wordLists").where({ id: id }).first();
@@ -49,12 +44,7 @@ const deleteWordList = async (id) => {
     // 단어장 삭제
     await db("wordLists").where({ id: id }).del();
   } catch (error) {
-    logger.error("단어장 삭제 오류:", error);
+    _error("단어장 삭제 오류:", error);
     throw error;
   }
-};
-
-module.exports = {
-  createWordList,
-  deleteWordList,
 };

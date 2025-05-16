@@ -4,16 +4,16 @@
  * This script bundles the AdminJS React components for production use.
  * Run this script before deploying to production with: npm run admin:bundle
  */
-const { bundle } = require("@adminjs/bundler");
-const path = require("path");
-const fs = require("fs");
+import { bundle } from "@adminjs/bundler";
+import { join } from "path";
+import { existsSync, mkdirSync } from "fs";
 
 // Output directory for bundled components
-const outDir = path.join(__dirname, "../admin/.adminjs");
+const outDir = join(__dirname, "../admin/.adminjs");
 
 // Ensure the output directory exists
-if (!fs.existsSync(outDir)) {
-  fs.mkdirSync(outDir, { recursive: true });
+if (!existsSync(outDir)) {
+  mkdirSync(outDir, { recursive: true });
 }
 
 const bundleComponents = async () => {
@@ -22,7 +22,7 @@ const bundleComponents = async () => {
   try {
     // Bundle Dashboard component
     await bundle({
-      componentEntryPath: path.join(
+      componentEntryPath: join(
         __dirname,
         "../admin/components/dashboard.jsx",
       ),
@@ -32,7 +32,7 @@ const bundleComponents = async () => {
 
     // Bundle LogViewer component
     await bundle({
-      componentEntryPath: path.join(
+      componentEntryPath: join(
         __dirname,
         "../admin/components/logViewer.jsx",
       ),

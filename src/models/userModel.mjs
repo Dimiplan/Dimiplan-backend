@@ -2,21 +2,18 @@
  * 사용자 모델
  * 향상된 보안으로 모든 사용자 관련 데이터베이스 작업을 처리합니다
  */
-const db = require("../config/db");
-const {
-  hashUserId,
-  decryptData,
-  getTimestamp,
-  isEncrypted,
-} = require("../utils/cryptoUtils");
-const logger = require("../utils/logger");
+import db from "../config/db.mjs";
+import {
+  hashUserId, decryptData, getTimestamp, isEncrypted,
+} from "../utils/cryptoUtils.mjs";
+import logger from "../utils/logger.mjs";
 
 /**
  * 데이터베이스에 사용자가 존재하는지 확인
  * @param {string} uid - 사용자 ID
  * @returns {Promise<boolean>} - 사용자가 존재하면 true
  */
-const isUserExists = async (uid) => {
+export const isUserExists = async (uid) => {
   try {
     const hashedUid = hashUserId(uid);
     const count = await db("users").where("id", hashedUid).count("* as count");
@@ -32,7 +29,7 @@ const isUserExists = async (uid) => {
  * @param {Object} user - id, name, grade, class, email, profile_image를 가진 사용자 객체
  * @returns {Promise} - 데이터베이스 작업 결과
  */
-const createUser = async (user) => {
+export const createUser = async (user) => {
   try {
     if (!(await isUserExists(user.id))) {
       // 민감한 사용자 데이터 암호화
@@ -77,7 +74,7 @@ const createUser = async (user) => {
  * @param {string} uid - 사용자 ID
  * @returns {Promise<Object|null>} - 사용자 객체 또는 찾지 못한 경우 null
  */
-const getUser = async (uid) => {
+export const getUser = async (uid) => {
   try {
     const hashedUid = hashUserId(uid);
     const users = await db("users").where("id", hashedUid).select("*");
@@ -120,7 +117,7 @@ const getUser = async (uid) => {
  * @param {Object} userData - 업데이트할 사용자 데이터
  * @returns {Promise} - 데이터베이스 작업 결과
  */
-const updateUser = async (uid, userData) => {
+export const updateUser = async (uid, userData) => {
   try {
     const hashedUid = hashUserId(uid);
 
@@ -162,7 +159,7 @@ const updateUser = async (uid, userData) => {
  * @param {string} uid - 사용자 ID
  * @returns {Promise<boolean>} - 사용자가 등록되어 있으면 true
  */
-const isRegistered = async (uid) => {
+export const isRegistered = async (uid) => {
   try {
     const user = await getUser(uid);
     return user !== null && user.name !== null;
@@ -177,15 +174,6 @@ const isRegistered = async (uid) => {
  * @param {string} plainUid - 일반 사용자 ID
  * @returns {string} - 해시된 사용자 ID
  */
-const getHashedUserId = (plainUid) => {
+export const getHashedUserId = (plainUid) => {
   return hashUserId(plainUid);
-};
-
-module.exports = {
-  isUserExists,
-  createUser,
-  getUser,
-  updateUser,
-  isRegistered,
-  getHashedUserId,
 };
