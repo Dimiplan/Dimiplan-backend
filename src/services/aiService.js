@@ -1,4 +1,3 @@
-/Users/coder/Desktop/WebProjects/Dimiplan-backend/src/services/aiService.js
 /**
  * AI 서비스
  * OpenRouter AI API와의 상호작용 관리
