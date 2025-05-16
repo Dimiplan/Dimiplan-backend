@@ -41,6 +41,7 @@ const PAID_MODELS = {
  */
 const summarizeMemory = async (userId, room) => {
   if (!room) return "No previous messages";
+  logger.verbose("메모리 요약 시작");
 
   // 1) 데이터베이스에서 기존 메시지들을 가져온 후 문자열로 직렬화
   //    (배열로 올 수 있으므로 안전하게 처리)
