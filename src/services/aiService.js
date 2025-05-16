@@ -66,13 +66,19 @@ const summarizeMemory = async (userId, room) => {
         { role: "user", content: history },
       ],
     });
-    logger.verbose(
-      "메모리 요약 응답:",
-      response.choices[0].message.content.trim(),
-    );
-    const { summary } = response.choices[0].message.content.trim();
-    logger.verbose("메모리 요약:", summary);
-    return summary;
+    const raw = response.choices[0].message.content.trim();
+    logger.verbose("메모리 요약 응답:", raw);
+
+    let summaryText;
+    try {
+      summaryText = JSON.parse(raw).summary;
+    } catch (e) {
+      logger.warn("요약 응답 JSON 파싱 실패, 원본 문자열을 그대로 사용합니다:", e);
+      summaryText = raw;
+    }
+
+    logger.verbose("메모리 요약:", summaryText);
+    return summaryText;
   } catch (error) {
     logger.error("메모리 요약 중 에러:", error);
     throw error;
