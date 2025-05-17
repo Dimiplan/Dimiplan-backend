@@ -76,6 +76,8 @@ const whitelist = [
   "http://localhost:3000",
   "https://api.dimiplan.com",
   "https://api-dev.dimiplan.com",
+  null,
+  undefined
 ];
 
 // CORS 옵션 설정
