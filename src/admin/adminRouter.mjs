@@ -261,7 +261,7 @@ const initAdminRouter = async (app) => {
     rootPath: '/admin',
     branding: {
       companyName: 'Dimiplan Admin',
-      logo: '/admin/logo.svg',
+      logo: '/admin/logo.png',
       favicon: '/admin/favicon.ico'
     }
   };

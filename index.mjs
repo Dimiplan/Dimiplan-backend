@@ -76,6 +76,7 @@ const whitelist = [
   "http://localhost:3000",
   "https://api.dimiplan.com",
   "https://api-dev.dimiplan.com",
+  'null', // null origin 허용 (예: 로컬 파일)
 ];
 
 // CORS 옵션 설정
