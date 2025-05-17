@@ -47,7 +47,20 @@ if (logger.isTestEnvironment) {
 }
 
 // 보안 HTTP 헤더 자동 설정
-app.use(helmet());
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", "data:"],
+      connectSrc: ["'self'"],
+      fontSrc: ["'self'", "data:"],
+      baseUri: ["'self'"],
+      objectSrc: ["'none'"]
+    }
+  }
+}));
 
 // 로드 밸런서 뒤의 보안 쿠키를 위해 프록시 신뢰 설정
 app.set("trust proxy", true);
