@@ -81,7 +81,7 @@ const whitelist = [
 // CORS 옵션 설정
 const corsOptions = {
   origin: function (origin, callback) {
-    logger.verbose("CORS 요청 출처:", origin);
+    logger.verbose(`CORS 요청 출처: ${origin}`);
     if (!origin || whitelist.includes(origin)) {
       callback(null, true);
     } else {
