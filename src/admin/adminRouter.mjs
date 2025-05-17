@@ -3,7 +3,7 @@
  * Provides administrative interface with secured access
  */
 import AdminJS from 'adminjs';
-import { buildAuthenticatedRouter } from '@adminjs/express';
+import AdminJSExpress from '@adminjs/express';
 import { ComponentLoader } from 'adminjs';
 import session from 'express-session';
 import { createClient } from 'redis';
@@ -273,7 +273,7 @@ const initAdminRouter = async (app) => {
   // Parse form data for login POST
   router.use(express.urlencoded({ extended: true }));
   router.use(express.json());
-  const adminRouter = buildAuthenticatedRouter(
+  const adminRouter = AdminJSExpress.buildAuthenticatedRouter(
     admin,
     {
       authenticate: async (email, password) => {
