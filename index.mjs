@@ -76,18 +76,15 @@ const whitelist = [
   "http://localhost:3000",
   "https://api.dimiplan.com",
   "https://api-dev.dimiplan.com",
-  null,
-  undefined
 ];
 
 // CORS 옵션 설정
 const corsOptions = {
   origin: function (origin, callback) {
-    logger.verbose(`CORS 요청 출처: ${origin}`);
     if (!origin || whitelist.includes(origin)) {
       callback(null, true);
     } else {
-      callback(new Error("CORS 정책에 의해 허용되지 않은 요청"));
+      callback(new Error(`CORS 정책에 의해 허용되지 않은 요청: ${origin}`));
     }
   },
   credentials: true, // 인증 정보 포함 요청 허용
