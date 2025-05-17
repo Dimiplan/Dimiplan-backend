@@ -268,7 +268,11 @@ const initAdminRouter = async (app) => {
 
   const admin = new AdminJS(adminOptions);
 
-  // Build authenticated router: pass undefined as predefinedRouter to ensure express.Router is used
+  // Build authenticated router using a custom Express router with body-parsing
+  const router = express.Router();
+  // Parse form data for login POST
+  router.use(express.urlencoded({ extended: true }));
+  router.use(express.json());
   const adminRouter = buildAuthenticatedRouter(
     admin,
     {
@@ -283,7 +287,7 @@ const initAdminRouter = async (app) => {
       cookieName: 'dimiplan.admin',
       cookiePassword: process.env.ADMIN_COOKIE_PASSWORD || 'secure-admin-password-12345'
     },
-    undefined,
+    router,
     {
       store: redisStore,
       resave: false,
