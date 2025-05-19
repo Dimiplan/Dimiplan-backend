@@ -239,16 +239,21 @@ const pages = {
  */
 const initAdminRouter = async (app) => {
   // Set up Redis session store (reuse existing Redis connection)
-  const redisClient = createClient({ url: 'redis://127.0.0.1:6379' });
-  await redisClient.connect().catch(err => {
-    logger.error('Admin Redis connection error:', err);
-    throw err;
-  });
-
-  const redisStore = new RedisStore({
-    client: redisClient,
-    prefix: 'dimiplan:admin:',
-  });
+  let redisStore;
+  try {
+    const redisClient = createClient({ url: 'redis://127.0.0.1:6379' });
+    await redisClient.connect();
+    logger.info('Redis connected successfully for admin panel');
+    redisStore = new RedisStore({
+      client: redisClient,
+      prefix: 'dimiplan:admin:',
+    });
+  } catch (err) {
+    logger.error('Redis connection failed, using memory store:', err);
+    // Use a memory store as fallback
+    const MemoryStore = session.MemoryStore;
+    redisStore = new MemoryStore();
+  }
 
   const adminOptions = {
     resources,
@@ -277,38 +282,53 @@ const initAdminRouter = async (app) => {
     admin,
     {
       authenticate: async (email, password) => {
-        const adminEmail = process.env.ADMIN_EMAIL || 'admin@dimiplan.com';
-        const adminPassword = process.env.ADMIN_PASSWORD || 'admin123';
-        if (email === adminEmail && password === adminPassword) {
-          return { email: adminEmail };
+        try {
+          const adminEmail = process.env.ADMIN_EMAIL;
+          const adminPassword = process.env.ADMIN_PASSWORD;
+          
+          logger.info(`Admin login attempt for: ${email}`);
+          
+          if (email === adminEmail && password === adminPassword) {
+            logger.info('Admin login successful');
+            return { email: adminEmail };
+          }
+          
+          logger.warn('Admin login failed - invalid credentials');
+          return null;
+        } catch (error) {
+          logger.error('Authentication error:', error);
+          // Don't throw errors in authentication function
+          return null;
         }
-        return null;
       },
       cookieName: 'dimiplan.admin',
-      cookiePassword: process.env.ADMIN_COOKIE_PASSWORD || 'secure-admin-password-12345'
+      cookiePassword: process.env.ADMIN_COOKIE_PASSWORD
     },
     router,
     {
       store: redisStore,
       resave: false,
       saveUninitialized: false,
-      secret: process.env.ADMIN_SESSION_SECRET || 'secure-admin-session-12345',
+      secret: process.env.ADMIN_SESSION_SECRET,
       cookie: {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
+        secure: true,
         maxAge: 24 * 60 * 60 * 1000
       },
       name: 'dimiplan.admin.sid'
     }
   );
 
+  router.use((err, req, res, next) => {
+    logger.error('Admin router error:', err);
+    if (!res.headersSent) {
+      res.status(500).send('Admin panel error: ' + err.message);
+    }
+    next(err);
+  });
+
   // Serve static files for admin
   app.use('/admin/assets', express.static(path.join(__dirname, 'public')));
-
-  // Watch for component changes in development
-  if (process.env.NODE_ENV === 'development') {
-    admin.watch();
-  }
 
   return { admin, adminRouter };
 };
