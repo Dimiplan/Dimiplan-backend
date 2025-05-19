@@ -682,7 +682,7 @@
 
     "concat-map": ["concat-map@0.0.1", "", {}, "sha512-/Srv4dswyQNBfohGpz9o6Yb3Gz3SrUDqBH5rTuhGR7ahtlbYKnVxw2bCFMRljaA7EXHaXZ8wsHdodFvbkhKmqg=="],
 
-    "connect-redis": ["connect-redis@8.0.3", "", { "peerDependencies": { "express-session": ">=1" } }, "sha512-wLIaRv5csDWZsODD/X1vzfF9YKAYVfjJfzxsR6er0jqikM+i4GuBv06kgB8/O3QJWj5ANhYRoym/j1rL459v7g=="],
+    "connect-redis": ["connect-redis@8.1.0", "", { "peerDependencies": { "express-session": ">=1" } }, "sha512-Km0EYLDlmExF52UCss5gLGTtrukGC57G6WCC2aqEMft5Vr4xNWuM4tL+T97kWrw+vp40SXFteb6Xk/7MxgpwdA=="],
 
     "connect-session-knex": ["connect-session-knex@5.0.0", "", { "dependencies": { "knex": "3" } }, "sha512-LNmgZriKjmZPkPDsB8rspdqdrsQ+aAoSXFDJA3/1OQxt3nlAWzUNghhTsFAiY95Pcp/tTS18n8rRwiBCDBIz5g=="],
 
