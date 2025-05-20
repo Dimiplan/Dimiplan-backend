@@ -376,15 +376,15 @@
 
     "@popperjs/core": ["@popperjs/core@2.11.8", "", {}, "sha512-P1st0aksCrn9sGZhp8GMYwBnQsbvAWsZAX44oXNNvLHGqAOcoVxmjZiohstwQ7SqKnbR47akdNi+uleWD8+g6A=="],
 
-    "@redis/bloom": ["@redis/bloom@5.0.1", "", { "peerDependencies": { "@redis/client": "^5.0.1" } }, "sha512-F7L+rnuJvq/upKaVoEgsf8VT7g5pLQYWRqSUOV3uO4vpVtARzSKJ7CLyJjVsQS+wZVCGxsLMh8DwAIDcny1B+g=="],
+    "@redis/bloom": ["@redis/bloom@5.1.0", "", { "peerDependencies": { "@redis/client": "^5.1.0" } }, "sha512-Gp5RWvVKbvItMU2sd848yhY/BnigToz8H4PYcvlBBSP5cQ3lVP1LMh5Kx2CYBNzCdDabVicwBKNvaoLBqPNqIg=="],
 
-    "@redis/client": ["@redis/client@5.0.1", "", { "dependencies": { "cluster-key-slot": "1.1.2" } }, "sha512-k0EJvlMGEyBqUD3orKe0UMZ66fPtfwqPIr+ZSd853sXj2EyhNtPXSx+J6sENXJNgAlEBhvD+57Dwt0qTisKB0A=="],
+    "@redis/client": ["@redis/client@5.1.0", "", { "dependencies": { "cluster-key-slot": "1.1.2" } }, "sha512-FMD35y2KgCWTBLOfF0MhwDSaIVcu5mOUuTV9Kw3JOWHMgON3+ulht31cjTB/gph0BfD1vzUvCeROeRaf/d+35w=="],
 
-    "@redis/json": ["@redis/json@5.0.1", "", { "peerDependencies": { "@redis/client": "^5.0.1" } }, "sha512-t94HOTk5myfhvaHZzlUzk2hoUvH2jsjftcnMgJWuHL/pzjAJQoZDCUJzjkoXIUjWXuyJixTguaaDyOZWwqH2Kg=="],
+    "@redis/json": ["@redis/json@5.1.0", "", { "peerDependencies": { "@redis/client": "^5.1.0" } }, "sha512-laXZt1Rlimk3py5ZoABBnd4xn/8dWbLUWGvVS7avgMhdczS+eWtXpElilJbFpc+7ZpVlol4vaSGFuR8ThDcTFw=="],
 
-    "@redis/search": ["@redis/search@5.0.1", "", { "peerDependencies": { "@redis/client": "^5.0.1" } }, "sha512-wipK6ZptY7K68B7YLVhP5I/wYCDUU+mDJMyJiUcQLuOs7/eKOBc8lTXKUSssor8QnzZSPy4A5ulcC5PZY22Zgw=="],
+    "@redis/search": ["@redis/search@5.1.0", "", { "peerDependencies": { "@redis/client": "^5.1.0" } }, "sha512-afQYMeIdWGNPjr84GxxgJVkolxMW3BBrlNOwhRHPdzbdGh0rTUPjOJpGHBig34ostHX6AhZ6QwqceU1zLluDEg=="],
 
-    "@redis/time-series": ["@redis/time-series@5.0.1", "", { "peerDependencies": { "@redis/client": "^5.0.1" } }, "sha512-k6PgbrakhnohsEWEAdQZYt3e5vSKoIzpKvgQt8//lnWLrTZx+c3ed2sj0+pKIF4FvnSeuXLo4bBWcH0Z7Urg1A=="],
+    "@redis/time-series": ["@redis/time-series@5.1.0", "", { "peerDependencies": { "@redis/client": "^5.1.0" } }, "sha512-BjKndLXREPeb4ZtxrI6z1bz2FbzBj7LnWyyevNk6Wd7VRWQ3W10LSvJAJwguPD62mSqpTPhy0lMPqFJwo0gS7A=="],
 
     "@redux-devtools/extension": ["@redux-devtools/extension@3.3.0", "", { "dependencies": { "@babel/runtime": "^7.23.2", "immutable": "^4.3.4" }, "peerDependencies": { "redux": "^3.1.0 || ^4.0.0 || ^5.0.0" } }, "sha512-X34S/rC8S/M1BIrkYD1mJ5f8vlH0BDqxXrs96cvxSBo4FhMdbhU+GUGsmNYov1xjSyLMHgo8NYrUG8bNX7525g=="],
 
@@ -1262,7 +1262,7 @@
 
     "rechoir": ["rechoir@0.8.0", "", { "dependencies": { "resolve": "^1.20.0" } }, "sha512-/vxpCXddiX8NGfGO/mTafwjq4aFa/71pvamip0++IQk3zG8cbCj0fifNPrjjF1XMXUne91jL9OoxmdykoEtifQ=="],
 
-    "redis": ["redis@5.0.1", "", { "dependencies": { "@redis/bloom": "5.0.1", "@redis/client": "5.0.1", "@redis/json": "5.0.1", "@redis/search": "5.0.1", "@redis/time-series": "5.0.1" } }, "sha512-J8nqUjrfSq0E8NQkcHDZ4HdEQk5RMYjP3jZq02PE+ERiRxolbDNxPaTT4xh6tdrme+lJ86Goje9yMt9uzh23hQ=="],
+    "redis": ["redis@5.1.0", "", { "dependencies": { "@redis/bloom": "5.1.0", "@redis/client": "5.1.0", "@redis/json": "5.1.0", "@redis/search": "5.1.0", "@redis/time-series": "5.1.0" } }, "sha512-5G5k9sYo5H5L0kd7UETiJZFTkIClH31fSmaEk2eU8E7mrmF0J1t6RqmFXOCJmSRlNd3QyvDUK/AWL9psbKaN0Q=="],
 
     "redux": ["redux@4.2.1", "", { "dependencies": { "@babel/runtime": "^7.9.2" } }, "sha512-LAUYz4lc+Do8/g7aeRa8JkyDErK6ekstQaqWQrNRW//MY1TvCEpMtpTWvlQ+FPbWCx+Xixu/6SHt5N0HR+SB4w=="],
 
