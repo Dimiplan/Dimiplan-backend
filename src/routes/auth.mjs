@@ -106,9 +106,10 @@ passport.deserializeUser((user, done) => {
 router.get(
   "/google",
   (req, res, next) => {
-    // 원본 도메인 저장 (나중에 리다이렉트에 사용)
-    const originDomain = req.headers.referer || process.env.FRONT_HOST;
-    req.session.originDomain = originDomain;
+    // returnUrl이 있으면 세션에 저장
+    if (req.query.returnUrl) {
+      req.session.returnUrl = req.query.returnUrl;
+    }
 
     // 세션 명시적 저장
     req.session.save((err) => {
@@ -141,29 +142,43 @@ router.get(
   async (req, res) => {
     try {
       const uid = req.session?.passport?.user?.id;
+      const returnUrl = req.session?.returnUrl;
 
-      // 저장된 원본 도메인 또는 기본 호스트 사용
-      const originDomain = req.session.originDomain || process.env.FRONT_HOST;
-      logger.info("원본 도메인으로 리다이렉트:", originDomain);
+      // 저장된 returnUrl이 있으면 해당 URL로, 없으면 기본 호스트 사용
+      const redirectDomain = returnUrl || process.env.FRONT_HOST;
+      logger.info("리다이렉트 URL:", redirectDomain);
 
       if (!uid) {
-        return res.redirect(`${originDomain}/login/fail`);
+        const failUrl = returnUrl
+          ? `${returnUrl}?login=fail`
+          : `${process.env.FRONT_HOST}/login/fail`;
+        return res.redirect(failUrl);
       }
 
       // 사용자 등록 여부 확인 (이름 설정 기준)
       const registered = await isRegistered(uid);
 
+      // returnUrl 세션에서 제거
+      delete req.session.returnUrl;
+
       // 등록 상태에 따라 리다이렉트
       if (!registered) {
-        return res.redirect(`${originDomain}/signup`);
+        const signupUrl = returnUrl
+          ? `${returnUrl}?signup=required`
+          : `${process.env.FRONT_HOST}/signup`;
+        return res.redirect(signupUrl);
       } else {
-        return res.redirect(`${originDomain}`);
+        // 등록된 사용자는 returnUrl로 또는 기본 페이지로 리다이렉트
+        return res.redirect(redirectDomain);
       }
     } catch (error) {
       logger.error("구글 콜백 라우트 중 오류:", error);
-      const fallbackDomain = req.session.originDomain || process.env.FRONT_HOST;
-      logger.info("실패 시 폴백 도메인으로 리다이렉트:", fallbackDomain);
-      return res.redirect(`${fallbackDomain}/login/fail`);
+      const fallbackUrl = req.session?.returnUrl || process.env.FRONT_HOST;
+      logger.info("실패 시 폴백 URL로 리다이렉트:", fallbackUrl);
+      const failUrl = req.session?.returnUrl
+        ? `${req.session.returnUrl}?login=fail`
+        : `${process.env.FRONT_HOST}/login/fail`;
+      return res.redirect(failUrl);
     }
   },
 );
@@ -174,9 +189,16 @@ router.get(
  * @returns {Redirect} 로그인 실패 페이지로 리다이렉트 (/login/fail)
  */
 router.get("/google/callback/failure", (req, res) => {
-  const fallbackDomain = req.session.originDomain || process.env.FRONT_HOST;
-  logger.info("실패 시 폴백 도메인으로 리다이렉트:", fallbackDomain);
-  return res.redirect(`${fallbackDomain}/login/fail`);
+  const returnUrl = req.session?.returnUrl;
+  const failUrl = returnUrl
+    ? `${returnUrl}?login=fail`
+    : `${process.env.FRONT_HOST}/login/fail`;
+  logger.info("실패 시 URL로 리다이렉트:", failUrl);
+
+  // returnUrl 세션에서 제거
+  delete req.session.returnUrl;
+
+  return res.redirect(failUrl);
 });
 
 /**
