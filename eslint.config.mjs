@@ -9,6 +9,18 @@ export default defineConfig([
     extends: ["js/recommended"],
     rules: {
       "no-unused-vars": "off",
+      "jsdoc/require-jsdoc": ["error", {
+        "require": {
+          "FunctionDeclaration": true,
+          "MethodDefinition": true,
+          "ClassDeclaration": true,
+          "ArrowFunctionExpression": true,
+          "FunctionExpression": true
+        }
+      }],
+      "jsdoc/require-param": "error",
+      "jsdoc/require-returns": "error",
+      "jsdoc/check-types": "error"
     },
   },
   { files: ["**/*.js"], languageOptions: { sourceType: "commonjs" } },

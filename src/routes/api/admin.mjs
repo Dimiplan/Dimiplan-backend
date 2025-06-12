@@ -16,9 +16,9 @@ const router = Router();
 router.use(isAdmin);
 
 /**
- * @doxygen
- * @brief 시스템 상태 조회
- * @details 서버 실행 시간, 메모리 사용량, CPU 사용률 등 시스템 정보 제공
+ * 시스템 상태 조회
+ * 서버 실행 시간, 메모리 사용량, CPU 사용률 등 시스템 정보 제공
+ * 
  * @route GET /api/admin/system-status
  * @returns {Object} 시스템 상태 정보
  */
@@ -42,9 +42,9 @@ router.get("/system-status", async (req, res) => {
 });
 
 /**
- * @doxygen
- * @brief 로그 파일 목록 조회
- * @details logs 디렉토리의 로그 파일 목록과 크기 정보 제공
+ * 로그 파일 목록 조회
+ * logs 디렉토리의 로그 파일 목록과 크기 정보 제공
+ * 
  * @route GET /api/admin/logs
  * @returns {Array} 로그 파일 목록
  */
@@ -76,9 +76,9 @@ router.get("/logs", async (req, res) => {
 });
 
 /**
- * @doxygen
- * @brief 특정 로그 파일 내용 조회
- * @details 로그 파일의 최근 N줄 또는 전체 내용 제공
+ * 특정 로그 파일 내용 조회
+ * 로그 파일의 최근 N줄 또는 전체 내용 제공
+ * 
  * @route GET /api/admin/logs/:filename
  * @param {string} filename - 로그 파일명
  * @param {number} [lines=100] - 조회할 라인 수 (query parameter)
@@ -120,9 +120,9 @@ router.get("/logs/:filename", async (req, res) => {
 });
 
 /**
- * @doxygen
- * @brief 데이터베이스 테이블 목록 조회
- * @details 데이터베이스의 모든 테이블 목록과 기본 정보 제공
+ * 데이터베이스 테이블 목록 조회
+ * 데이터베이스의 모든 테이블 목록과 기본 정보 제공
+ * 
  * @route GET /api/admin/database/tables
  * @returns {Array} 테이블 목록
  */
@@ -154,9 +154,9 @@ router.get("/database/tables", async (req, res) => {
 });
 
 /**
- * @doxygen
- * @brief 특정 테이블 데이터 조회
- * @details 페이지네이션을 지원하는 테이블 데이터 조회
+ * 특정 테이블 데이터 조회
+ * 페이지네이션을 지원하는 테이블 데이터 조회
+ * 
  * @route GET /api/admin/database/tables/:tableName
  * @param {string} tableName - 테이블명
  * @param {number} [page=1] - 페이지 번호
@@ -224,9 +224,9 @@ router.get("/database/tables/:tableName", async (req, res) => {
 });
 
 /**
- * @doxygen
- * @brief 사용자 통계 정보 조회
- * @details 총 사용자 수, 활성 사용자 수, 최근 가입자 등 통계 제공
+ * 사용자 통계 정보 조회
+ * 총 사용자 수, 활성 사용자 수, 최근 가입자 등 통계 제공
+ * 
  * @route GET /api/admin/stats/users
  * @returns {Object} 사용자 통계 정보
  */
@@ -257,25 +257,80 @@ router.get("/stats/users", async (req, res) => {
 });
 
 /**
- * @doxygen
- * @brief API 엔드포인트 문서 조회
- * @details Doxygen 주석을 파싱하여 API 문서 생성
+ * API 엔드포인트 문서 조회
+ * JSDoc 주석을 파싱하여 API 문서 생성
+ * 
  * @route GET /api/admin/docs
  * @returns {Array} API 엔드포인트 문서 목록
  */
 router.get("/docs", async (req, res) => {
   try {
-    // API 파일들 스캔
+    // JSDoc JSON 파일 경로
+    const docsPath = join(process.cwd(), "docs", "api-docs.json");
+    
+    // JSDoc JSON 파일이 없으면 생성
+    if (!readFileSync(docsPath, 'utf8').length) {
+      const { exec } = await import('child_process');
+      await new Promise((resolve, reject) => {
+        exec('npm run docs:json', (error, stdout, stderr) => {
+          if (error) reject(error);
+          else resolve(stdout);
+        });
+      });
+    }
+    
+    // JSDoc 데이터 읽기
+    const jsdocData = JSON.parse(readFileSync(docsPath, 'utf8'));
+    
+    // API 라우터에서 함수들 추출
+    const apiDocs = [];
     const apiDir = join(process.cwd(), "src", "routes", "api");
     const apiFiles = readdirSync(apiDir).filter(file => file.endsWith('.mjs'));
     
-    const apiDocs = [];
+    // JSDoc 데이터에서 라우터 함수들만 필터링
+    for (const item of jsdocData) {
+      if (item.kind === 'function' && item.description) {
+        // 파일에서 라우터 정의 찾기
+        for (const file of apiFiles) {
+          const filePath = join(apiDir, file);
+          const content = readFileSync(filePath, 'utf8');
+          
+          // Express 라우터 패턴 찾기
+          const routerMatches = content.match(new RegExp(`router\\.(get|post|put|delete|patch)\\s*\\(\\s*["']([^"']+)["']`, 'g'));
+          
+          if (routerMatches) {
+            for (const match of routerMatches) {
+              const routeMatch = match.match(/router\.(get|post|put|delete|patch)\s*\(\s*["']([^"']+)["']/);
+              if (routeMatch) {
+                const method = routeMatch[1].toUpperCase();
+                const path = `/api/admin${routeMatch[2]}`;
+                
+                // JSDoc 정보와 매칭
+                if (content.includes(item.name) || (item.longname && content.includes(item.longname))) {
+                  apiDocs.push({
+                    file: file.replace('.mjs', ''),
+                    method,
+                    path,
+                    brief: item.description.replace(/<[^>]*>/g, '').trim() || item.name,
+                    details: item.comment ? item.comment.split('\n').find(line => line.includes('@details'))?.replace(/.*@details\s*/, '') || '' : '',
+                    returns: item.returns ? item.returns[0]?.description?.replace(/<[^>]*>/g, '').trim() || '' : '',
+                    params: item.params || [],
+                    examples: item.examples || []
+                  });
+                  break;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
     
+    // 기존 doxygen 방식도 병행 지원 (이전 호환성)
     for (const file of apiFiles) {
       const filePath = join(apiDir, file);
       const content = readFileSync(filePath, 'utf8');
       
-      // Doxygen 주석 파싱 (간단한 정규식 사용)
       const doxygenBlocks = content.match(/\/\*\*[\s\S]*?\*\//g) || [];
       
       for (const block of doxygenBlocks) {
@@ -285,14 +340,22 @@ router.get("/docs", async (req, res) => {
         const returnsMatch = block.match(/@returns\s+(.*)/);
         
         if (briefMatch && routeMatch) {
-          apiDocs.push({
-            file: file.replace('.mjs', ''),
-            method: routeMatch[1],
-            path: routeMatch[2],
-            brief: briefMatch[1],
-            details: detailsMatch ? detailsMatch[1] : '',
-            returns: returnsMatch ? returnsMatch[1] : ''
-          });
+          // 중복 체크
+          const exists = apiDocs.some(doc => 
+            doc.method === routeMatch[1].toUpperCase() && 
+            doc.path === routeMatch[2]
+          );
+          
+          if (!exists) {
+            apiDocs.push({
+              file: file.replace('.mjs', ''),
+              method: routeMatch[1].toUpperCase(),
+              path: routeMatch[2],
+              brief: briefMatch[1],
+              details: detailsMatch ? detailsMatch[1] : '',
+              returns: returnsMatch ? returnsMatch[1] : ''
+            });
+          }
         }
       }
     }
@@ -302,6 +365,45 @@ router.get("/docs", async (req, res) => {
   } catch (error) {
     logger.error("API 문서 조회 실패", { error: error.message });
     res.status(500).json({ success: false, message: "API 문서 생성 실패" });
+  }
+});
+
+/**
+ * JSDoc 문서 재생성
+ * JSDoc JSON 파일을 재생성하여 최신 문서화 정보 업데이트
+ * 
+ * @route POST /api/admin/docs/regenerate
+ * @returns {Object} 재생성 결과
+ */
+router.post("/docs/regenerate", async (req, res) => {
+  try {
+    const { exec } = await import('child_process');
+    
+    await new Promise((resolve, reject) => {
+      exec('npm run docs:json', (error, stdout, stderr) => {
+        if (error) {
+          logger.error("JSDoc 재생성 실패", { error: error.message, stderr });
+          reject(error);
+        } else {
+          logger.info("JSDoc 재생성 성공", { stdout });
+          resolve(stdout);
+        }
+      });
+    });
+
+    logger.info("JSDoc 문서 재생성 완료", { admin: req.user?.email });
+    res.json({ 
+      success: true, 
+      message: "JSDoc 문서가 재생성되었습니다",
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    logger.error("JSDoc 문서 재생성 실패", { error: error.message });
+    res.status(500).json({ 
+      success: false, 
+      message: "JSDoc 문서 재생성 실패",
+      error: error.message 
+    });
   }
 });
 

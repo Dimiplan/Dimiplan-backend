@@ -96,9 +96,15 @@ passport.deserializeUser((user, done) => {
 });
 
 /**
+ * 구글 OAuth 로그인 초기화
+ * 리다이렉트 도메인을 저장하고 구글 인증 페이지로 리다이렉트합니다
+ * 사용자가 계정을 선택할 수 있도록 prompt=select_account 옵션을 사용합니다
+ * 
  * @route GET /auth/google
- * @desc 구글 OAuth 로그인 초기화
- * 리다이렉트 도메인 저장 및 구글 인증 페이지로 리다이렉트
+ * @returns {Redirect} 구글 OAuth 인증 페이지로 리다이렉트
+ * @example
+ * // GET /auth/google
+ * // 브라우저가 구글 로그인 페이지로 리다이렉트됨
  */
 router.get(
   "/google",
@@ -123,9 +129,15 @@ router.get(
 );
 
 /**
+ * 구글 OAuth 콜백 처리
+ * 사용자 인증 후 등록 상태에 따라 적절한 페이지로 리다이렉트합니다
+ * 미등록 사용자는 주얼 페이지로, 등록된 사용자는 메인 페이지로 이동합니다
+ * 
  * @route GET /auth/google/callback
- * @desc 구글 OAuth 콜백 처리
- * 사용자 인증 후 적절한 페이지로 리다이렉트
+ * @returns {Redirect} 등록 상태에 따른 리다이렉트 (/signup 또는 /)
+ * @example
+ * // 미등록 사용자: /signup으로 리다이렉트
+ * // 등록된 사용자: /로 리다이렉트
  */
 router.get(
   "/google/callback",
@@ -163,8 +175,11 @@ router.get(
 );
 
 /**
+ * 구글 OAuth 인증 실패 처리
+ * OAuth 인증이 실패한 경우 오류 페이지로 리다이렉트합니다
+ * 
  * @route GET /auth/google/callback/failure
- * @desc 구글 OAuth 인증 실패 처리
+ * @returns {Redirect} 로그인 실패 페이지로 리다이렉트 (/login/fail)
  */
 router.get("/google/callback/failure", (req, res) => {
   const fallbackDomain = req.session.originDomain || process.env.FRONT_HOST;
@@ -173,9 +188,20 @@ router.get("/google/callback/failure", (req, res) => {
 });
 
 /**
+ * 사용자 ID로 로그인 (모바일 앱용)
+ * 사용자 생성 및 세션 관리를 위한 Passport 커스텀 전략을 사용합니다
+ * 성공 시 세션 ID를 반환하여 모바일 앱에서 사용할 수 있도록 합니다
+ * 
  * @route POST /auth/login
- * @desc 사용자 ID로 로그인 (모바일 앱용)
- * 사용자 생성 및 세션 관리 (Passport 커스텀 전략 사용)
+ * @param {string} userId - 사용자 ID (필수)
+ * @param {string} [email] - 사용자 이메일
+ * @param {string} [photo] - 프로필 사진 URL
+ * @param {string} [name] - 사용자 이름
+ * @returns {Object} 로그인 성공 메시지와 세션 ID
+ * @example
+ * // POST /auth/login
+ * // Body: { "userId": "123456", "email": "user@example.com" }
+ * // Response: { "message": "로그인 성공", "sessionId": "sess_abc123" }
  */
 router.post("/login", (req, res, next) => {
   passport.authenticate("mobile", (err, user, info) => {
@@ -226,9 +252,14 @@ router.post("/login", (req, res, next) => {
 });
 
 /**
+ * 사용자 로그아웃
+ * 세션을 제거하고 쿠키를 초기화하여 로그아웃을 처리합니다
+ * 
  * @route GET /auth/logout
- * @desc 사용자 로그아웃
- * 세션 제거 및 쿠키 초기화
+ * @returns {Object} 로그아웃 완료 메시지
+ * @example
+ * // GET /auth/logout
+ * // Response: { "message": "로그아웃 완료" }
  */
 router.get("/logout", (req, res) => {
   req.session.destroy((err) => {

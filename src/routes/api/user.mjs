@@ -11,8 +11,16 @@ const router = Router();
 
 /**
  * 사용자 데이터 유효성 검사
+ * 사용자가 입력한 데이터의 유효성을 검증합니다 (이름 길이, 학년, 반 범위 등)
+ * 
  * @param {Object} userData - 검증할 사용자 데이터
+ * @param {string} [userData.name] - 사용자 이름 (최대 15자)
+ * @param {number} [userData.grade] - 학년 (1-3)
+ * @param {number} [userData.class] - 반 (1-6)
  * @returns {boolean} 데이터 유효성 여부
+ * @example
+ * validateUserData({ name: "홍길동", grade: 1, class: 1 }); // true
+ * validateUserData({ name: "너무긴이름입니다1234567890", grade: 1 }); // false
  */
 const validateUserData = (userData) => {
   // 이름 길이 검증 (최대 15자)
@@ -44,9 +52,19 @@ const validateUserData = (userData) => {
 };
 
 /**
+ * 사용자 정보 업데이트
+ * 프로필 정보 수정 API로 사용자의 이름, 학년, 반, 이메일, 프로필 이미지를 업데이트합니다
+ * 
  * @route POST /api/user/update
- * @desc 사용자 정보 업데이트
- * 프로필 정보 수정 API
+ * @param {string} [name] - 사용자 이름 (최대 15자)
+ * @param {number} [grade] - 학년 (1-3)
+ * @param {number} [class] - 반 (1-6)
+ * @param {string} [email] - 이메일 주소
+ * @param {string} [profile_image] - 프로필 이미지 URL
+ * @returns {Object} 업데이트 성공 메시지
+ * @example
+ * // POST /api/user/update
+ * // Body: { "name": "홍길동", "grade": 2, "class": 3 }
  */
 router.post("/update", isAuthenticated, async (req, res) => {
   try {
@@ -93,9 +111,14 @@ router.post("/update", isAuthenticated, async (req, res) => {
 });
 
 /**
+ * 사용자 등록 상태 확인
+ * 사용자의 회원가입 완료 여부를 확인합니다 (이름 설정 여부 기준)
+ * 
  * @route GET /api/user/registered
- * @desc 사용자 등록 상태 확인
- * 사용자의 회원가입 완료 여부 확인
+ * @returns {Object} 등록 상태 정보 ({ registered: boolean })
+ * @example
+ * // GET /api/user/registered
+ * // Response: { "registered": true }
  */
 router.get("/registered", isAuthenticated, async (req, res) => {
   try {
@@ -109,9 +132,15 @@ router.get("/registered", isAuthenticated, async (req, res) => {
 });
 
 /**
+ * 현재 사용자 정보 조회
+ * 로그인된 사용자의 프로필 정보를 반환합니다
+ * 
  * @route GET /api/user/get
- * @desc 현재 사용자 정보 조회
- * 로그인된 사용자의 프로필 정보 반환
+ * @returns {Object} 사용자 정보 객체
+ * @throws {404} 사용자를 찾을 수 없는 경우
+ * @example
+ * // GET /api/user/get
+ * // Response: { "id": "123", "name": "홍길동", "grade": 1, "class": 1, "email": "user@example.com" }
  */
 router.get("/get", isAuthenticated, async (req, res) => {
   try {

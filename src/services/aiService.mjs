@@ -1,20 +1,37 @@
 /**
  * AI 서비스
- * OpenRouter AI API와의 상호작용 관리
- * 자동 모델 선택 및 AI 응답 생성 기능 제공
+ * OpenRouter AI API와의 상호작용을 관리하고 자동 모델 선택 및 AI 응답 생성 기능을 제공합니다
+ * 
+ * @fileoverview OpenRouter API를 통한 AI 채팅 서비스 관리 모듈
  */
 import OpenAI from "openai";
 import "../config/dotenv.mjs"; // 환경 변수 로드
 import logger from "../utils/logger.mjs";
 import { addChatMessages, createChatRoom, getChatMessages } from "../models/chatModel.mjs";
 
-// OpenRouter API 클라이언트 초기화
+/**
+ * OpenRouter API 클라이언트 인스턴스
+ * OpenAI 호환 인터페이스를 사용하여 OpenRouter API에 연결합니다
+ * 
+ * @type {OpenAI}
+ * @constant
+ */
 const openRouter = new OpenAI({
   baseURL: "https://openrouter.ai/api/v1",
   apiKey: process.env.OPENROUTER_API_KEY,
 });
 
-// 무료 AI 모델 목록
+/**
+ * 무료 AI 모델 목록
+ * 자동 모델 선택 시 사용할 수 있는 무료 모델들의 목록입니다
+ * 인덱스 0-3에 따라 단순한 질문부터 복잡한 추론까지 대응합니다
+ * 
+ * @type {string[]}
+ * @constant
+ * @example
+ * // 모델 인덱스 0: 가장 빠른 모델
+ * const quickModel = FREE_MODELS[0]; // "openai/gpt-4.1-nano"
+ */
 const FREE_MODELS = [
   "openai/gpt-4.1-nano",
   "openai/o4-mini",
@@ -22,7 +39,16 @@ const FREE_MODELS = [
   "openai/gpt-4.1",
 ];
 
-// 유료 AI 모델 목록
+/**
+ * 유료 AI 모델 목록
+ * 고급 기능이 필요한 경우 사용할 수 있는 유료 모델들의 목록입니다
+ * 현재는 미사용 상태이지만 향후 확장을 위해 정의되어 있습니다
+ * 
+ * @type {Object.<string, string>}
+ * @constant
+ * @property {string} CLAUDE_SONNET - Claude 3.7 Sonnet 모델 (thinking 모드)
+ * @property {string} O3 - OpenAI O3 모델
+ */
 const PAID_MODELS = {
   CLAUDE_SONNET: "anthropic/claude-3.7-sonnet:thinking",
   O3: "openai/o3",
@@ -30,10 +56,19 @@ const PAID_MODELS = {
 
 /**
  * 채팅 이력을 요약해 메모리로 전달
- *
+ * 기존 대화 내역을 AI가 이해하기 쉽도록 요약합니다
+ * 대화의 맥락과 세부 사항을 유지하면서 쿨팩트하게 만듭니다
+ * 
+ * @async
+ * @function summarizeMemory
  * @param {string} userId - 사용자 ID
  * @param {number|string} room - 채팅방 ID
- * @returns {Promise<string>} 요약 문자열
+ * @returns {Promise<string>} 요약된 대화 내역 문자열
+ * @throws {Error} AI 요약 요청 실패 시 예외 발생
+ * @example
+ * // 대화 이력 요약
+ * const summary = await summarizeMemory('user123', 'room456');
+ * console.log(summary); // "사용자가 이전에 코딩에 대해 문의한 내용..."
  */
 const summarizeMemory = async (userId, room) => {
   if (!room) return "No previous messages";
@@ -86,10 +121,23 @@ const summarizeMemory = async (userId, room) => {
 
 /**
  * 자동 AI 모델 선택 및 응답 생성
- * 프롬프트의 복잡성에 따라 적절한 AI 모델 선택
- *
+ * 프롬프트의 복잡성을 분석하여 적절한 AI 모델을 자동으로 선택하고 응답을 생성합니다
+ * 새 채팅방인 경우 자동으로 제목을 생성하고, 기존 채팅방인 경우 대화 내역을 참고합니다
+ * 
+ * @async
+ * @function generateAutoResponse
+ * @param {string} userId - 사용자 ID
  * @param {string} prompt - 사용자 입력 프롬프트
+ * @param {string|number} [room] - 채팅방 ID (선택사항, 없으면 새 채팅방 생성)
  * @returns {Promise<Object>} AI 응답 객체
+ * @returns {string} returns.message - AI가 생성한 응답 메시지
+ * @returns {string|number} returns.room - 사용된 채팅방 ID
+ * @throws {Error} AI API 호출 실패 또는 모델 선택 오류 시 예외 발생
+ * @example
+ * // 새 채팅방에서 자동 응답 생성
+ * const response = await generateAutoResponse('user123', '안녕하세요');
+ * console.log(response.message); // AI 응답
+ * console.log(response.room); // 새로 생성된 채팅방 ID
  */
 export const generateAutoResponse = async (userId, prompt, room) => {
   try {
@@ -184,11 +232,26 @@ export const generateAutoResponse = async (userId, prompt, room) => {
 
 /**
  * 수동 AI 모델로 응답 생성
- * 프롬프트의 복잡성에 따라 적절한 AI 모델 선택
- *
+ * 사용자가 직접 선택한 특정 AI 모델로 응답을 생성합니다
+ * 선택된 모델이 유효한지 확인하고, 새 채팅방인 경우 자동으로 제목을 생성합니다
+ * 
+ * @async
+ * @function generateCustomResponse
+ * @param {string} userId - 사용자 ID
  * @param {string} prompt - 사용자 입력 프롬프트
- * @param {string} model - 사용자가 선택한 AI 모델
- * @returns {Promise<Object>} AI 응답 객체
+ * @param {string} model - 사용자가 선택한 AI 모델 (무료 모델 목록에 있어야 함)
+ * @param {string|number} [room] - 채팅방 ID (선택사항, 없으면 새 채팅방 생성)
+ * @returns {Promise<string>} AI가 생성한 응답 메시지
+ * @throws {Error} 선택된 모델이 목록에 없거나 AI API 호출 실패 시 예외 발생
+ * @example
+ * // 특정 모델로 응답 생성
+ * const response = await generateCustomResponse(
+ *   'user123', 
+ *   '코딩 질문', 
+ *   'openai/gpt-4.1', 
+ *   'room456'
+ * );
+ * console.log(response); // AI 응답 메시지
  */
 export const generateCustomResponse = async (userId, prompt, model, room) => {
   try {

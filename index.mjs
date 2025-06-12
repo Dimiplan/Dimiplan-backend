@@ -1,151 +1,123 @@
-// 필요한 모듈 불러오기
-import express, { json, urlencoded, static as staticMiddleware } from "express";
-import cors from "cors";
+/**
+ * Dimiplan Backend 메인 애플리케이션
+ * Express 기반 HTTPS 서버로 사용자 인증, 플래너, AI 서비스를 제공합니다
+ * 
+ * @fileoverview 메인 애플리케이션 진입점
+ */
+
 import session from "express-session";
 import passport from "passport";
-import helmet from "helmet";
 import { getSessionConfig } from "./src/config/sessionConfig.mjs";
+import {
+  createExpressApp,
+  setupSecurityMiddleware,
+  setupCorsMiddleware,
+  setupBodyParsing,
+  setupLoggingMiddleware,
+  setupTestLoggingMiddleware,
+  setupErrorHandling
+} from "./src/config/app.mjs";
+import { createHttpsServer, setupProcessHandlers } from "./src/config/server.mjs";
+import { closeRedisConnection } from "./src/config/sessionConfig.mjs";
 import logger from "./src/utils/logger.mjs";
-
-import { createServer } from "https";
-import { readFileSync } from "fs";
-
-import "./src/config/dotenv";
-
-const sslOptions = {
-  key: readFileSync("./keys/private.pem"),
-  cert: readFileSync("./keys/public.pem"),
-};
 
 // 라우터 모듈 불러오기
 import authRouter from "./src/routes/auth.mjs";
 import apiRouter from "./src/routes/api/index.mjs";
 
-const app = express();
+/**
+ * Express 애플리케이션 인스턴스 생성 및 기본 설정
+ */
+const app = createExpressApp();
 
-// 테스트 환경에서 요청/응답 로깅을 위한 미들웨어 설정
-if (logger.isTestEnvironment) {
-  app.use((req, res, next) => {
-    // 들어오는 요청 로깅
-    logger.logRequest(req);
+// 미들웨어 설정
+setupTestLoggingMiddleware(app);
+setupSecurityMiddleware(app);
+setupCorsMiddleware(app);
+setupBodyParsing(app, { limit: "1mb" });
+setupLoggingMiddleware(app);
 
-    // 원본 응답 전송 함수 백업
-    const originalSend = res.send;
-
-    // 응답 전송 함수 재정의 (응답 본문 로깅)
-    res.send = function (body) {
-      logger.logResponse(req, res, body);
-      return originalSend.apply(res, arguments);
-    };
-
-    next();
-  });
-}
-
-// 보안 HTTP 헤더 자동 설정
-app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'"],
-      styleSrc: ["'self'", "'unsafe-inline'"],
-      imgSrc: ["'self'", "data:"],
-      connectSrc: ["'self'"],
-      fontSrc: ["'self'", "data:"],
-      baseUri: ["'self'"],
-      objectSrc: ["'none'"]
-    }
-  }
-}));
-
-// 로드 밸런서 뒤의 보안 쿠키를 위해 프록시 신뢰 설정
-app.set("trust proxy", true);
-
-// CORS 옵션 설정
-const corsOptions = {
-  origin: function (origin, callback) {
-    if (!origin || origin === 'null') {
-      callback(null, true);
-    } else if (origin.endsWith('.dimiplan.com') || origin.endsWith('.dimiplan-mobile.pages.dev')) {
-      callback(null, true);
-    } else {
-      callback(new Error(`CORS 정책에 의해 허용되지 않은 요청: ${origin}`));
-    }
-  },
-  credentials: true, // 인증 정보 포함 요청 허용
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // 허용할 HTTP 메서드
-  allowedHeaders: ["Content-Type", "Authorization", "x-session-id"], // 허용할 헤더
-  exposedHeaders: ["x-session-id"], // 클라이언트에 노출할 헤더
-  maxAge: 86400, // CORS 사전 요청(preflight) 캐시 시간 (24시간)
-};
-
-// CORS 미들웨어 적용
-app.use(cors(corsOptions));
-
-// 요청 본문 크기 제한 설정
-app.use(json({ limit: "1mb" })); // JSON 페이로드 크기 제한
-app.use(urlencoded({ extended: true, limit: "1mb" })); // URL 인코딩된 페이로드 크기 제한
-
-// 세션 미들웨어 비동기 초기화
+/**
+ * 세션 미들웨어 비동기 초기화
+ * Redis 기반 세션 스토어 설정 및 Passport 초기화를 수행합니다
+ * 
+ * @param {Object} app - Express 애플리케이션 인스턴스
+ * @returns {Promise<void>}
+ * @throws {Error} 세션 설정 실패 시 오류 발생
+ */
 const initializeSession = async (app) => {
-  const config = await getSessionConfig();
-  app.use(session(config));
-
-  // Passport 초기화 (세션 설정 후)
-  app.use(passport.initialize());
-  app.use(passport.session());
+  try {
+    const config = await getSessionConfig();
+    app.use(session(config));
+    
+    // Passport 초기화 (세션 설정 후)
+    app.use(passport.initialize());
+    app.use(passport.session());
+    
+    logger.info("세션 미들웨어가 성공적으로 초기화되었습니다");
+  } catch (error) {
+    logger.error("세션 초기화 실패:", error);
+    throw error;
+  }
 };
 
-// 모든 요청에 대한 기본 로깅 미들웨어
-app.use((req, res, next) => {
-  logger.info(`요청 방식: ${req.method}, 경로: ${req.path}, IP: ${req.ip}`);
-  next();
-});
-
-// 앱 초기화 함수
+/**
+ * 애플리케이션 초기화 함수
+ * 세션, 라우터, 오류 처리 등 모든 설정을 초기화합니다
+ * 
+ * @returns {Promise<Object>} 초기화된 Express 애플리케이션
+ * @throws {Error} 초기화 실패 시 오류 발생
+ */
 const initializeApp = async () => {
-  // 앱 기본 설정
-  // ...
-
-  // 세션 초기화
-  await initializeSession(app);
-
-  // 라우트 설정
-  app.use("/auth", authRouter); // 인증 관련 라우터
-  app.use("/api", apiRouter); // API 관련 라우터
-
-  // 전역 에러 핸들링 미들웨어
-  app.use((err, req, res, next) => {
-    logger.error("애플리케이션 오류:", err);
-    res.status(500).json({ message: "내부 서버 오류" });
-  });
-
-  return app;
+  logger.info("애플리케이션 초기화를 시작합니다...");
+  
+  try {
+    // 세션 초기화
+    await initializeSession(app);
+    
+    // 라우트 설정
+    app.use("/auth", authRouter);
+    app.use("/api", apiRouter);
+    
+    // 전역 오류 처리 미들웨어 설정
+    setupErrorHandling(app);
+    
+    logger.info("애플리케이션 초기화가 완료되었습니다");
+    return app;
+    
+  } catch (error) {
+    logger.error("애플리케이션 초기화 실패:", error);
+    throw error;
+  }
 };
 
-// 앱 시작
+/**
+ * 애플리케이션 시작 및 서버 생성
+ * 초기화 후 HTTPS 서버를 시작하고 프로세스 핸들러를 설정합니다
+ */
 let server;
-initializeApp()
-  .then((app) => {
-    const PORT = process.env.PORT;
-    server = createServer(sslOptions, app);
-    server.listen(PORT, () => {
-      logger.info(`서버가 ${PORT} 포트에서 실행 중입니다`);
-    });
-  })
-  .catch((err) => {
-    logger.error("앱 초기화 오류:", err);
-    process.exit(1);
-  });
 
-// 프로세스 종료 신호 처리 (정상 종료)
-process.on("SIGTERM", () => {
-  logger.info("SIGTERM 신호 수신, 안전하게 서버 종료 중");
-  // 데이터베이스 연결 종료 등 정리 작업 수행
-  server.close(() => {
-    logger.info("서버가 안전하게 종료되었습니다");
-    process.exit(0);
-  });
-});
+(async () => {
+  try {
+    // 애플리케이션 초기화
+    const initializedApp = await initializeApp();
+    
+    // HTTPS 서버 생성 및 시작
+    server = await createHttpsServer(initializedApp);
+    
+    // 프로세스 신호 처리 설정
+    setupProcessHandlers(server, async () => {
+      logger.info("정리 작업을 시작합니다...");
+      await closeRedisConnection();
+      logger.info("정리 작업이 완료되었습니다");
+    });
+    
+    logger.info("Dimiplan Backend 서버가 성공적으로 시작되었습니다");
+    
+  } catch (error) {
+    logger.error("서버 시작 실패:", error);
+    process.exit(1);
+  }
+})();
 
 export default app;

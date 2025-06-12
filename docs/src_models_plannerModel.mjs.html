@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: src/models/plannerModel.mjs</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: src/models/plannerModel.mjs</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * 플래너 모델
+ * 암호화와 함께 모든 플래너 관련 데이터베이스 작업을 처리합니다
+ * 플래너 생성, 조회, 수정, 삭제 기능과 이름 암호화/복호화를 제공합니다
+ * 
+ * @fileoverview 플래너 관리 시스템의 데이터 모델 모듈
+ */
+import db from "../config/db.mjs";
+import { getNextId, executeTransaction } from "../utils/dbUtils.mjs";
+import {hashUserId, encryptData, decryptData, getTimestamp,} from "../utils/cryptoUtils.mjs";
+import logger from "../utils/logger.mjs";
+
+/**
+ * 새 플래너 생성
+ * 사용자별로 고유한 플래너 ID를 발급하고 이름을 암호화하여 새 플래너를 생성합니다
+ * 같은 이름의 플래너가 이미 존재하는 경우 오류를 발생시킵니다
+ * 
+ * @async
+ * @function createPlanner
+ * @param {string} uid - 사용자 ID (평문)
+ * @param {string} name - 플래너 이름
+ * @param {number} [isDaily=0] - 일일 플래너 여부 (0: 일반, 1: 일일)
+ * @returns {Promise&lt;Object>} 생성된 플래너 데이터
+ * @returns {string} returns.owner - 사용자 ID (평문)
+ * @returns {string} returns.name - 플래너 이름 (평문)
+ * @returns {number} returns.id - 플래너 ID
+ * @returns {number} returns.isDaily - 일일 플래너 여부
+ * @throws {Error} 같은 이름의 플래너가 존재하거나 데이터베이스 오류 시 예외 발생
+ * @example
+ * const newPlanner = await createPlanner('user123', '일정 관리', 1);
+ * console.log(newPlanner.id); // 1, 2, 3, ...
+ */
+export const createPlanner = async (uid, name, isDaily) => {
+  try {
+    // 데이터베이스 쿼리를 위해 사용자 ID 해시
+    const hashedUid = hashUserId(uid);
+
+    // 같은 이름의 플래너가 있는지 확인
+    const existingPlanner = await db("planner")
+      .where({
+        owner: hashedUid,
+        name: encryptData(uid, name), // 암호화된 이름 확인
+      })
+      .first();
+
+    if (existingPlanner) {
+      throw new Error("같은 이름의 플래너가 이미 존재합니다");
+    }
+
+    // 다음 플래너 ID 가져오기
+    const plannerId = await getNextId(hashedUid, "plannerId");
+
+    // 암호화된 이름으로 플래너 생성
+    await db("planner").insert({
+      owner: hashedUid,
+      name: encryptData(uid, name),
+      id: plannerId,
+      isDaily: isDaily ?? 0,
+      created_at: getTimestamp(),
+      updated_at: getTimestamp(),
+    });
+
+    return {
+      owner: uid, // 애플리케이션 로직을 위해 원본 사용자 ID 반환
+      name: name, // 복호화된 이름 반환
+      id: plannerId,
+      isDaily: isDaily ?? 0,
+    };
+  } catch (error) {
+    logger.error("플래너 생성 오류:", error);
+    throw error;
+  }
+};
+
+/**
+ * ID로 플래너 가져오기
+ * 지정된 ID의 플래너를 데이터베이스에서 조회하고 암호화된 이름을 복호화하여 반환합니다
+ * 플래너가 존재하지 않으면 null을 반환합니다
+ * 
+ * @async
+ * @function getPlannerById
+ * @param {string} uid - 사용자 ID (평문)
+ * @param {number} id - 플래너 ID
+ * @returns {Promise&lt;Object|null>} 플래너 데이터 또는 찾지 못한 경우 null
+ * @returns {string} returns.owner - 사용자 ID (평문)
+ * @returns {string} returns.name - 플래너 이름 (복호화된 평문)
+ * @returns {number} returns.id - 플래너 ID
+ * @returns {number} returns.isDaily - 일일 플래너 여부
+ * @returns {string} returns.created_at - 생성 일시
+ * @returns {string} returns.updated_at - 수정 일시
+ * @throws {Error} 데이터베이스 오류 시 예외 발생
+ * @example
+ * const planner = await getPlannerById('user123', 1);
+ * if (planner) {
+ *   console.log(planner.name); // '복호화된 플래너 이름'
+ * }
+ */
+export const getPlannerById = async (uid, id) => {
+  try {
+    // 데이터베이스 쿼리를 위해 사용자 ID 해시
+    const hashedUid = hashUserId(uid);
+
+    // 암호화된 플래너 데이터 가져오기
+    const planner = await db("planner")
+      .where({ owner: hashedUid, id: id })
+      .first();
+
+    if (!planner) {
+      return null;
+    }
+
+    // 이름 필드 복호화
+    return {
+      ...planner,
+      owner: uid, // 애플리케이션 로직을 위해 원본 ID 반환
+      name: decryptData(uid, planner.name),
+    };
+  } catch (error) {
+    logger.error("ID로 플래너 가져오기 오류:", error);
+    throw error;
+  }
+};
+
+/**
+ * 모든 플래너 가져오기
+ * 사용자의 모든 플래너를 데이터베이스에서 조회하고 암호화된 이름을 복호화하여 반환합니다
+ * 일일 플래너를 먼저, 다음에 ID 순으로 정렬되어 반환됩니다
+ * 
+ * @async
+ * @function getPlanners
+ * @param {string} uid - 사용자 ID (평문)
+ * @returns {Promise&lt;Array&lt;Object>>} 플래너 객체 배열
+ * @returns {string} returns[].owner - 사용자 ID (평문)
+ * @returns {string} returns[].name - 플래너 이름 (복호화된 평문)
+ * @returns {number} returns[].id - 플래너 ID
+ * @returns {number} returns[].isDaily - 일일 플래너 여부
+ * @returns {string} returns[].created_at - 생성 일시
+ * @returns {string} returns[].updated_at - 수정 일시
+ * @throws {Error} 데이터베이스 오류 시 예외 발생
+ * @example
+ * const planners = await getPlanners('user123');
+ * planners.forEach(p => console.log(`${p.name} (${p.isDaily ? '일일' : '일반'})`));
+ */
+export const getPlanners = async (uid) => {
+  try {
+    // 데이터베이스 쿼리를 위해 사용자 ID 해시
+    const hashedUid = hashUserId(uid);
+
+    // 암호화된 플래너 데이터 가져오기
+    const planners = await db("planner")
+      .where({ owner: hashedUid })
+      .orderByRaw("isDaily ASC, id ASC");
+
+    // 결과에서 이름 복호화
+    return planners.map((planner) => ({
+      ...planner,
+      owner: uid, // 애플리케이션 로직을 위해 원본 사용자 ID 반환
+      name: decryptData(uid, planner.name),
+    }));
+  } catch (error) {
+    logger.error("플래너 가져오기 오류:", error);
+    throw error;
+  }
+};
+
+/**
+ * 플래너 이름 변경
+ * 지정된 플래너가 존재하는지 확인하고, 새 이름이 기존 플래너와 충돌하지 않는지 검사합니다
+ * 새 이름을 암호화하여 데이터베이스에 업데이트하고 평문 데이터를 반환합니다
+ * 
+ * @async
+ * @function renamePlanner
+ * @param {string} uid - 사용자 ID (평문)
+ * @param {number} id - 플래너 ID
+ * @param {string} newName - 새 플래너 이름
+ * @returns {Promise&lt;Object>} 업데이트된 플래너 데이터
+ * @returns {string} returns.owner - 사용자 ID (평문)
+ * @returns {string} returns.name - 새 플래너 이름 (평문)
+ * @returns {number} returns.id - 플래너 ID
+ * @throws {Error} 플래너를 찾을 수 없거나 같은 이름이 존재할 때 또는 데이터베이스 오류 시 예외 발생
+ * @example
+ * try {
+ *   const updated = await renamePlanner('user123', 1, '새로운 이름');
+ *   console.log('플래너 이름 변경 성공');
+ * } catch (error) {
+ *   console.error('이름 변경 실패:', error.message);
+ * }
+ */
+export const renamePlanner = async (uid, id, newName) => {
+  try {
+    // 데이터베이스 쿼리를 위해 사용자 ID 해시
+    const hashedUid = hashUserId(uid);
+
+    // 플래너 가져오기
+    const planner = await db("planner")
+      .where({ owner: hashedUid, id: id })
+      .first();
+
+    if (!planner) {
+      throw new Error("플래너를 찾을 수 없습니다");
+    }
+
+    // 새 이름이 기존 플래너와 충돌하는지 확인
+    const existingPlanner = await db("planner")
+      .where({
+        owner: hashedUid,
+        name: encryptData(uid, newName),
+      })
+      .whereNot({ id: id })
+      .first();
+
+    if (existingPlanner) {
+      throw new Error("같은 이름의 플래너가 이미 존재합니다");
+    }
+
+    // 암호화된 이름으로 업데이트
+    await db("planner")
+      .where({ owner: hashedUid, id: id })
+      .update({
+        name: encryptData(uid, newName),
+        updated_at: getTimestamp(),
+      });
+
+    // 복호화된 이름으로 업데이트된 플래너 반환
+    return {
+      ...planner,
+      owner: uid, // 애플리케이션 로직을 위한 원본 사용자 ID
+      name: newName, // 복호화된 이름
+    };
+  } catch (error) {
+    logger.error("플래너 이름 변경 오류:", error);
+    throw error;
+  }
+};
+
+/**
+ * 플래너와 그 안의 모든 계획 삭제
+ * 지정된 플래너가 존재하는지 확인한 후, 트랜잭션을 사용하여 안전하게 삭제합니다
+ * 플래너와 관련된 모든 계획을 원자적으로 삭제하여 데이터 일관성을 보장합니다
+ * 
+ * @async
+ * @function deletePlanner
+ * @param {string} uid - 사용자 ID (평문)
+ * @param {number} id - 삭제할 플래너 ID
+ * @returns {Promise&lt;boolean>} 삭제 성공 여부 (true: 성공)
+ * @throws {Error} 플래너를 찾을 수 없을 때 또는 데이터베이스 오류 시 예외 발생
+ * @example
+ * try {
+ *   const deleted = await deletePlanner('user123', 1);
+ *   console.log('플래너와 모든 계획 삭제 성공');
+ * } catch (error) {
+ *   console.error('플래너를 찾을 수 없습니다');
+ * }
+ */
+export const deletePlanner = async (uid, id) => {
+  try {
+    // 데이터베이스 작업을 위해 사용자 ID 해시
+    const hashedUid = hashUserId(uid);
+
+    // 플래너가 존재하는지 확인
+    const planner = await db("planner")
+      .where({ owner: hashedUid, id: id })
+      .first();
+
+    if (!planner) {
+      throw new Error("플래너를 찾을 수 없습니다");
+    }
+
+    // 모든 작업이 함께 성공 또는 실패하도록 트랜잭션 사용
+    await executeTransaction(async (trx) => {
+      // 플래너 내의 모든 계획 삭제
+      await trx("plan").where({ owner: hashedUid, from: id }).del();
+
+      // 플래너 삭제
+      await trx("planner").where({ owner: hashedUid, id: id }).del();
+    });
+
+    logger.info(
+      `플래너 삭제됨: ID ${id}, 사용자 ${hashedUid.substring(0, 8)}...`,
+    );
+    return true;
+  } catch (error) {
+    logger.error("플래너 삭제 오류:", error);
+    throw error;
+  }
+};
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-apiRouter.html">apiRouter</a></li><li><a href="module-auth.html">auth</a></li><li><a href="module-logWithTimestamp.html">logWithTimestamp</a></li><li><a href="module-sessionConfig.html">sessionConfig</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ALLOWED_DOMAINS">ALLOWED_DOMAINS</a></li><li><a href="global.html#FREE_MODELS">FREE_MODELS</a></li><li><a href="global.html#PAID_MODELS">PAID_MODELS</a></li><li><a href="global.html#PULL_INTERVAL">PULL_INTERVAL</a></li><li><a href="global.html#SENSITIVE_FIELDS">SENSITIVE_FIELDS</a></li><li><a href="global.html#SENSITIVE_HEADERS">SENSITIVE_HEADERS</a></li><li><a href="global.html#addAdminField">addAdminField</a></li><li><a href="global.html#addChatMessages">addChatMessages</a></li><li><a href="global.html#apiRateLimiter">apiRateLimiter</a></li><li><a href="global.html#app">app</a></li><li><a href="global.html#checkAdminStatus">checkAdminStatus</a></li><li><a href="global.html#colors">colors</a></li><li><a href="global.html#completeTask">completeTask</a></li><li><a href="global.html#createBodySizeLimiter">createBodySizeLimiter</a></li><li><a href="global.html#createChatRoom">createChatRoom</a></li><li><a href="global.html#createExpressApp">createExpressApp</a></li><li><a href="global.html#createHttpsServer">createHttpsServer</a></li><li><a href="global.html#createPlanner">createPlanner</a></li><li><a href="global.html#createRateLimiter">createRateLimiter</a></li><li><a href="global.html#createTask">createTask</a></li><li><a href="global.html#createUser">createUser</a></li><li><a href="global.html#createWordList">createWordList</a></li><li><a href="global.html#db">db</a></li><li><a href="global.html#decryptData">decryptData</a></li><li><a href="global.html#deleteChatRoom">deleteChatRoom</a></li><li><a href="global.html#deletePlanner">deletePlanner</a></li><li><a href="global.html#deleteTask">deleteTask</a></li><li><a href="global.html#deleteWordList">deleteWordList</a></li><li><a href="global.html#encryptData">encryptData</a></li><li><a href="global.html#errorLoggingMiddleware">errorLoggingMiddleware</a></li><li><a href="global.html#executeGitPull">executeGitPull</a></li><li><a href="global.html#executeTransaction">executeTransaction</a></li><li><a href="global.html#formatDate">formatDate</a></li><li><a href="global.html#formatDateForMySQL">formatDateForMySQL</a></li><li><a href="global.html#generateAutoResponse">generateAutoResponse</a></li><li><a href="global.html#generateCustomResponse">generateCustomResponse</a></li><li><a href="global.html#generateSecureToken">generateSecureToken</a></li><li><a href="global.html#getCSPDirectives">getCSPDirectives</a></li><li><a href="global.html#getChatMessages">getChatMessages</a></li><li><a href="global.html#getChatRooms">getChatRooms</a></li><li><a href="global.html#getCorsConfig">getCorsConfig</a></li><li><a href="global.html#getCorsOptions">getCorsOptions</a></li><li><a href="global.html#getCurrentMySQLDateTime">getCurrentMySQLDateTime</a></li><li><a href="global.html#getCustomCorsConfig">getCustomCorsConfig</a></li><li><a href="global.html#getDevSecurityConfig">getDevSecurityConfig</a></li><li><a href="global.html#getEnvFilePaths">getEnvFilePaths</a></li><li><a href="global.html#getEnvironmentInfo">getEnvironmentInfo</a></li><li><a href="global.html#getEnvironmentSecurityConfig">getEnvironmentSecurityConfig</a></li><li><a href="global.html#getHashedUserId">getHashedUserId</a></li><li><a href="global.html#getNextId">getNextId</a></li><li><a href="global.html#getPlannerById">getPlannerById</a></li><li><a href="global.html#getPlanners">getPlanners</a></li><li><a href="global.html#getSecurityConfig">getSecurityConfig</a></li><li><a href="global.html#getTaskById">getTaskById</a></li><li><a href="global.html#getTasks">getTasks</a></li><li><a href="global.html#getTimestamp">getTimestamp</a></li><li><a href="global.html#getUser">getUser</a></li><li><a href="global.html#getYearEndDate">getYearEndDate</a></li><li><a href="global.html#getYearStartDate">getYearStartDate</a></li><li><a href="global.html#gracefulShutdown">gracefulShutdown</a></li><li><a href="global.html#hashUserId">hashUserId</a></li><li><a href="global.html#initializeApp">initializeApp</a></li><li><a href="global.html#initializeSession">initializeSession</a></li><li><a href="global.html#isAdmin">isAdmin</a></li><li><a href="global.html#isEncrypted">isEncrypted</a></li><li><a href="global.html#isRegistered">isRegistered</a></li><li><a href="global.html#isUserExists">isUserExists</a></li><li><a href="global.html#levels">levels</a></li><li><a href="global.html#loadEnvironmentVariables">loadEnvironmentVariables</a></li><li><a href="global.html#loadSSLOptions">loadSSLOptions</a></li><li><a href="global.html#logWithTimestamp">logWithTimestamp</a></li><li><a href="global.html#loginRateLimiter">loginRateLimiter</a></li><li><a href="global.html#maskSensitiveData">maskSensitiveData</a></li><li><a href="global.html#maskSensitiveHeaders">maskSensitiveHeaders</a></li><li><a href="global.html#openRouter">openRouter</a></li><li><a href="global.html#optionalAuth">optionalAuth</a></li><li><a href="global.html#options">options</a></li><li><a href="global.html#performanceMonitoringMiddleware">performanceMonitoringMiddleware</a></li><li><a href="global.html#removeAdminUser">removeAdminUser</a></li><li><a href="global.html#renamePlanner">renamePlanner</a></li><li><a href="global.html#requestLoggingMiddleware">requestLoggingMiddleware</a></li><li><a href="global.html#requireAdmin">requireAdmin</a></li><li><a href="global.html#requireAuth">requireAuth</a></li><li><a href="global.html#responseLoggingMiddleware">responseLoggingMiddleware</a></li><li><a href="global.html#safeStringify">safeStringify</a></li><li><a href="global.html#securityHeaders">securityHeaders</a></li><li><a href="global.html#server">server</a></li><li><a href="global.html#setAdminUser">setAdminUser</a></li><li><a href="global.html#setDefaultEnvironmentVariables">setDefaultEnvironmentVariables</a></li><li><a href="global.html#setupBodyParsing">setupBodyParsing</a></li><li><a href="global.html#setupCorsMiddleware">setupCorsMiddleware</a></li><li><a href="global.html#setupErrorHandling">setupErrorHandling</a></li><li><a href="global.html#setupLoggingMiddleware">setupLoggingMiddleware</a></li><li><a href="global.html#setupProcessHandlers">setupProcessHandlers</a></li><li><a href="global.html#setupSecurityMiddleware">setupSecurityMiddleware</a></li><li><a href="global.html#setupTestLoggingMiddleware">setupTestLoggingMiddleware</a></li><li><a href="global.html#summarizeMemory">summarizeMemory</a></li><li><a href="global.html#testDatabaseConnection">testDatabaseConnection</a></li><li><a href="global.html#updateTask">updateTask</a></li><li><a href="global.html#updateUser">updateUser</a></li><li><a href="global.html#validateOrigin">validateOrigin</a></li><li><a href="global.html#validateRequiredEnvironmentVariables">validateRequiredEnvironmentVariables</a></li><li><a href="global.html#validateUserData">validateUserData</a></li><li><a href="global.html#verifyUserId">verifyUserId</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Thu Jun 12 2025 20:26:11 GMT+0900 (대한민국 표준시)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

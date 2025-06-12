@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: src/config/dotenv.mjs</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: src/config/dotenv.mjs</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * 환경 변수 설정 모듈
+ * .env 파일에서 환경 변수를 로드하고 기본값을 설정합니다
+ * 
+ * @fileoverview 환경 변수 로드 및 기본값 설정
+ */
+
+import { config } from "dotenv";
+import { existsSync } from "fs";
+
+/**
+ * 환경별 .env 파일 경로를 결정합니다
+ * 
+ * @returns {string[]} 로드할 .env 파일 경로 배열
+ */
+const getEnvFilePaths = () => {
+  const nodeEnv = process.env.NODE_ENV || "development";
+  const paths = [];
+  
+  // 환경별 파일 우선 로드
+  const envFile = `.env.${nodeEnv}`;
+  if (existsSync(envFile)) {
+    paths.push(envFile);
+  }
+  
+  // 기본 .env 파일
+  if (existsSync(".env")) {
+    paths.push(".env");
+  }
+  
+  return paths;
+};
+
+/**
+ * 환경 변수를 로드하고 검증합니다
+ * 
+ * @returns {void}
+ * @throws {Error} 필수 환경 변수가 없는 경우 오류 발생
+ */
+const loadEnvironmentVariables = () => {
+  const envPaths = getEnvFilePaths();
+  
+  // 각 .env 파일 로드
+  envPaths.forEach(path => {
+    const result = config({ path });
+    if (result.error) {
+      console.warn(`환경 변수 파일 로드 실패: ${path}`, result.error.message);
+    } else {
+      console.log(`환경 변수 파일 로드 성공: ${path}`);
+    }
+  });
+  
+  // 기본값 설정
+  setDefaultEnvironmentVariables();
+  
+  // 필수 환경 변수 검증
+  validateRequiredEnvironmentVariables();
+};
+
+/**
+ * 기본 환경 변수 값을 설정합니다
+ * 
+ * @returns {void}
+ */
+const setDefaultEnvironmentVariables = () => {
+  // 기본 NODE_ENV 설정
+  if (!process.env.NODE_ENV) {
+    process.env.NODE_ENV = "development";
+  }
+  
+  // 기본 포트 설정
+  if (!process.env.PORT) {
+    process.env.PORT = "3000";
+  }
+  
+  // 기본 로그 레벨 설정
+  if (!process.env.LOG_LEVEL) {
+    process.env.LOG_LEVEL = process.env.NODE_ENV === "production" ? "info" : "verbose";
+  }
+  
+  // 기본 세션 설정
+  if (!process.env.SESSION_SECRET) {
+    console.warn("SESSION_SECRET이 설정되지 않았습니다. 임시 값을 사용합니다.");
+    process.env.SESSION_SECRET = "temporary-secret-key-change-in-production";
+  }
+};
+
+/**
+ * 필수 환경 변수가 설정되어 있는지 검증합니다
+ * 
+ * @returns {void}
+ * @throws {Error} 필수 환경 변수가 없는 경우 오류 발생
+ */
+const validateRequiredEnvironmentVariables = () => {
+  const required = [
+    "PORT",
+    "NODE_ENV"
+  ];
+  
+  const missing = required.filter(key => !process.env[key]);
+  
+  if (missing.length > 0) {
+    throw new Error(`필수 환경 변수가 설정되지 않았습니다: ${missing.join(", ")}`);
+  }
+  
+  // 프로덕션 환경에서 추가 검증
+  if (process.env.NODE_ENV === "production") {
+    const productionRequired = [
+      "CRYPTO_MASTER_KEY",
+      "CRYPTO_MASTER_IV",
+      "UID_SALT",
+      "SESSION_SECRET"
+    ];
+    
+    const missingProduction = productionRequired.filter(key => !process.env[key]);
+    
+    if (missingProduction.length > 0) {
+      console.error(`프로덕션 환경에서 필수 환경 변수가 설정되지 않았습니다: ${missingProduction.join(", ")}`);
+      console.error("보안을 위해 이러한 값들을 설정해주세요.");
+    }
+  }
+};
+
+/**
+ * 현재 환경 설정 정보를 반환합니다
+ * 
+ * @returns {Object} 환경 설정 정보 객체
+ */
+export const getEnvironmentInfo = () => ({
+  nodeEnv: process.env.NODE_ENV,
+  port: process.env.PORT,
+  logLevel: process.env.LOG_LEVEL,
+  isDevelopment: process.env.NODE_ENV === "development",
+  isProduction: process.env.NODE_ENV === "production",
+  isTest: process.env.NODE_ENV === "test"
+});
+
+// 환경 변수 로드 실행
+try {
+  loadEnvironmentVariables();
+  console.log("환경 변수 로드 완료:", getEnvironmentInfo());
+} catch (error) {
+  console.error("환경 변수 로드 실패:", error.message);
+  process.exit(1);
+}
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-apiRouter.html">apiRouter</a></li><li><a href="module-auth.html">auth</a></li><li><a href="module-logWithTimestamp.html">logWithTimestamp</a></li><li><a href="module-sessionConfig.html">sessionConfig</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ALLOWED_DOMAINS">ALLOWED_DOMAINS</a></li><li><a href="global.html#FREE_MODELS">FREE_MODELS</a></li><li><a href="global.html#PAID_MODELS">PAID_MODELS</a></li><li><a href="global.html#PULL_INTERVAL">PULL_INTERVAL</a></li><li><a href="global.html#SENSITIVE_FIELDS">SENSITIVE_FIELDS</a></li><li><a href="global.html#SENSITIVE_HEADERS">SENSITIVE_HEADERS</a></li><li><a href="global.html#addAdminField">addAdminField</a></li><li><a href="global.html#addChatMessages">addChatMessages</a></li><li><a href="global.html#apiRateLimiter">apiRateLimiter</a></li><li><a href="global.html#app">app</a></li><li><a href="global.html#checkAdminStatus">checkAdminStatus</a></li><li><a href="global.html#colors">colors</a></li><li><a href="global.html#completeTask">completeTask</a></li><li><a href="global.html#createBodySizeLimiter">createBodySizeLimiter</a></li><li><a href="global.html#createChatRoom">createChatRoom</a></li><li><a href="global.html#createExpressApp">createExpressApp</a></li><li><a href="global.html#createHttpsServer">createHttpsServer</a></li><li><a href="global.html#createPlanner">createPlanner</a></li><li><a href="global.html#createRateLimiter">createRateLimiter</a></li><li><a href="global.html#createTask">createTask</a></li><li><a href="global.html#createUser">createUser</a></li><li><a href="global.html#createWordList">createWordList</a></li><li><a href="global.html#db">db</a></li><li><a href="global.html#decryptData">decryptData</a></li><li><a href="global.html#deleteChatRoom">deleteChatRoom</a></li><li><a href="global.html#deletePlanner">deletePlanner</a></li><li><a href="global.html#deleteTask">deleteTask</a></li><li><a href="global.html#deleteWordList">deleteWordList</a></li><li><a href="global.html#encryptData">encryptData</a></li><li><a href="global.html#errorLoggingMiddleware">errorLoggingMiddleware</a></li><li><a href="global.html#executeGitPull">executeGitPull</a></li><li><a href="global.html#executeTransaction">executeTransaction</a></li><li><a href="global.html#formatDate">formatDate</a></li><li><a href="global.html#formatDateForMySQL">formatDateForMySQL</a></li><li><a href="global.html#generateAutoResponse">generateAutoResponse</a></li><li><a href="global.html#generateCustomResponse">generateCustomResponse</a></li><li><a href="global.html#generateSecureToken">generateSecureToken</a></li><li><a href="global.html#getCSPDirectives">getCSPDirectives</a></li><li><a href="global.html#getChatMessages">getChatMessages</a></li><li><a href="global.html#getChatRooms">getChatRooms</a></li><li><a href="global.html#getCorsConfig">getCorsConfig</a></li><li><a href="global.html#getCorsOptions">getCorsOptions</a></li><li><a href="global.html#getCurrentMySQLDateTime">getCurrentMySQLDateTime</a></li><li><a href="global.html#getCustomCorsConfig">getCustomCorsConfig</a></li><li><a href="global.html#getDevSecurityConfig">getDevSecurityConfig</a></li><li><a href="global.html#getEnvFilePaths">getEnvFilePaths</a></li><li><a href="global.html#getEnvironmentInfo">getEnvironmentInfo</a></li><li><a href="global.html#getEnvironmentSecurityConfig">getEnvironmentSecurityConfig</a></li><li><a href="global.html#getHashedUserId">getHashedUserId</a></li><li><a href="global.html#getNextId">getNextId</a></li><li><a href="global.html#getPlannerById">getPlannerById</a></li><li><a href="global.html#getPlanners">getPlanners</a></li><li><a href="global.html#getSecurityConfig">getSecurityConfig</a></li><li><a href="global.html#getTaskById">getTaskById</a></li><li><a href="global.html#getTasks">getTasks</a></li><li><a href="global.html#getTimestamp">getTimestamp</a></li><li><a href="global.html#getUser">getUser</a></li><li><a href="global.html#getYearEndDate">getYearEndDate</a></li><li><a href="global.html#getYearStartDate">getYearStartDate</a></li><li><a href="global.html#gracefulShutdown">gracefulShutdown</a></li><li><a href="global.html#hashUserId">hashUserId</a></li><li><a href="global.html#initializeApp">initializeApp</a></li><li><a href="global.html#initializeSession">initializeSession</a></li><li><a href="global.html#isAdmin">isAdmin</a></li><li><a href="global.html#isEncrypted">isEncrypted</a></li><li><a href="global.html#isRegistered">isRegistered</a></li><li><a href="global.html#isUserExists">isUserExists</a></li><li><a href="global.html#levels">levels</a></li><li><a href="global.html#loadEnvironmentVariables">loadEnvironmentVariables</a></li><li><a href="global.html#loadSSLOptions">loadSSLOptions</a></li><li><a href="global.html#logWithTimestamp">logWithTimestamp</a></li><li><a href="global.html#loginRateLimiter">loginRateLimiter</a></li><li><a href="global.html#maskSensitiveData">maskSensitiveData</a></li><li><a href="global.html#maskSensitiveHeaders">maskSensitiveHeaders</a></li><li><a href="global.html#openRouter">openRouter</a></li><li><a href="global.html#optionalAuth">optionalAuth</a></li><li><a href="global.html#options">options</a></li><li><a href="global.html#performanceMonitoringMiddleware">performanceMonitoringMiddleware</a></li><li><a href="global.html#removeAdminUser">removeAdminUser</a></li><li><a href="global.html#renamePlanner">renamePlanner</a></li><li><a href="global.html#requestLoggingMiddleware">requestLoggingMiddleware</a></li><li><a href="global.html#requireAdmin">requireAdmin</a></li><li><a href="global.html#requireAuth">requireAuth</a></li><li><a href="global.html#responseLoggingMiddleware">responseLoggingMiddleware</a></li><li><a href="global.html#safeStringify">safeStringify</a></li><li><a href="global.html#securityHeaders">securityHeaders</a></li><li><a href="global.html#server">server</a></li><li><a href="global.html#setAdminUser">setAdminUser</a></li><li><a href="global.html#setDefaultEnvironmentVariables">setDefaultEnvironmentVariables</a></li><li><a href="global.html#setupBodyParsing">setupBodyParsing</a></li><li><a href="global.html#setupCorsMiddleware">setupCorsMiddleware</a></li><li><a href="global.html#setupErrorHandling">setupErrorHandling</a></li><li><a href="global.html#setupLoggingMiddleware">setupLoggingMiddleware</a></li><li><a href="global.html#setupProcessHandlers">setupProcessHandlers</a></li><li><a href="global.html#setupSecurityMiddleware">setupSecurityMiddleware</a></li><li><a href="global.html#setupTestLoggingMiddleware">setupTestLoggingMiddleware</a></li><li><a href="global.html#summarizeMemory">summarizeMemory</a></li><li><a href="global.html#testDatabaseConnection">testDatabaseConnection</a></li><li><a href="global.html#updateTask">updateTask</a></li><li><a href="global.html#updateUser">updateUser</a></li><li><a href="global.html#validateOrigin">validateOrigin</a></li><li><a href="global.html#validateRequiredEnvironmentVariables">validateRequiredEnvironmentVariables</a></li><li><a href="global.html#validateUserData">validateUserData</a></li><li><a href="global.html#verifyUserId">verifyUserId</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Thu Jun 12 2025 20:26:11 GMT+0900 (대한민국 표준시)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

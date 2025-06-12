@@ -1,6 +1,8 @@
 /**
  * 로깅 유틸리티
  * 민감한 데이터 필터링과 구조화된 로깅 기능 제공
+ * 
+ * @fileoverview Winston 기반 로깅 시스템 및 보안 필터링
  */
 import winston, { addColors, createLogger } from "winston";
 const { format, transports } = winston;
@@ -8,30 +10,46 @@ import { existsSync, mkdirSync } from "fs";
 import { join } from "path";
 import "../config/dotenv.mjs"; // 환경 변수 로드
 
-// 로그 레벨 정의
+/**
+ * 로그 레벨 정의
+ * Winston 로거에서 사용할 로그 레벨들을 정의합니다
+ * 
+ * @type {Object}
+ * @property {number} error - 치명적인 오류 (0)
+ * @property {number} warn - 경고성 메시지 (1)
+ * @property {number} info - 일반 정보 (2)
+ * @property {number} verbose - 상세 로깅, 테스트 환경용 (3)
+ */
 const levels = {
-  error: 0, // 치명적인 오류
-  warn: 1, // 경고성 메시지
-  info: 2, // 일반 정보
-  verbose: 3, // 상세 로깅 (테스트 환경용)
+  error: 0,
+  warn: 1,
+  info: 2,
+  verbose: 3
 };
 
-// 각 레벨별 색상 정의
+/**
+ * 각 로그 레벨별 콘솔 색상 정의
+ * 콘솔 출력 시 가독성을 높이기 위한 색상 설정
+ * 
+ * @type {Object}
+ */
 const colors = {
   error: "red",
   warn: "yellow",
   info: "green",
-  verbose: "cyan",
+  verbose: "cyan"
 };
 
 addColors(colors);
 
 /**
  * 안전한 JSON 직렬화 함수
- * 순환 참조 및 복잡한 객체 처리
- *
- * @param {Object} obj - 직렬화할 객체
+ * 순환 참조 및 복잡한 객체 처리를 위한 안전한 직렬화
+ * 
+ * @param {any} obj - 직렬화할 객체
  * @returns {string} 직렬화된 JSON 문자열
+ * @example
+ * const result = safeStringify({ circular: obj });
  */
 const safeStringify = (obj) => {
   if (!obj) return String(obj);

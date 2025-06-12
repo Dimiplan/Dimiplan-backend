@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: src/middleware/logging.mjs</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: src/middleware/logging.mjs</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * 로깅 미들웨어 모듈
+ * 요청/응답 로깅 및 보안 정보 필터링을 담당합니다
+ * 
+ * @fileoverview 로깅 미들웨어 및 보안 필터링 유틸리티
+ */
+
+import logger from "../utils/logger.mjs";
+
+/**
+ * 민감한 정보를 포함할 수 있는 헤더 목록
+ * 로그에서 마스킹 처리할 헤더들을 정의합니다
+ * 
+ * @type {string[]}
+ */
+const SENSITIVE_HEADERS = [
+  "authorization",
+  "cookie",
+  "set-cookie",
+  "x-session-id",
+  "x-api-key",
+  "x-auth-token"
+];
+
+/**
+ * 민감한 정보를 포함할 수 있는 필드 목록
+ * 요청/응답 본문에서 마스킹 처리할 필드들을 정의합니다
+ * 
+ * @type {string[]}
+ */
+const SENSITIVE_FIELDS = [
+  "password",
+  "token",
+  "secret",
+  "key",
+  "auth",
+  "credential",
+  "session"
+];
+
+/**
+ * 헤더에서 민감한 정보를 마스킹합니다
+ * 
+ * @param {Object} headers - 원본 헤더 객체
+ * @returns {Object} 마스킹된 헤더 객체
+ * @example
+ * const safeHeaders = maskSensitiveHeaders(req.headers);
+ */
+const maskSensitiveHeaders = (headers) => {
+  if (!headers || typeof headers !== "object") return headers;
+  
+  const maskedHeaders = { ...headers };
+  
+  Object.keys(maskedHeaders).forEach(key => {
+    const lowerKey = key.toLowerCase();
+    if (SENSITIVE_HEADERS.some(sensitive => lowerKey.includes(sensitive))) {
+      maskedHeaders[key] = "[MASKED]";
+    }
+  });
+  
+  return maskedHeaders;
+};
+
+/**
+ * 객체에서 민감한 정보를 재귀적으로 마스킹합니다
+ * 
+ * @param {any} data - 마스킹할 데이터
+ * @param {number} [depth=0] - 현재 재귀 깊이
+ * @param {number} [maxDepth=5] - 최대 재귀 깊이
+ * @returns {any} 마스킹된 데이터
+ */
+const maskSensitiveData = (data, depth = 0, maxDepth = 5) => {
+  // 재귀 깊이 제한
+  if (depth > maxDepth) return "[MAX_DEPTH_REACHED]";
+  
+  if (!data || typeof data !== "object") return data;
+  
+  // 배열 처리
+  if (Array.isArray(data)) {
+    return data.map(item => maskSensitiveData(item, depth + 1, maxDepth));
+  }
+  
+  // 객체 처리
+  const maskedData = {};
+  Object.keys(data).forEach(key => {
+    const lowerKey = key.toLowerCase();
+    if (SENSITIVE_FIELDS.some(sensitive => lowerKey.includes(sensitive))) {
+      maskedData[key] = "[MASKED]";
+    } else {
+      maskedData[key] = maskSensitiveData(data[key], depth + 1, maxDepth);
+    }
+  });
+  
+  return maskedData;
+};
+
+/**
+ * 요청 로깅 미들웨어
+ * 들어오는 요청의 기본 정보를 안전하게 로그에 기록합니다
+ * 
+ * @middleware
+ * @param {Object} req - Express 요청 객체
+ * @param {Object} res - Express 응답 객체
+ * @param {Function} next - 다음 미들웨어 함수
+ * @returns {void}
+ */
+export const requestLoggingMiddleware = (req, res, next) => {
+  const requestInfo = {
+    method: req.method,
+    url: req.url,
+    path: req.path,
+    ip: req.ip,
+    userAgent: req.get("User-Agent"),
+    timestamp: new Date().toISOString(),
+    headers: maskSensitiveHeaders(req.headers),
+    query: maskSensitiveData(req.query),
+    // body는 크기가 클 수 있으므로 개발 환경에서만 로깅
+    ...(process.env.NODE_ENV === "development" &amp;&amp; {
+      body: maskSensitiveData(req.body)
+    })
+  };
+  
+  logger.info("들어오는 요청:", requestInfo);
+  next();
+};
+
+/**
+ * 응답 로깅 미들웨어
+ * 나가는 응답의 기본 정보를 안전하게 로그에 기록합니다
+ * 
+ * @middleware
+ * @param {Object} req - Express 요청 객체
+ * @param {Object} res - Express 응답 객체
+ * @param {Function} next - 다음 미들웨어 함수
+ * @returns {void}
+ */
+export const responseLoggingMiddleware = (req, res, next) => {
+  const startTime = Date.now();
+  
+  // 원본 응답 메서드 백업
+  const originalSend = res.send;
+  const originalJson = res.json;
+  
+  // send 메서드 오버라이드
+  res.send = function(body) {
+    logResponse(req, res, body, startTime);
+    return originalSend.apply(res, arguments);
+  };
+  
+  // json 메서드 오버라이드
+  res.json = function(body) {
+    logResponse(req, res, body, startTime);
+    return originalJson.apply(res, arguments);
+  };
+  
+  next();
+};
+
+/**
+ * 응답 정보를 로그에 기록하는 내부 함수
+ * 
+ * @private
+ * @param {Object} req - Express 요청 객체
+ * @param {Object} res - Express 응답 객체
+ * @param {any} body - 응답 본문
+ * @param {number} startTime - 요청 시작 시간
+ * @returns {void}
+ */
+const logResponse = (req, res, body, startTime) => {
+  const duration = Date.now() - startTime;
+  
+  const responseInfo = {
+    method: req.method,
+    url: req.url,
+    statusCode: res.statusCode,
+    duration: `${duration}ms`,
+    timestamp: new Date().toISOString(),
+    headers: maskSensitiveHeaders(res.getHeaders()),
+    // 응답 본문은 개발 환경에서만 로깅 (크기 제한)
+    ...(process.env.NODE_ENV === "development" &amp;&amp; body &amp;&amp; {
+      bodySize: Buffer.byteLength(JSON.stringify(body), 'utf8'),
+      body: typeof body === "string" &amp;&amp; body.length > 1000 
+        ? body.substring(0, 1000) + "...[TRUNCATED]"
+        : maskSensitiveData(body)
+    })
+  };
+  
+  // 상태 코드에 따른 로그 레벨 결정
+  if (res.statusCode >= 500) {
+    logger.error("응답 (서버 오류):", responseInfo);
+  } else if (res.statusCode >= 400) {
+    logger.warn("응답 (클라이언트 오류):", responseInfo);
+  } else {
+    logger.info("응답:", responseInfo);
+  }
+};
+
+/**
+ * 오류 로깅 미들웨어
+ * 처리되지 않은 오류를 안전하게 로그에 기록합니다
+ * 
+ * @middleware
+ * @param {Error} err - 발생한 오류 객체
+ * @param {Object} req - Express 요청 객체
+ * @param {Object} res - Express 응답 객체
+ * @param {Function} next - 다음 미들웨어 함수
+ * @returns {void}
+ */
+export const errorLoggingMiddleware = (err, req, res, next) => {
+  const errorInfo = {
+    message: err.message,
+    stack: err.stack,
+    status: err.status || err.statusCode || 500,
+    method: req.method,
+    url: req.url,
+    ip: req.ip,
+    userAgent: req.get("User-Agent"),
+    timestamp: new Date().toISOString(),
+    headers: maskSensitiveHeaders(req.headers),
+    body: maskSensitiveData(req.body)
+  };
+  
+  logger.error("미들웨어 오류:", errorInfo);
+  next(err);
+};
+
+/**
+ * 성능 모니터링 미들웨어
+ * 요청 처리 시간과 메모리 사용량을 모니터링합니다
+ * 
+ * @middleware
+ * @param {Object} req - Express 요청 객체
+ * @param {Object} res - Express 응답 객체
+ * @param {Function} next - 다음 미들웨어 함수
+ * @returns {void}
+ */
+export const performanceMonitoringMiddleware = (req, res, next) => {
+  const startTime = process.hrtime.bigint();
+  const startMemory = process.memoryUsage();
+  
+  res.on("finish", () => {
+    const endTime = process.hrtime.bigint();
+    const endMemory = process.memoryUsage();
+    
+    const duration = Number(endTime - startTime) / 1000000; // 나노초를 밀리초로 변환
+    const memoryDiff = {
+      rss: endMemory.rss - startMemory.rss,
+      heapUsed: endMemory.heapUsed - startMemory.heapUsed,
+      heapTotal: endMemory.heapTotal - startMemory.heapTotal
+    };
+    
+    // 느린 요청이나 메모리 사용량이 많은 요청만 로깅
+    if (duration > 1000 || Math.abs(memoryDiff.heapUsed) > 10 * 1024 * 1024) { // 1초 초과 또는 10MB 초과
+      logger.warn("성능 경고:", {
+        method: req.method,
+        url: req.url,
+        duration: `${duration.toFixed(2)}ms`,
+        memoryDiff,
+        statusCode: res.statusCode
+      });
+    }
+  });
+  
+  next();
+};</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-apiRouter.html">apiRouter</a></li><li><a href="module-auth.html">auth</a></li><li><a href="module-logWithTimestamp.html">logWithTimestamp</a></li><li><a href="module-sessionConfig.html">sessionConfig</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ALLOWED_DOMAINS">ALLOWED_DOMAINS</a></li><li><a href="global.html#FREE_MODELS">FREE_MODELS</a></li><li><a href="global.html#PAID_MODELS">PAID_MODELS</a></li><li><a href="global.html#PULL_INTERVAL">PULL_INTERVAL</a></li><li><a href="global.html#SENSITIVE_FIELDS">SENSITIVE_FIELDS</a></li><li><a href="global.html#SENSITIVE_HEADERS">SENSITIVE_HEADERS</a></li><li><a href="global.html#addAdminField">addAdminField</a></li><li><a href="global.html#addChatMessages">addChatMessages</a></li><li><a href="global.html#apiRateLimiter">apiRateLimiter</a></li><li><a href="global.html#app">app</a></li><li><a href="global.html#checkAdminStatus">checkAdminStatus</a></li><li><a href="global.html#colors">colors</a></li><li><a href="global.html#completeTask">completeTask</a></li><li><a href="global.html#createBodySizeLimiter">createBodySizeLimiter</a></li><li><a href="global.html#createChatRoom">createChatRoom</a></li><li><a href="global.html#createExpressApp">createExpressApp</a></li><li><a href="global.html#createHttpsServer">createHttpsServer</a></li><li><a href="global.html#createPlanner">createPlanner</a></li><li><a href="global.html#createRateLimiter">createRateLimiter</a></li><li><a href="global.html#createTask">createTask</a></li><li><a href="global.html#createUser">createUser</a></li><li><a href="global.html#createWordList">createWordList</a></li><li><a href="global.html#db">db</a></li><li><a href="global.html#decryptData">decryptData</a></li><li><a href="global.html#deleteChatRoom">deleteChatRoom</a></li><li><a href="global.html#deletePlanner">deletePlanner</a></li><li><a href="global.html#deleteTask">deleteTask</a></li><li><a href="global.html#deleteWordList">deleteWordList</a></li><li><a href="global.html#encryptData">encryptData</a></li><li><a href="global.html#errorLoggingMiddleware">errorLoggingMiddleware</a></li><li><a href="global.html#executeGitPull">executeGitPull</a></li><li><a href="global.html#executeTransaction">executeTransaction</a></li><li><a href="global.html#formatDate">formatDate</a></li><li><a href="global.html#formatDateForMySQL">formatDateForMySQL</a></li><li><a href="global.html#generateAutoResponse">generateAutoResponse</a></li><li><a href="global.html#generateCustomResponse">generateCustomResponse</a></li><li><a href="global.html#generateSecureToken">generateSecureToken</a></li><li><a href="global.html#getCSPDirectives">getCSPDirectives</a></li><li><a href="global.html#getChatMessages">getChatMessages</a></li><li><a href="global.html#getChatRooms">getChatRooms</a></li><li><a href="global.html#getCorsConfig">getCorsConfig</a></li><li><a href="global.html#getCorsOptions">getCorsOptions</a></li><li><a href="global.html#getCurrentMySQLDateTime">getCurrentMySQLDateTime</a></li><li><a href="global.html#getCustomCorsConfig">getCustomCorsConfig</a></li><li><a href="global.html#getDevSecurityConfig">getDevSecurityConfig</a></li><li><a href="global.html#getEnvFilePaths">getEnvFilePaths</a></li><li><a href="global.html#getEnvironmentInfo">getEnvironmentInfo</a></li><li><a href="global.html#getEnvironmentSecurityConfig">getEnvironmentSecurityConfig</a></li><li><a href="global.html#getHashedUserId">getHashedUserId</a></li><li><a href="global.html#getNextId">getNextId</a></li><li><a href="global.html#getPlannerById">getPlannerById</a></li><li><a href="global.html#getPlanners">getPlanners</a></li><li><a href="global.html#getSecurityConfig">getSecurityConfig</a></li><li><a href="global.html#getTaskById">getTaskById</a></li><li><a href="global.html#getTasks">getTasks</a></li><li><a href="global.html#getTimestamp">getTimestamp</a></li><li><a href="global.html#getUser">getUser</a></li><li><a href="global.html#getYearEndDate">getYearEndDate</a></li><li><a href="global.html#getYearStartDate">getYearStartDate</a></li><li><a href="global.html#gracefulShutdown">gracefulShutdown</a></li><li><a href="global.html#hashUserId">hashUserId</a></li><li><a href="global.html#initializeApp">initializeApp</a></li><li><a href="global.html#initializeSession">initializeSession</a></li><li><a href="global.html#isAdmin">isAdmin</a></li><li><a href="global.html#isEncrypted">isEncrypted</a></li><li><a href="global.html#isRegistered">isRegistered</a></li><li><a href="global.html#isUserExists">isUserExists</a></li><li><a href="global.html#levels">levels</a></li><li><a href="global.html#loadEnvironmentVariables">loadEnvironmentVariables</a></li><li><a href="global.html#loadSSLOptions">loadSSLOptions</a></li><li><a href="global.html#logWithTimestamp">logWithTimestamp</a></li><li><a href="global.html#loginRateLimiter">loginRateLimiter</a></li><li><a href="global.html#maskSensitiveData">maskSensitiveData</a></li><li><a href="global.html#maskSensitiveHeaders">maskSensitiveHeaders</a></li><li><a href="global.html#openRouter">openRouter</a></li><li><a href="global.html#optionalAuth">optionalAuth</a></li><li><a href="global.html#options">options</a></li><li><a href="global.html#performanceMonitoringMiddleware">performanceMonitoringMiddleware</a></li><li><a href="global.html#removeAdminUser">removeAdminUser</a></li><li><a href="global.html#renamePlanner">renamePlanner</a></li><li><a href="global.html#requestLoggingMiddleware">requestLoggingMiddleware</a></li><li><a href="global.html#requireAdmin">requireAdmin</a></li><li><a href="global.html#requireAuth">requireAuth</a></li><li><a href="global.html#responseLoggingMiddleware">responseLoggingMiddleware</a></li><li><a href="global.html#safeStringify">safeStringify</a></li><li><a href="global.html#securityHeaders">securityHeaders</a></li><li><a href="global.html#server">server</a></li><li><a href="global.html#setAdminUser">setAdminUser</a></li><li><a href="global.html#setDefaultEnvironmentVariables">setDefaultEnvironmentVariables</a></li><li><a href="global.html#setupBodyParsing">setupBodyParsing</a></li><li><a href="global.html#setupCorsMiddleware">setupCorsMiddleware</a></li><li><a href="global.html#setupErrorHandling">setupErrorHandling</a></li><li><a href="global.html#setupLoggingMiddleware">setupLoggingMiddleware</a></li><li><a href="global.html#setupProcessHandlers">setupProcessHandlers</a></li><li><a href="global.html#setupSecurityMiddleware">setupSecurityMiddleware</a></li><li><a href="global.html#setupTestLoggingMiddleware">setupTestLoggingMiddleware</a></li><li><a href="global.html#summarizeMemory">summarizeMemory</a></li><li><a href="global.html#testDatabaseConnection">testDatabaseConnection</a></li><li><a href="global.html#updateTask">updateTask</a></li><li><a href="global.html#updateUser">updateUser</a></li><li><a href="global.html#validateOrigin">validateOrigin</a></li><li><a href="global.html#validateRequiredEnvironmentVariables">validateRequiredEnvironmentVariables</a></li><li><a href="global.html#validateUserData">validateUserData</a></li><li><a href="global.html#verifyUserId">verifyUserId</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Thu Jun 12 2025 20:26:11 GMT+0900 (대한민국 표준시)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

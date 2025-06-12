@@ -13,9 +13,17 @@ const router = Router();
 router.use(isAuthenticated, isUserRegistered);
 
 /**
+ * 새로운 플래너 생성
+ * 사용자의 플래너 추가 요청을 처리하여 새 플래너를 생성합니다
+ * 
  * @route POST /api/planner/add
- * @desc 새로운 플래너 생성
- * 사용자의 플래너 추가 요청 처리
+ * @param {string} name - 플래너 이름 (필수)
+ * @param {boolean} isDaily - 일일 플래너 여부
+ * @param {string} from - 플래너 출처 (필수)
+ * @returns {Object} 성공 메시지
+ * @example
+ * // POST /api/planner/add
+ * // Body: { "name": "일정 플래너", "isDaily": true, "from": "web" }
  */
 router.post("/add", async (req, res) => {
   try {
@@ -41,9 +49,16 @@ router.post("/add", async (req, res) => {
 });
 
 /**
+ * 플래너 이름 변경
+ * 사용자의 플래너 이름 수정 요청을 처리합니다
+ * 
  * @route POST /api/planner/rename
- * @desc 플래너 이름 변경
- * 사용자의 플래너 이름 수정 요청 처리
+ * @param {string} id - 플래너 ID (필수)
+ * @param {string} name - 새 플래너 이름 (필수)
+ * @returns {Object} 성공 메시지
+ * @example
+ * // POST /api/planner/rename
+ * // Body: { "id": "123", "name": "새로운 이름" }
  */
 router.post("/rename", async (req, res) => {
   try {
@@ -71,9 +86,16 @@ router.post("/rename", async (req, res) => {
 });
 
 /**
+ * 플래너 삭제
+ * 사용자의 플래너와 연관된 모든 플랜을 삭제하는 요청을 처리합니다
+ * 
  * @route POST /api/planner/delete
- * @desc 플래너 삭제
- * 사용자의 플래너와 연관된 모든 플랜 삭제 요청 처리
+ * @param {string} id - 삭제할 플래너 ID (필수)
+ * @returns {Object} 성공 메시지
+ * @throws {404} 플래너를 찾을 수 없는 경우
+ * @example
+ * // POST /api/planner/delete
+ * // Body: { "id": "123" }
  */
 router.post("/delete", async (req, res) => {
   try {
@@ -106,9 +128,15 @@ router.post("/delete", async (req, res) => {
 });
 
 /**
+ * 특정 플래너 정보 조회
+ * 사용자의 특정 플래너 상세 정보 요청을 처리합니다
+ * 
  * @route GET /api/planner/getInfo
- * @desc 특정 플래너 정보 조회
- * 사용자의 특정 플래너 상세 정보 요청 처리
+ * @param {string} id - 플래너 ID (query parameter, 필수)
+ * @returns {Object} 플래너 상세 정보
+ * @throws {404} 플래너를 찾을 수 없는 경우
+ * @example
+ * // GET /api/planner/getInfo?id=123
  */
 router.get("/getInfo", async (req, res) => {
   try {
@@ -141,9 +169,15 @@ router.get("/getInfo", async (req, res) => {
 });
 
 /**
+ * 모든 플래너 조회
+ * 사용자의 모든 플래너 목록 요청을 처리합니다
+ * 
  * @route GET /api/planner/getPlanners
- * @desc 모든 플래너 조회
- * 사용자의 모든 플래너 목록 요청 처리
+ * @returns {Array} 플래너 목록 배열
+ * @throws {404} 플래너가 없는 경우
+ * @example
+ * // GET /api/planner/getPlanners
+ * // Response: [{"id": 1, "name": "플래널1", "isDaily": true}]
  */
 router.get("/getPlanners", async (req, res) => {
   try {

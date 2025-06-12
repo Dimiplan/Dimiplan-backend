@@ -1,10 +1,25 @@
 /**
  * 데이터베이스 마이그레이션: users 테이블에 isAdmin 필드 추가
- * 이 스크립트는 기존 users 테이블에 관리자 권한을 나타내는 isAdmin 필드를 추가합니다.
+ * 이 스크립트는 기존 users 테이블에 관리자 권한을 나타내는 isAdmin 필드를 추가합니다
+ * 
+ * @fileoverview 관리자 권한 관리를 위한 데이터베이스 마이그레이션 스크립트
  */
 import { db } from "../config/db.mjs";
 import logger from "../utils/logger.mjs";
 
+/**
+ * users 테이블에 isAdmin 필드를 추가하는 마이그레이션 함수
+ * 기존 테이블에 관리자 권한 필드를 안전하게 추가하고 인덱스를 생성합니다
+ * 
+ * @async
+ * @function addAdminField
+ * @returns {Promise<void>} 마이그레이션 완료 시 결과를 반환
+ * @throws {Error} 마이그레이션 실패 시 예외 발생
+ * @example
+ * // 마이그레이션 실행
+ * await addAdminField();
+ * console.log('마이그레이션 완료');
+ */
 const addAdminField = async () => {
   try {
     // 이미 isAdmin 필드가 존재하는지 확인

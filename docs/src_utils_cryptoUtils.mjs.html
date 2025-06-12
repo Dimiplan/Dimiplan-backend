@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: src/utils/cryptoUtils.mjs</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: src/utils/cryptoUtils.mjs</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * 암호화 유틸리티 함수
+ * 보안 데이터 저장 및 검색을 위한 암호화 기능을 제공합니다
+ * SHA3 해싱, AES 암호화/복호화, 사용자 ID 해싱 및 데이터 검증 기능을 포함합니다
+ * 
+ * @fileoverview 사용자 데이터 보안을 위한 암호화 및 해싱 유틸리티 모듈
+ */
+import { createHmac, createHash, timingSafeEqual, createCipheriv, createDecipheriv, randomBytes } from "crypto";
+import { formatDateForMySQL } from "./dateUtils.mjs";
+import "../config/dotenv.mjs"; // 환경 변수 로드
+
+// 마스터 암호화 키 (프로덕션에서는 안전한 저장소에 보관)
+const MASTER_KEY = process.env.CRYPTO_MASTER_KEY;
+const MASTER_IV = process.env.CRYPTO_MASTER_IV;
+
+// 사용자 ID 해싱을 위한 솔트
+const UID_SALT = process.env.UID_SALT;
+
+/**
+ * 특정 사용자를 위한 파생 암호화 키 생성
+ * 마스터 키와 사용자 ID로부터 결정론적이지만 안전한 암호화 키를 파생합니다
+ * HMAC-SHA256을 사용하여 사용자별로 고유한 키와 IV를 생성합니다
+ * 
+ * @function getUserEncryptionKey
+ * @param {string} userId - 원본 사용자 ID
+ * @returns {Object} 암호화에 사용할 키와 초기화 벡터(IV)
+ * @returns {Buffer} returns.key - AES-256 암호화 키 (32바이트)
+ * @returns {Buffer} returns.iv - AES 초기화 벡터 (16바이트)
+ * @private
+ * @example
+ * const { key, iv } = getUserEncryptionKey('user123');
+ * console.log(key.length); // 32
+ * console.log(iv.length); // 16
+ */
+const getUserEncryptionKey = (userId) => {
+  // 마스터 키와 사용자 ID로부터 결정론적이지만 안전한 키 파생
+  const keyMaterial = createHmac("sha256", MASTER_KEY)
+    .update(userId)
+    .digest();
+
+  // 키의 첫 32바이트 사용
+  const key = keyMaterial.slice(0, 32);
+
+  // 사용자별 결정론적 초기화 벡터 생성
+  const iv = createHmac("sha256", MASTER_IV)
+    .update(userId)
+    .digest()
+    .slice(0, 16); // AES는 16바이트 IV 필요
+
+  return { key, iv };
+};
+
+/**
+ * SHA3로 사용자 ID 해시
+ * 레인보우 테이블 공격 방지를 위해 솔트를 추가하여 사용자 ID를 해싱합니다
+ * 데이터베이스에서 사용자 식별을 위한 안전한 해시 값을 생성합니다
+ * 
+ * @function hashUserId
+ * @param {string} userId - 원본 사용자 ID
+ * @returns {string} SHA3-256으로 해시된 사용자 ID (16진수 문자열)
+ * @example
+ * const hashed = hashUserId('user123');
+ * console.log(hashed); // "a1b2c3d4..."
+ * console.log(hashed.length); // 64 (자)
+ */
+export const hashUserId = (userId) => {
+  // 레인보우 테이블 공격 방지를 위해 솔트 추가
+  return createHash("sha3-256")
+    .update(userId + UID_SALT)
+    .digest("hex");
+};
+
+/**
+ * 평문 사용자 ID와 해시된 사용자 ID 일치 여부 확인
+ * 타이밍 공격 방지를 위해 timingSafeEqual을 사용하여 안전하게 비교합니다
+ * 데이터베이스에서 사용자 인증 시 사용됩니다
+ * 
+ * @function verifyUserId
+ * @param {string} plainUserId - 원본 사용자 ID
+ * @param {string} hashedUserId - 비교할 해시된 사용자 ID
+ * @returns {boolean} 일치 여부 (true: 일치, false: 불일치)
+ * @example
+ * const isValid = verifyUserId('user123', hashedId);
+ * if (isValid) {
+ *   console.log('사용자 ID 인증 성공');
+ * }
+ */
+export const verifyUserId = (plainUserId, hashedUserId) => {
+  const computedHash = hashUserId(plainUserId);
+  return timingSafeEqual(
+    Buffer.from(computedHash, "hex"),
+    Buffer.from(hashedUserId, "hex"),
+  );
+};
+
+/**
+ * 특정 사용자를 위한 데이터 암호화
+ * AES-256-CBC 암호화를 사용하여 사용자별 데이터를 안전하게 암호화합니다
+ * 객체는 JSON 문자열로 변환 후 암호화되며, 문자열은 그대로 사용됩니다
+ * 
+ * @function encryptData
+ * @param {string} userId - 원본 사용자 ID
+ * @param {string|Object} data - 암호화할 데이터 (객체는 JSON 문자열로 변환)
+ * @returns {string} 16진수 문자열로 암호화된 데이터
+ * @throws {Error} 데이터 암호화 실패 시 예외 발생
+ * @example
+ * // 문자열 암호화
+ * const encrypted = encryptData('user123', '마이 비밀 데이터');
+ * 
+ * // 객체 암호화
+ * const encryptedObj = encryptData('user123', { secret: '비밀', value: 42 });
+ */
+export const encryptData = (userId, data) => {
+  try {
+    // 데이터 준비
+    const dataStr =
+      typeof data === "object" ? JSON.stringify(data) : String(data);
+
+    // 사용자별 암호화 키 가져오기
+    const { key, iv } = getUserEncryptionKey(userId);
+
+    // 암호화 수행
+    const cipher = createCipheriv("aes-256-cbc", key, iv);
+    let encrypted = cipher.update(dataStr, "utf8", "hex");
+    encrypted += cipher.final("hex");
+
+    return encrypted;
+  } catch (error) {
+    console.error("암호화 중 오류:", error);
+    throw new Error("데이터 암호화 실패");
+  }
+};
+
+/**
+ * 특정 사용자의 암호화된 데이터 복호화
+ * AES-256-CBC 복호화를 사용하여 사용자별 데이터를 안전하게 복호화합니다
+ * parseJson 옵션에 따라 JSON 객체로 파싱하거나 문자열로 반환합니다
+ * 
+ * @function decryptData
+ * @param {string} userId - 원본 사용자 ID
+ * @param {string} encryptedData - 암호화된 데이터 (16진수 문자열)
+ * @param {boolean} [parseJson=false] - JSON 파싱 여부
+ * @returns {string|Object} 복호화된 데이터
+ * @throws {Error} 데이터 복호화 실패 시 예외 발생
+ * @example
+ * // 문자열 복호화
+ * const decrypted = decryptData('user123', encryptedData);
+ * 
+ * // JSON 객체 복호화
+ * const decryptedObj = decryptData('user123', encryptedData, true);
+ */
+export const decryptData = (userId, encryptedData, parseJson = false) => {
+  try {
+    // 사용자별 암호화 키 가져오기
+    const { key, iv } = getUserEncryptionKey(userId);
+
+    // 복호화 수행
+    const decipher = createDecipheriv("aes-256-cbc", key, iv);
+    let decrypted = decipher.update(encryptedData, "hex", "utf8");
+    decrypted += decipher.final("utf8");
+
+    // JSON 파싱 옵션에 따라 반환
+    return parseJson ? JSON.parse(decrypted) : decrypted;
+  } catch (error) {
+    console.error("복호화 중 오류:", error);
+    throw new Error("데이터 복호화 실패");
+  }
+};
+
+/**
+ * 주어진 문자열이 암호화된 데이터일 가능성 확인
+ * AES 암호화 데이터의 최소 길이와 16진수 형식을 기준으로 판단합니다
+ * 이 함수는 완벽한 검증이 아닌 휴리스틱 기반 판단입니다
+ * 
+ * @function isEncrypted
+ * @param {string} data - 확인할 데이터
+ * @returns {boolean} 암호화된 데이터로 보이는지 여부
+ * @example
+ * console.log(isEncrypted('a1b2c3d4e5f6....')); // true (긴 16진수 문자열)
+ * console.log(isEncrypted('hello world')); // false (일반 문자열)
+ * console.log(isEncrypted('123')); // false (너무 짧음)
+ */
+export const isEncrypted = (data) => {
+  // AES 암호화 데이터의 최소 길이 및 16진수 형식 확인
+  return (
+    typeof data === "string" &amp;&amp; /^[0-9a-f]+$/i.test(data) &amp;&amp; data.length >= 32
+  );
+};
+
+/**
+ * 안전한 무작위 문자열 생성
+ * 암호학적으로 안전한 난수 생성기를 사용하여 토큰, 비밀번호, API 키 등에 사용할 수 있는 랜덤 문자열을 생성합니다
+ * 
+ * @function generateSecureToken
+ * @param {number} [length=32] - 생성할 문자열 길이 (바이트 단위, 최종 16진수 문자열은 2배 길이)
+ * @returns {string} 16진수 형식의 랜덤 문자열
+ * @example
+ * // 32바이트 (64자) 토큰 생성
+ * const token = generateSecureToken(); // 기본 32바이트
+ * console.log(token.length); // 64
+ * 
+ * // 16바이트 (32자) 토큰 생성
+ * const shortToken = generateSecureToken(16);
+ * console.log(shortToken.length); // 32
+ */
+export const generateSecureToken = (length = 32) => {
+  return randomBytes(length).toString("hex");
+};
+
+/**
+ * MySQL 호환 타임스탬프 생성
+ * 현재 시간을 MySQL datetime 형식으로 변환하여 반환합니다
+ * dateUtils.mjs의 formatDateForMySQL 함수를 내부적으로 사용합니다
+ * 
+ * @function getTimestamp
+ * @returns {string} MySQL 호환 타임스탬프 (YYYY-MM-DD HH:MM:SS 형식)
+ * @example
+ * const timestamp = getTimestamp();
+ * console.log(timestamp); // "2023-12-25 14:30:45"
+ */
+export const getTimestamp = () => {
+  return formatDateForMySQL(new Date());
+};
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-apiRouter.html">apiRouter</a></li><li><a href="module-auth.html">auth</a></li><li><a href="module-logWithTimestamp.html">logWithTimestamp</a></li><li><a href="module-sessionConfig.html">sessionConfig</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ALLOWED_DOMAINS">ALLOWED_DOMAINS</a></li><li><a href="global.html#FREE_MODELS">FREE_MODELS</a></li><li><a href="global.html#PAID_MODELS">PAID_MODELS</a></li><li><a href="global.html#PULL_INTERVAL">PULL_INTERVAL</a></li><li><a href="global.html#SENSITIVE_FIELDS">SENSITIVE_FIELDS</a></li><li><a href="global.html#SENSITIVE_HEADERS">SENSITIVE_HEADERS</a></li><li><a href="global.html#addAdminField">addAdminField</a></li><li><a href="global.html#addChatMessages">addChatMessages</a></li><li><a href="global.html#apiRateLimiter">apiRateLimiter</a></li><li><a href="global.html#app">app</a></li><li><a href="global.html#checkAdminStatus">checkAdminStatus</a></li><li><a href="global.html#colors">colors</a></li><li><a href="global.html#completeTask">completeTask</a></li><li><a href="global.html#createBodySizeLimiter">createBodySizeLimiter</a></li><li><a href="global.html#createChatRoom">createChatRoom</a></li><li><a href="global.html#createExpressApp">createExpressApp</a></li><li><a href="global.html#createHttpsServer">createHttpsServer</a></li><li><a href="global.html#createPlanner">createPlanner</a></li><li><a href="global.html#createRateLimiter">createRateLimiter</a></li><li><a href="global.html#createTask">createTask</a></li><li><a href="global.html#createUser">createUser</a></li><li><a href="global.html#createWordList">createWordList</a></li><li><a href="global.html#db">db</a></li><li><a href="global.html#decryptData">decryptData</a></li><li><a href="global.html#deleteChatRoom">deleteChatRoom</a></li><li><a href="global.html#deletePlanner">deletePlanner</a></li><li><a href="global.html#deleteTask">deleteTask</a></li><li><a href="global.html#deleteWordList">deleteWordList</a></li><li><a href="global.html#encryptData">encryptData</a></li><li><a href="global.html#errorLoggingMiddleware">errorLoggingMiddleware</a></li><li><a href="global.html#executeGitPull">executeGitPull</a></li><li><a href="global.html#executeTransaction">executeTransaction</a></li><li><a href="global.html#formatDate">formatDate</a></li><li><a href="global.html#formatDateForMySQL">formatDateForMySQL</a></li><li><a href="global.html#generateAutoResponse">generateAutoResponse</a></li><li><a href="global.html#generateCustomResponse">generateCustomResponse</a></li><li><a href="global.html#generateSecureToken">generateSecureToken</a></li><li><a href="global.html#getCSPDirectives">getCSPDirectives</a></li><li><a href="global.html#getChatMessages">getChatMessages</a></li><li><a href="global.html#getChatRooms">getChatRooms</a></li><li><a href="global.html#getCorsConfig">getCorsConfig</a></li><li><a href="global.html#getCorsOptions">getCorsOptions</a></li><li><a href="global.html#getCurrentMySQLDateTime">getCurrentMySQLDateTime</a></li><li><a href="global.html#getCustomCorsConfig">getCustomCorsConfig</a></li><li><a href="global.html#getDevSecurityConfig">getDevSecurityConfig</a></li><li><a href="global.html#getEnvFilePaths">getEnvFilePaths</a></li><li><a href="global.html#getEnvironmentInfo">getEnvironmentInfo</a></li><li><a href="global.html#getEnvironmentSecurityConfig">getEnvironmentSecurityConfig</a></li><li><a href="global.html#getHashedUserId">getHashedUserId</a></li><li><a href="global.html#getNextId">getNextId</a></li><li><a href="global.html#getPlannerById">getPlannerById</a></li><li><a href="global.html#getPlanners">getPlanners</a></li><li><a href="global.html#getSecurityConfig">getSecurityConfig</a></li><li><a href="global.html#getTaskById">getTaskById</a></li><li><a href="global.html#getTasks">getTasks</a></li><li><a href="global.html#getTimestamp">getTimestamp</a></li><li><a href="global.html#getUser">getUser</a></li><li><a href="global.html#getYearEndDate">getYearEndDate</a></li><li><a href="global.html#getYearStartDate">getYearStartDate</a></li><li><a href="global.html#gracefulShutdown">gracefulShutdown</a></li><li><a href="global.html#hashUserId">hashUserId</a></li><li><a href="global.html#initializeApp">initializeApp</a></li><li><a href="global.html#initializeSession">initializeSession</a></li><li><a href="global.html#isAdmin">isAdmin</a></li><li><a href="global.html#isEncrypted">isEncrypted</a></li><li><a href="global.html#isRegistered">isRegistered</a></li><li><a href="global.html#isUserExists">isUserExists</a></li><li><a href="global.html#levels">levels</a></li><li><a href="global.html#loadEnvironmentVariables">loadEnvironmentVariables</a></li><li><a href="global.html#loadSSLOptions">loadSSLOptions</a></li><li><a href="global.html#logWithTimestamp">logWithTimestamp</a></li><li><a href="global.html#loginRateLimiter">loginRateLimiter</a></li><li><a href="global.html#maskSensitiveData">maskSensitiveData</a></li><li><a href="global.html#maskSensitiveHeaders">maskSensitiveHeaders</a></li><li><a href="global.html#openRouter">openRouter</a></li><li><a href="global.html#optionalAuth">optionalAuth</a></li><li><a href="global.html#options">options</a></li><li><a href="global.html#performanceMonitoringMiddleware">performanceMonitoringMiddleware</a></li><li><a href="global.html#removeAdminUser">removeAdminUser</a></li><li><a href="global.html#renamePlanner">renamePlanner</a></li><li><a href="global.html#requestLoggingMiddleware">requestLoggingMiddleware</a></li><li><a href="global.html#requireAdmin">requireAdmin</a></li><li><a href="global.html#requireAuth">requireAuth</a></li><li><a href="global.html#responseLoggingMiddleware">responseLoggingMiddleware</a></li><li><a href="global.html#safeStringify">safeStringify</a></li><li><a href="global.html#securityHeaders">securityHeaders</a></li><li><a href="global.html#server">server</a></li><li><a href="global.html#setAdminUser">setAdminUser</a></li><li><a href="global.html#setDefaultEnvironmentVariables">setDefaultEnvironmentVariables</a></li><li><a href="global.html#setupBodyParsing">setupBodyParsing</a></li><li><a href="global.html#setupCorsMiddleware">setupCorsMiddleware</a></li><li><a href="global.html#setupErrorHandling">setupErrorHandling</a></li><li><a href="global.html#setupLoggingMiddleware">setupLoggingMiddleware</a></li><li><a href="global.html#setupProcessHandlers">setupProcessHandlers</a></li><li><a href="global.html#setupSecurityMiddleware">setupSecurityMiddleware</a></li><li><a href="global.html#setupTestLoggingMiddleware">setupTestLoggingMiddleware</a></li><li><a href="global.html#summarizeMemory">summarizeMemory</a></li><li><a href="global.html#testDatabaseConnection">testDatabaseConnection</a></li><li><a href="global.html#updateTask">updateTask</a></li><li><a href="global.html#updateUser">updateUser</a></li><li><a href="global.html#validateOrigin">validateOrigin</a></li><li><a href="global.html#validateRequiredEnvironmentVariables">validateRequiredEnvironmentVariables</a></li><li><a href="global.html#validateUserData">validateUserData</a></li><li><a href="global.html#verifyUserId">verifyUserId</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Thu Jun 12 2025 20:26:11 GMT+0900 (대한민국 표준시)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
