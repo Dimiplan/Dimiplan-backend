@@ -8,7 +8,7 @@ import {
   updateUserInfo,
   checkUserRegistration,
   getUserInfo,
-} from "../../services/userService.mjs";
+} from "../../services/user.mjs";
 import logger from "../../utils/logger.mjs";
 
 const router = Router();

@@ -2,7 +2,7 @@
  * 사용자 서비스
  * 사용자 관련 비즈니스 로직을 담당합니다
  */
-import { getUser, isRegistered, updateUser } from "../models/userModel.mjs";
+import { getUser, isRegistered, updateUser } from "../models/user.mjs";
 import logger from "../utils/logger.mjs";
 
 /**

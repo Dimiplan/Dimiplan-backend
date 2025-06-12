@@ -11,7 +11,7 @@ import {
   decryptData,
   getTimestamp,
   isEncrypted,
-} from "../utils/cryptoUtils.mjs";
+} from "../utils/crypto.mjs";
 import logger from "../utils/logger.mjs";
 
 /**

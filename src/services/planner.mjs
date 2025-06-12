@@ -8,7 +8,7 @@ import {
   getPlanners,
   renamePlanner,
   deletePlanner,
-} from "../models/plannerModel.mjs";
+} from "../models/planner.mjs";
 import logger from "../utils/logger.mjs";
 
 /**

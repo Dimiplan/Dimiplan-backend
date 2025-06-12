@@ -8,7 +8,7 @@ import {
   updateTask,
   deleteTask,
   completeTask,
-} from "../models/taskModel.mjs";
+} from "../models/task.mjs";
 import logger from "../utils/logger.mjs";
 
 /**

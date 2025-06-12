@@ -8,11 +8,11 @@ import {
   createChatRoom,
   getChatRooms,
   getChatMessages,
-} from "../../models/chatModel.mjs";
+} from "../../models/chat.mjs";
 import {
   generateAutoResponse,
   generateCustomResponse,
-} from "../../services/aiService.mjs";
+} from "../../services/ai.mjs";
 import logger from "../../utils/logger.mjs";
 
 const router = Router();

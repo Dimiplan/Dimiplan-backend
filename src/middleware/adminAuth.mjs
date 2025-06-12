@@ -2,9 +2,9 @@
  * 관리자 인증 미들웨어
  * 관리자 권한이 있는 사용자만 특정 라우트에 접근할 수 있도록 제한
  */
-import { getUser } from "../models/userModel.mjs";
+import { getUser } from "../models/user.mjs";
 import { db } from "../config/db.mjs";
-import { hashUserId } from "../utils/cryptoUtils.mjs";
+import { hashUserId } from "../utils/crypto.mjs";
 import logger from "../utils/logger.mjs";
 
 /**

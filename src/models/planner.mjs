@@ -6,13 +6,13 @@
  * @fileoverview 플래너 관리 시스템의 데이터 모델 모듈
  */
 import db from "../config/db.mjs";
-import { getNextId, executeTransaction } from "../utils/dbUtils.mjs";
+import { getNextId, executeTransaction } from "../utils/db.mjs";
 import {
   hashUserId,
   encryptData,
   decryptData,
   getTimestamp,
-} from "../utils/cryptoUtils.mjs";
+} from "../utils/crypto.mjs";
 import logger from "../utils/logger.mjs";
 
 // eslint-disable-next-line jsdoc/require-returns

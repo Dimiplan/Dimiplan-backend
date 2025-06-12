@@ -3,7 +3,7 @@
  * @module sessionConfig
  * @description 안전한 세션 설정 및 Redis 기반 세션 관리를 위한 유틸리티 제공
  */
-import { generateSecureToken } from "../utils/cryptoUtils.mjs";
+import { generateSecureToken } from "../utils/crypto.mjs";
 import logger from "../utils/logger.mjs";
 import { RedisStore } from "connect-redis";
 import { createClient } from "redis";

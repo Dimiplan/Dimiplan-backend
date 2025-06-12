@@ -10,7 +10,7 @@ import {
   removeTask,
   markTaskComplete,
   getTaskList,
-} from "../../services/taskService.mjs";
+} from "../../services/task.mjs";
 import logger from "../../utils/logger.mjs";
 
 const router = Router();

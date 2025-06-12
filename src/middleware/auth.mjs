@@ -3,9 +3,9 @@
  * @module auth
  * @description 사용자 인증 및 등록 상태를 검증하는 공통 함수 제공
  */
-import { isRegistered } from "../models/userModel.mjs";
+import { isRegistered } from "../models/user.mjs";
 import logger from "../utils/logger.mjs";
-import { hashUserId } from "../utils/cryptoUtils.mjs";
+import { hashUserId } from "../utils/crypto.mjs";
 import { getUserFromSession } from "../config/sessionConfig.mjs";
 
 /**

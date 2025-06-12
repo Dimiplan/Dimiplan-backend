@@ -11,7 +11,7 @@ import {
   addChatMessages,
   createChatRoom,
   getChatMessages,
-} from "../models/chatModel.mjs";
+} from "../models/chat.mjs";
 
 /**
  * OpenRouter API 클라이언트 인스턴스

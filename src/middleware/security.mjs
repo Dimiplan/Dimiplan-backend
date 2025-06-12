@@ -7,7 +7,7 @@
 
 import rateLimit from "express-rate-limit";
 import { getUserFromSession } from "../config/sessionConfig.mjs";
-import { isUserExists } from "../models/userModel.mjs";
+import { isUserExists } from "../models/user.mjs";
 import logger from "../utils/logger.mjs";
 
 /**

@@ -7,13 +7,13 @@
  * @todo 단어 추가, 수정, 암호화 기능 추가 필요
  */
 import db from "../config/db.mjs";
-import { getNextId, executeTransaction } from "../utils/dbUtils.mjs";
+import { getNextId, executeTransaction } from "../utils/db.mjs";
 import {
   hashUserId,
   encryptData,
   decryptData,
   getTimestamp,
-} from "../utils/cryptoUtils.mjs";
+} from "../utils/crypto.mjs";
 import { error as _error } from "../utils/logger.mjs";
 
 /**

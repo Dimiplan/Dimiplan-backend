@@ -10,7 +10,7 @@ import {
   removePlanner,
   getPlannerInfo,
   getAllPlanners,
-} from "../../services/plannerService.mjs";
+} from "../../services/planner.mjs";
 import logger from "../../utils/logger.mjs";
 
 const router = Router();

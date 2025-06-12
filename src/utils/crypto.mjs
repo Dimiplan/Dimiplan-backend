@@ -13,7 +13,7 @@ import {
   createDecipheriv,
   randomBytes,
 } from "crypto";
-import { formatDateForMySQL } from "./dateUtils.mjs";
+import { formatDateForMySQL } from "./date.mjs";
 import "../config/dotenv.mjs"; // 환경 변수 로드
 
 // 마스터 암호화 키 (프로덕션에서는 안전한 저장소에 보관)

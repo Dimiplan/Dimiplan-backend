@@ -7,7 +7,7 @@ import passport from "passport";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import { Strategy as LocalStrategy } from "passport-custom"; // 추가: 커스텀 전략
 import "../config/dotenv";
-import { createUser, isRegistered } from "../models/userModel";
+import { createUser, isRegistered } from "../models/user";
 import { storeUserInSession } from "../config/sessionConfig";
 import logger from "../utils/logger.mjs";
 
