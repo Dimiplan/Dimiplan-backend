@@ -1,5 +1,3 @@
-// Modified index.js to include AdminJS integration
-
 // 필요한 모듈 불러오기
 import express, { json, urlencoded, static as staticMiddleware } from "express";
 import cors from "cors";
@@ -8,11 +6,9 @@ import passport from "passport";
 import helmet from "helmet";
 import { getSessionConfig } from "./src/config/sessionConfig.mjs";
 import logger from "./src/utils/logger.mjs";
-import initAdminRouter from "./src/admin/adminRouter.mjs"; // 새로 추가
 
 import { createServer } from "https";
 import { readFileSync } from "fs";
-import { join } from "path";
 
 import "./src/config/dotenv";
 
@@ -106,28 +102,13 @@ app.use((req, res, next) => {
   next();
 });
 
-// 정적 파일 서빙
-app.use(
-  "/admin/public",
-  staticMiddleware(join(__dirname, "src/admin/public")),
-);
-
 // 앱 초기화 함수
 const initializeApp = async () => {
   // 앱 기본 설정
   // ...
 
   // 세션 초기화
-  await initializeSession(app).then(async ()=>{
-    // AdminJS 라우터 초기화 및 등록
-    try {
-      const { admin, adminRouter } = await initAdminRouter(app);
-      app.use(admin.options.rootPath, adminRouter);
-      logger.info(`AdminJS 패널 초기화 완료: ${admin.options.rootPath}`);
-    } catch (error) {
-      logger.error("AdminJS 초기화 오류:", error);
-    }
-  });
+  await initializeSession(app);
 
   // 라우트 설정
   app.use("/auth", authRouter); // 인증 관련 라우터
@@ -150,7 +131,6 @@ initializeApp()
     server = createServer(sslOptions, app);
     server.listen(PORT, () => {
       logger.info(`서버가 ${PORT} 포트에서 실행 중입니다`);
-      logger.info(`AdminJS 대시보드: https://localhost:${PORT}/admin`);
     });
   })
   .catch((err) => {

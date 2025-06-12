@@ -4,24 +4,17 @@
   "description": "",
   "exports": {
     ".": "./index.mjs",
-    "./admin": "./src/admin/index.mjs",
     "./auto-pull": "./src/scripts/autoPull.mjs"
   },
   "scripts": {
     "dev": "bun --watch index.mjs",
-    "auto-pull": "bun src/scripts/autoPull.mjs",
-    "admin:bundle": "bun src/scripts/adminBundle.mjs"
+    "auto-pull": "bun src/scripts/autoPull.mjs"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "module",
   "dependencies": {
-    "@adminjs/bundler": "^3.0.0",
-    "@adminjs/design-system": "^4.1.1",
-    "@adminjs/express": "^6.1.1",
-    "@adminjs/sql": "^2.2.6",
-    "adminjs": "^7.5.5",
     "connect-redis": "^8.0.3",
     "connect-session-knex": "^5.0.0",
     "cors": "^2.8.5",

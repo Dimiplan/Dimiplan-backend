@@ -1,0 +1,3 @@
+[submodule "admin/admin-panel"]
+	path = admin/admin-panel
+	url = https://github.com/Dimiplan/Dimiplan-backend-admin-panel.git
