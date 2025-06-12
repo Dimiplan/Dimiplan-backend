@@ -65,24 +65,12 @@ app.use(helmet({
 // 로드 밸런서 뒤의 보안 쿠키를 위해 프록시 신뢰 설정
 app.set("trust proxy", true);
 
-// CORS(Cross-Origin Resource Sharing) 허용 도메인 목록
-const whitelist = [
-  "https://dimigo.co.kr",
-  "https://m.dimigo.co.kr",
-  "https://dimiplan.com",
-  "https://m.dimiplan.com",
-  "https://dev.dimiplan.com",
-  "https://m-dev.dimiplan.com",
-  "http://localhost:3000",
-  "https://api.dimiplan.com",
-  "https://api-dev.dimiplan.com",
-  'null', // null origin 허용 (예: 로컬 파일)
-];
-
 // CORS 옵션 설정
 const corsOptions = {
   origin: function (origin, callback) {
-    if (!origin || whitelist.includes(origin)) {
+    if (!origin || origin === 'null') {
+      callback(null, true);
+    } else if (origin.endsWith('.dimiplan.com') || origin.endsWith('.dimiplan-mobile.pages.dev')) {
       callback(null, true);
     } else {
       callback(new Error(`CORS 정책에 의해 허용되지 않은 요청: ${origin}`));
