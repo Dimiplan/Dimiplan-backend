@@ -32,6 +32,7 @@
         "eslint-plugin-prettier": "^5.4.1",
         "globals": "^16.2.0",
         "jsdoc": "^4.0.4",
+        "jsdoc-route-plugin": "^0.1.0",
         "prettier": "^3.5.3",
       },
     },
@@ -374,6 +375,8 @@
     "js2xmlparser": ["js2xmlparser@4.0.2", "", { "dependencies": { "xmlcreate": "^2.0.4" } }, "sha512-6n4D8gLlLf1n5mNLQPRfViYzu9RATblzPEtm1SthMX1Pjao0r9YI9nw7ZIfRxQMERS87mcswrg+r/OYrPRX6jA=="],
 
     "jsdoc": ["jsdoc@4.0.4", "", { "dependencies": { "@babel/parser": "^7.20.15", "@jsdoc/salty": "^0.2.1", "@types/markdown-it": "^14.1.1", "bluebird": "^3.7.2", "catharsis": "^0.9.0", "escape-string-regexp": "^2.0.0", "js2xmlparser": "^4.0.2", "klaw": "^3.0.0", "markdown-it": "^14.1.0", "markdown-it-anchor": "^8.6.7", "marked": "^4.0.10", "mkdirp": "^1.0.4", "requizzle": "^0.2.3", "strip-json-comments": "^3.1.0", "underscore": "~1.13.2" }, "bin": { "jsdoc": "./jsdoc.js" } }, "sha512-zeFezwyXeG4syyYHbvh1A967IAqq/67yXtXvuL5wnqCkFZe8I0vKfm+EO+YEvLguo6w9CDUbrAXVtJSHh2E8rw=="],
+
+    "jsdoc-route-plugin": ["jsdoc-route-plugin@0.1.0", "", {}, "sha512-oTsJUsbXy4Y08aNh6uhu7R94v8rv7ScOdgmQgqQlzlG4EeHqWDdRiV177Dh8TE8lzoOLBrXb684RmX5HWqgbyA=="],
 
     "jsdoc-type-pratt-parser": ["jsdoc-type-pratt-parser@4.1.0", "", {}, "sha512-Hicd6JK5Njt2QB6XYFS7ok9e37O8AYk3jTcppG4YVQnYjOemymvTcmc7OWsmq/Qqj5TdRFO5/x/tIPmBeRtGHg=="],
 
