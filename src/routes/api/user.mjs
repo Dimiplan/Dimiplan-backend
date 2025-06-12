@@ -15,8 +15,6 @@ const router = Router();
 
 /**
  * @name 사용자 정보 업데이트
- * 프로필 정보 수정 API로 사용자의 이름, 학년, 반, 이메일, 프로필 이미지를 업데이트합니다
- *
  * @route POST /api/user/update
  * @param {string} [name] - 사용자 이름 (최대 15자)
  * @param {number} [grade] - 학년 (1-3)
@@ -46,8 +44,6 @@ router.post("/update", isAuthenticated, async (req, res) => {
 
 /**
  * @name 사용자 등록 상태 확인
- * 사용자의 회원가입 완료 여부를 확인합니다 (이름 설정 여부 기준)
- *
  * @route GET /api/user/registered
  * @returns {object} 등록 상태 정보 ({ registered: boolean })
  * @example
@@ -66,8 +62,6 @@ router.get("/registered", isAuthenticated, async (req, res) => {
 
 /**
  * @name 현재 사용자 정보 조회
- * 로그인된 사용자의 프로필 정보를 반환합니다
- *
  * @route GET /api/user/get
  * @returns {object} 사용자 정보 객체
  * @throws {404} 사용자를 찾을 수 없는 경우

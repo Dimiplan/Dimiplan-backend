@@ -20,8 +20,6 @@ router.use(isAuthenticated, isUserRegistered);
 
 /**
  * @name 새로운 작업 생성
- * 사용자의 작업 추가 요청을 처리하여 새 작업을 생성합니다
- *
  * @route POST /api/task/add
  * @param {string} contents - 작업 내용 (필수)
  * @param {number} priority - 작업 우선순위
@@ -51,8 +49,6 @@ router.post("/add", async (req, res) => {
 
 /**
  * @name 작업 정보 수정
- * 사용자의 작업 정보 업데이트 요청을 처리합니다
- *
  * @route POST /api/task/update
  * @param {string} id - 작업 ID (필수)
  * @param {string} [contents] - 수정할 작업 내용
@@ -87,8 +83,6 @@ router.post("/update", async (req, res) => {
 
 /**
  * @name 작업 삭제
- * 사용자의 작업 삭제 요청을 처리합니다
- *
  * @route POST /api/task/delete
  * @param {string} id - 삭제할 작업 ID (필수)
  * @returns {object} 성공 메시지
@@ -112,8 +106,6 @@ router.post("/delete", async (req, res) => {
 
 /**
  * @name 작업 완료 표시
- * 사용자의 작업 완료 요청을 처리합니다
- *
  * @route POST /api/task/complete
  * @param {string} id - 완료 처리할 작업 ID (필수)
  * @returns {object} 성공 메시지
@@ -137,8 +129,6 @@ router.post("/complete", async (req, res) => {
 
 /**
  * @name 작업 조회
- * 사용자의 전체 작업 또는 특정 플래너의 작업을 조회합니다
- *
  * @route GET /api/task/get
  * @param {string} [id] - 플래너 ID (query parameter, 선택사항)
  * @param {boolean} [isCompleted] - 완료 상태 필터 (query parameter)
