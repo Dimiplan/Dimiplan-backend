@@ -21,13 +21,13 @@ router.use(isAuthenticated, isUserRegistered);
 /**
  * @name 새로운 플래너 생성
  * @route {POST} /api/planner/add
- * @param {string} name - 플래너 이름 (필수)
- * @param {boolean} isDaily - 일일 플래너 여부
- * @param {string} from - 플래너 출처 (필수)
+ * @bodyparam {string} name - 플래너 이름 (필수)
+ * @bodyparam {boolean} isDaily - 일일 플래너 여부
+ * @bodyparam {string} from - 플래너 출처 (필수)
  * @returns {object} 성공 메시지
  * @example
- * // POST /api/planner/add
- * // Body: { "name": "일정 플래너", "isDaily": true, "from": "web" }
+ * POST /api/planner/add
+ * Body: { "name": "일정 플래너", "isDaily": true, "from": "web" }
  */
 router.post("/add", async (req, res) => {
   try {
@@ -47,12 +47,12 @@ router.post("/add", async (req, res) => {
 /**
  * @name 플래너 이름 변경
  * @route {POST} /api/planner/rename
- * @param {string} id - 플래너 ID (필수)
- * @param {string} name - 새 플래너 이름 (필수)
+ * @bodyparam {string} id - 플래너 ID (필수)
+ * @bodyparam {string} name - 새 플래너 이름 (필수)
  * @returns {object} 성공 메시지
  * @example
- * // POST /api/planner/rename
- * // Body: { "id": "123", "name": "새로운 이름" }
+ * POST /api/planner/rename
+ * Body: { "id": "123", "name": "새로운 이름" }
  */
 router.post("/rename", async (req, res) => {
   try {
@@ -72,12 +72,12 @@ router.post("/rename", async (req, res) => {
 /**
  * @name 플래너 삭제
  * @route {POST} /api/planner/delete
- * @param {string} id - 삭제할 플래너 ID (필수)
+ * @bodyparam {string} id - 삭제할 플래너 ID (필수)
  * @returns {object} 성공 메시지
  * @throws {404} 플래너를 찾을 수 없는 경우
  * @example
- * // POST /api/planner/delete
- * // Body: { "id": "123" }
+ * POST /api/planner/delete
+ * Body: { "id": "123" }
  */
 router.post("/delete", async (req, res) => {
   try {
@@ -102,11 +102,11 @@ router.post("/delete", async (req, res) => {
 /**
  * @name 특정 플래너 정보 조회
  * @route {GET} /api/planner/getInfo
- * @param {string} id - 플래너 ID (query parameter, 필수)
+ * @queryparam {string} id - 플래너 ID (query parameter, 필수)
  * @returns {object} 플래너 상세 정보
  * @throws {404} 플래너를 찾을 수 없는 경우
  * @example
- * // GET /api/planner/getInfo?id=123
+ * GET /api/planner/getInfo?id=123
  */
 router.get("/getInfo", async (req, res) => {
   try {
@@ -132,8 +132,8 @@ router.get("/getInfo", async (req, res) => {
  * @returns {Array} 플래너 목록 배열
  * @throws {404} 플래너가 없는 경우
  * @example
- * // GET /api/planner/getPlanners
- * // Response: [{"id": 1, "name": "플래널1", "isDaily": true}]
+ * GET /api/planner/getPlanners
+ * Response: [{"id": 1, "name": "플래널1", "isDaily": true}]
  */
 router.get("/getPlanners", async (req, res) => {
   try {

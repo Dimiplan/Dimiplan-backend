@@ -25,8 +25,8 @@ router.use(isAuthenticated, isUserRegistered);
  * @route {GET} /api/ai/getRoomList
  * @returns {object} roomData - 채팅방 목록 배열
  * @example
- * // GET /api/ai/getRoomList
- * // Response: { "roomData": [{"id": 1, "name": "채팅방1", "created_at": "2023-01-01"}] }
+ * GET /api/ai/getRoomList
+ * Response: { "roomData": [{"id": 1, "name": "채팅방1", "created_at": "2023-01-01"}] }
  */
 router.get("/getRoomList", async (req, res) => {
   try {
@@ -43,12 +43,12 @@ router.get("/getRoomList", async (req, res) => {
 /**
  * @name 새로운 채팅방 생성
  * @route {POST} /api/ai/addRoom
- * @param {string} name - 생성할 채팅방 이름 (필수)
+ * @bodyparam {string} name - 생성할 채팅방 이름 (필수)
  * @returns {object} 생성된 채팅방 정보와 성공 메시지
  * @example
- * // POST /api/ai/addRoom
- * // Body: { "name": "새 채팅방" }
- * // Response: { "message": "채팅방이 성공적으로 생성되었습니다", "id": 123 }
+ * POST /api/ai/addRoom
+ * Body: { "name": "새 채팅방" }
+ * Response: { "message": "채팅방이 성공적으로 생성되었습니다", "id": 123 }
  */
 router.post("/addRoom", async (req, res) => {
   try {
@@ -76,11 +76,11 @@ router.post("/addRoom", async (req, res) => {
 /**
  * @name 특정 채팅방의 모든 메시지 조회
  * @route {GET} /api/ai/getChatInRoom
- * @param {string} from - 채팅방 ID (query parameter, 필수)
+ * @queryparam {string} from - 채팅방 ID (query parameter, 필수)
  * @returns {object} chatData - 채팅 메시지 배열
  * @example
- * // GET /api/ai/getChatInRoom?from=123
- * // Response: { "chatData": [{"id": 1, "message": "안녕하세요", "sender": "user"}] }
+ * GET /api/ai/getChatInRoom?from=123
+ * Response: { "chatData": [{"id": 1, "message": "안녕하세요", "sender": "user"}] }
  */
 router.get("/getChatInRoom", async (req, res) => {
   try {
@@ -108,13 +108,13 @@ router.get("/getChatInRoom", async (req, res) => {
 /**
  * @name AI 자동 응답 생성
  * @route {POST} /api/ai/auto
- * @param {string} prompt - 사용자가 입력한 프롬프트 (필수)
- * @param {string} [room] - 채팅방 ID (선택사항, 미입력시 자동 생성)
+ * @bodyparam {string} prompt - 사용자가 입력한 프롬프트 (필수)
+ * @bodyparam {string} [room] - 채팅방 ID (선택사항, 미입력시 자동 생성)
  * @returns {object} response - AI 응답과 채팅방 정보
  * @example
- * // POST /api/ai/auto
- * // Body: { "prompt": "안녕하세요", "room": "123" }
- * // Response: { "response": { "message": "안녕하세요! 무엇을 도와드릴까요?", "room": "123" } }
+ * POST /api/ai/auto
+ * Body: { "prompt": "안녕하세요", "room": "123" }
+ * Response: { "response": { "message": "안녕하세요! 무엇을 도와드릴까요?", "room": "123" } }
  */
 router.post("/auto", async (req, res) => {
   try {
@@ -143,14 +143,14 @@ router.post("/auto", async (req, res) => {
 /**
  * @name 수동 AI 모델 선택 후 응답 생성
  * @route {POST} /api/ai/custom
- * @param {string} prompt - 사용자가 입력한 프롬프트 (필수)
- * @param {string} [room] - 채팅방 ID (선택사항, 미입력시 자동 생성)
- * @param {string} model - 사용자가 선택한 AI 모델 (필수)
+ * @bodyparam {string} prompt - 사용자가 입력한 프롬프트 (필수)
+ * @bodyparam {string} [room] - 채팅방 ID (선택사항, 미입력시 자동 생성)
+ * @bodyparam {string} model - 사용자가 선택한 AI 모델 (필수)
  * @returns {string} message - AI 응답 메시지
  * @example
- * // POST /api/ai/custom
- * // Body: { "prompt": "코딩 질문", "model": "gpt-4", "room": "123" }
- * // Response: { "message": "AI 응답 내용" }
+ * POST /api/ai/custom
+ * Body: { "prompt": "코딩 질문", "model": "gpt-4", "room": "123" }
+ * Response: { "message": "AI 응답 내용" }
  */
 router.post("/custom", async (req, res) => {
   try {

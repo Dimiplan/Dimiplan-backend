@@ -16,15 +16,15 @@ const router = Router();
 /**
  * @name 사용자 정보 업데이트
  * @route {POST} /api/user/update
- * @param {string} [name] - 사용자 이름 (최대 15자)
- * @param {number} [grade] - 학년 (1-3)
- * @param {number} [class] - 반 (1-6)
- * @param {string} [email] - 이메일 주소
- * @param {string} [profile_image] - 프로필 이미지 URL
+ * @bodyparam {string} [name] - 사용자 이름 (최대 15자)
+ * @bodyparam {number} [grade] - 학년 (1-3)
+ * @bodyparam {number} [class] - 반 (1-6)
+ * @bodyparam {string} [email] - 이메일 주소
+ * @bodyparam {string} [profile_image] - 프로필 이미지 URL
  * @returns {object} 업데이트 성공 메시지
  * @example
- * // POST /api/user/update
- * // Body: { "name": "홍길동", "grade": 2, "class": 3 }
+ * POST /api/user/update
+ * Body: { "name": "홍길동", "grade": 2, "class": 3 }
  */
 router.post("/update", isAuthenticated, async (req, res) => {
   try {
@@ -47,8 +47,8 @@ router.post("/update", isAuthenticated, async (req, res) => {
  * @route {GET} /api/user/registered
  * @returns {object} 등록 상태 정보 ({ registered: boolean })
  * @example
- * // GET /api/user/registered
- * // Response: { "registered": true }
+ * GET /api/user/registered
+ * Response: { "registered": true }
  */
 router.get("/registered", isAuthenticated, async (req, res) => {
   try {
@@ -66,8 +66,8 @@ router.get("/registered", isAuthenticated, async (req, res) => {
  * @returns {object} 사용자 정보 객체
  * @throws {404} 사용자를 찾을 수 없는 경우
  * @example
- * // GET /api/user/get
- * // Response: { "id": "123", "name": "홍길동", "grade": 1, "class": 1, "email": "user@example.com" }
+ * GET /api/user/get
+ * Response: { "id": "123", "name": "홍길동", "grade": 1, "class": 1, "email": "user@example.com" }
  */
 router.get("/get", isAuthenticated, async (req, res) => {
   try {

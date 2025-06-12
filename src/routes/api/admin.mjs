@@ -122,8 +122,6 @@ router.get("/logs/:filename", async (req, res) => {
 
 /**
  * @name 데이터베이스 테이블 목록 조회
- * 데이터베이스의 모든 테이블 목록과 기본 정보 제공
- *
  * @route {GET} /api/admin/database/tables
  * @returns {Array} 테이블 목록
  */
@@ -159,9 +157,9 @@ router.get("/database/tables", async (req, res) => {
 /**
  * @name 특정 테이블 데이터 조회
  * @route {GET} /api/admin/database/tables/:tableName
- * @param {string} tableName - 테이블명
- * @param {number} [page=1] - 페이지 번호
- * @param {number} [limit=50] - 페이지당 항목 수
+ * @routeparam {string} tableName - 테이블명
+ * @queryparam {number} [page=1] - 페이지 번호
+ * @queryparam {number} [limit=50] - 페이지당 항목 수
  * @returns {object} 테이블 데이터와 페이지네이션 정보
  */
 router.get("/database/tables/:tableName", async (req, res) => {
