@@ -22,7 +22,7 @@ router.use(isAuthenticated, isUserRegistered);
 
 /**
  * @name 사용자의 모든 채팅방 목록 조회
- * @route GET /api/ai/getRoomList
+ * @route {GET} /api/ai/getRoomList
  * @returns {object} roomData - 채팅방 목록 배열
  * @example
  * // GET /api/ai/getRoomList
@@ -42,7 +42,7 @@ router.get("/getRoomList", async (req, res) => {
 
 /**
  * @name 새로운 채팅방 생성
- * @route POST /api/ai/addRoom
+ * @route {POST} /api/ai/addRoom
  * @param {string} name - 생성할 채팅방 이름 (필수)
  * @returns {object} 생성된 채팅방 정보와 성공 메시지
  * @example
@@ -75,7 +75,7 @@ router.post("/addRoom", async (req, res) => {
 
 /**
  * @name 특정 채팅방의 모든 메시지 조회
- * @route GET /api/ai/getChatInRoom
+ * @route {GET} /api/ai/getChatInRoom
  * @param {string} from - 채팅방 ID (query parameter, 필수)
  * @returns {object} chatData - 채팅 메시지 배열
  * @example
@@ -107,7 +107,7 @@ router.get("/getChatInRoom", async (req, res) => {
 
 /**
  * @name AI 자동 응답 생성
- * @route POST /api/ai/auto
+ * @route {POST} /api/ai/auto
  * @param {string} prompt - 사용자가 입력한 프롬프트 (필수)
  * @param {string} [room] - 채팅방 ID (선택사항, 미입력시 자동 생성)
  * @returns {object} response - AI 응답과 채팅방 정보
@@ -142,7 +142,7 @@ router.post("/auto", async (req, res) => {
 
 /**
  * @name 수동 AI 모델 선택 후 응답 생성
- * @route POST /api/ai/custom
+ * @route {POST} /api/ai/custom
  * @param {string} prompt - 사용자가 입력한 프롬프트 (필수)
  * @param {string} [room] - 채팅방 ID (선택사항, 미입력시 자동 생성)
  * @param {string} model - 사용자가 선택한 AI 모델 (필수)

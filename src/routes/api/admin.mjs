@@ -17,7 +17,7 @@ router.use(isAdmin);
 
 /**
  * @name 시스템 상태 조회
- * @route GET /api/admin/system-status
+ * @route {GET} /api/admin/system-status
  * @returns {object} 시스템 상태 정보
  */
 router.get("/system-status", async (req, res) => {
@@ -41,7 +41,7 @@ router.get("/system-status", async (req, res) => {
 
 /**
  * @name 로그 파일 목록 조회
- * @route GET /api/admin/logs
+ * @route {GET} /api/admin/logs
  * @returns {Array} 로그 파일 목록
  */
 router.get("/logs", async (req, res) => {
@@ -78,7 +78,7 @@ router.get("/logs", async (req, res) => {
 
 /**
  * @name 특정 로그 파일 내용 조회
- * @route GET /api/admin/logs/:filename
+ * @route {GET} /api/admin/logs/:filename
  * @param {string} filename - 로그 파일명
  * @param {number} [lines=100] - 조회할 라인 수 (query parameter)
  * @returns {object} 로그 파일 내용
@@ -124,7 +124,7 @@ router.get("/logs/:filename", async (req, res) => {
  * @name 데이터베이스 테이블 목록 조회
  * 데이터베이스의 모든 테이블 목록과 기본 정보 제공
  *
- * @route GET /api/admin/database/tables
+ * @route {GET} /api/admin/database/tables
  * @returns {Array} 테이블 목록
  */
 router.get("/database/tables", async (req, res) => {
@@ -158,7 +158,7 @@ router.get("/database/tables", async (req, res) => {
 
 /**
  * @name 특정 테이블 데이터 조회
- * @route GET /api/admin/database/tables/:tableName
+ * @route {GET} /api/admin/database/tables/:tableName
  * @param {string} tableName - 테이블명
  * @param {number} [page=1] - 페이지 번호
  * @param {number} [limit=50] - 페이지당 항목 수
@@ -227,7 +227,7 @@ router.get("/database/tables/:tableName", async (req, res) => {
 
 /**
  * @name 사용자 통계 정보 조회
- * @route GET /api/admin/stats/users
+ * @route {GET} /api/admin/stats/users
  * @returns {object} 사용자 통계 정보
  */
 router.get("/stats/users", async (req, res) => {
@@ -258,7 +258,7 @@ router.get("/stats/users", async (req, res) => {
 
 /**
  * @name API 엔드포인트 문서 조회
- * @route GET /api/admin/docs
+ * @route {GET} /api/admin/docs
  * @returns {Array} API 엔드포인트 문서 목록
  */
 router.get("/docs", async (req, res) => {
@@ -395,7 +395,7 @@ router.get("/docs", async (req, res) => {
 
 /**
  * @name JSDoc 문서 재생성
- * @route POST /api/admin/docs/regenerate
+ * @route {POST} /api/admin/docs/regenerate
  * @returns {object} 재생성 결과
  */
 router.post("/docs/regenerate", async (req, res) => {

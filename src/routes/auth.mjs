@@ -97,7 +97,7 @@ passport.deserializeUser((user, done) => {
 
 /**
  * @name 구글 OAuth 로그인 초기화
- * @route GET /auth/google
+ * @route {GET} /auth/google
  * @returns {Redirect} 구글 OAuth 인증 페이지로 리다이렉트
  * @example
  * // GET /auth/google
@@ -127,7 +127,7 @@ router.get(
 
 /**
  * @name 구글 OAuth 콜백 처리
- * @route GET /auth/google/callback
+ * @route {GET} /auth/google/callback
  * @returns {Redirect} 등록 상태에 따른 리다이렉트 (/signup 또는 /)
  * @example
  * // 미등록 사용자: /signup으로 리다이렉트
@@ -170,7 +170,7 @@ router.get(
 
 /**
  * @name 구글 OAuth 인증 실패 처리
- * @route GET /auth/google/callback/failure
+ * @route {GET} /auth/google/callback/failure
  * @returns {Redirect} 로그인 실패 페이지로 리다이렉트 (/login/fail)
  */
 router.get("/google/callback/failure", (req, res) => {
@@ -181,7 +181,7 @@ router.get("/google/callback/failure", (req, res) => {
 
 /**
  * @name 사용자 ID로 로그인 (모바일 앱용)
- * @route POST /auth/login
+ * @route {POST} /auth/login
  * @param {string} userId - 사용자 ID (필수)
  * @param {string} [email] - 사용자 이메일
  * @param {string} [photo] - 프로필 사진 URL
@@ -242,7 +242,7 @@ router.post("/login", (req, res, next) => {
 
 /**
  * @name 사용자 로그아웃
- * @route GET /auth/logout
+ * @route {GET} /auth/logout
  * @returns {object} 로그아웃 완료 메시지
  * @example
  * // GET /auth/logout

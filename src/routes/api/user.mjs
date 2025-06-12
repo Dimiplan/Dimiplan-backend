@@ -15,7 +15,7 @@ const router = Router();
 
 /**
  * @name 사용자 정보 업데이트
- * @route POST /api/user/update
+ * @route {POST} /api/user/update
  * @param {string} [name] - 사용자 이름 (최대 15자)
  * @param {number} [grade] - 학년 (1-3)
  * @param {number} [class] - 반 (1-6)
@@ -44,7 +44,7 @@ router.post("/update", isAuthenticated, async (req, res) => {
 
 /**
  * @name 사용자 등록 상태 확인
- * @route GET /api/user/registered
+ * @route {GET} /api/user/registered
  * @returns {object} 등록 상태 정보 ({ registered: boolean })
  * @example
  * // GET /api/user/registered
@@ -62,7 +62,7 @@ router.get("/registered", isAuthenticated, async (req, res) => {
 
 /**
  * @name 현재 사용자 정보 조회
- * @route GET /api/user/get
+ * @route {GET} /api/user/get
  * @returns {object} 사용자 정보 객체
  * @throws {404} 사용자를 찾을 수 없는 경우
  * @example
