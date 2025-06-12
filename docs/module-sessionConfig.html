@@ -1,1217 +1,739 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="utf-8">
+  <head>
+    <meta charset="utf-8" />
     <title>JSDoc: Module: sessionConfig</title>
 
-    <script src="scripts/prettify/prettify.js"> </script>
-    <script src="scripts/prettify/lang-css.js"> </script>
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
     <!--[if lt IE 9]>
       <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
-    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
-    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
-</head>
+    <link
+      type="text/css"
+      rel="stylesheet"
+      href="styles/prettify-tomorrow.css"
+    />
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css" />
+  </head>
 
-<body>
+  <body>
+    <div id="main">
+      <h1 class="page-title">Module: sessionConfig</h1>
 
-<div id="main">
+      <section>
+        <header></header>
 
-    <h1 class="page-title">Module: sessionConfig</h1>
+        <article>
+          <div class="container-overview">
+            <div class="description">
+              <p>
+                안전한 세션 설정 및 Redis 기반 세션 관리를 위한 유틸리티 제공
+              </p>
+            </div>
 
-    
+            <dl class="details">
+              <dt class="tag-source">Source:</dt>
+              <dd class="tag-source">
+                <ul class="dummy">
+                  <li>
+                    <a href="src_config_sessionConfig.mjs.html"
+                      >src/config/sessionConfig.mjs</a
+                    >,
+                    <a href="src_config_sessionConfig.mjs.html#line1">line 1</a>
+                  </li>
+                </ul>
+              </dd>
+            </dl>
+          </div>
 
+          <h3 class="subsection-title">Members</h3>
 
+          <h4 class="name" id="~SESSION_SECRET">
+            <span class="type-signature">(inner, constant) </span
+            >SESSION_SECRET<span class="type-signature"> :string</span>
+          </h4>
 
+          <div class="description">
+            <p>세션 비밀 키 (프로덕션에서는 환경 변수로 관리)</p>
+          </div>
 
-<section>
+          <h5>Type:</h5>
+          <ul>
+            <li>
+              <span class="param-type">string</span>
+            </li>
+          </ul>
 
-<header>
-    
-        
-            
-        
-    
-</header>
+          <dl class="details">
+            <dt class="tag-source">Source:</dt>
+            <dd class="tag-source">
+              <ul class="dummy">
+                <li>
+                  <a href="src_config_sessionConfig.mjs.html"
+                    >src/config/sessionConfig.mjs</a
+                  >,
+                  <a href="src_config_sessionConfig.mjs.html#line19">line 19</a>
+                </li>
+              </ul>
+            </dd>
+          </dl>
 
-<article>
-    <div class="container-overview">
-    
-        
-            <div class="description"><p>안전한 세션 설정 및 Redis 기반 세션 관리를 위한 유틸리티 제공</p></div>
-        
+          <h4 class="name" id="~redisClient">
+            <span class="type-signature">(inner) </span>redisClient<span
+              class="type-signature"
+            >
+              :Object|null</span
+            >
+          </h4>
 
-        
-            
+          <div class="description">
+            <p>Redis 클라이언트 인스턴스</p>
+          </div>
 
+          <h5>Type:</h5>
+          <ul>
+            <li>
+              <span class="param-type">Object</span>
+              |
 
+              <span class="param-type">null</span>
+            </li>
+          </ul>
 
+          <dl class="details">
+            <dt class="tag-source">Source:</dt>
+            <dd class="tag-source">
+              <ul class="dummy">
+                <li>
+                  <a href="src_config_sessionConfig.mjs.html"
+                    >src/config/sessionConfig.mjs</a
+                  >,
+                  <a href="src_config_sessionConfig.mjs.html#line25">line 25</a>
+                </li>
+              </ul>
+            </dd>
+          </dl>
 
+          <h4 class="name" id="~redisStore">
+            <span class="type-signature">(inner) </span>redisStore<span
+              class="type-signature"
+            >
+              :Object|null</span
+            >
+          </h4>
 
+          <div class="description">
+            <p>Redis 기반 세션 저장소 인스턴스</p>
+          </div>
 
+          <h5>Type:</h5>
+          <ul>
+            <li>
+              <span class="param-type">Object</span>
+              |
 
+              <span class="param-type">null</span>
+            </li>
+          </ul>
 
+          <dl class="details">
+            <dt class="tag-source">Source:</dt>
+            <dd class="tag-source">
+              <ul class="dummy">
+                <li>
+                  <a href="src_config_sessionConfig.mjs.html"
+                    >src/config/sessionConfig.mjs</a
+                  >,
+                  <a href="src_config_sessionConfig.mjs.html#line31">line 31</a>
+                </li>
+              </ul>
+            </dd>
+          </dl>
 
+          <h3 class="subsection-title">Methods</h3>
 
+          <h4 class="name" id="~closeRedisConnection">
+            <span class="type-signature">(async, inner) </span
+            >closeRedisConnection<span class="signature">()</span
+            ><span class="type-signature"> &rarr; {Promise.&lt;void>}</span>
+          </h4>
 
+          <div class="description">
+            <p>Redis 클라이언트 연결을 안전하게 종료합니다</p>
+          </div>
 
+          <dl class="details">
+            <dt class="tag-source">Source:</dt>
+            <dd class="tag-source">
+              <ul class="dummy">
+                <li>
+                  <a href="src_config_sessionConfig.mjs.html"
+                    >src/config/sessionConfig.mjs</a
+                  >,
+                  <a href="src_config_sessionConfig.mjs.html#line150"
+                    >line 150</a
+                  >
+                </li>
+              </ul>
+            </dd>
+          </dl>
 
+          <h5>Returns:</h5>
 
+          <dl>
+            <dt>Type</dt>
+            <dd>
+              <span class="param-type">Promise.&lt;void></span>
+            </dd>
+          </dl>
 
-<dl class="details">
+          <h5>Example</h5>
 
-    
+          <pre
+            class="prettyprint"
+          ><code>await closeRedisConnection();</code></pre>
 
-    
+          <h4 class="name" id="~getSessionConfig">
+            <span class="type-signature">(async, inner) </span
+            >getSessionConfig<span class="signature">()</span
+            ><span class="type-signature">
+              &rarr;
+              {Promise.&lt;Object>|string|boolean|boolean|string|Object|Object}</span
+            >
+          </h4>
 
-    
+          <div class="description">
+            <p>세션 구성 옵션을 생성하고 반환합니다</p>
+          </div>
 
-    
+          <dl class="details">
+            <dt class="tag-source">Source:</dt>
+            <dd class="tag-source">
+              <ul class="dummy">
+                <li>
+                  <a href="src_config_sessionConfig.mjs.html"
+                    >src/config/sessionConfig.mjs</a
+                  >,
+                  <a href="src_config_sessionConfig.mjs.html#line81">line 81</a>
+                </li>
+              </ul>
+            </dd>
+          </dl>
 
-    
+          <h5>Returns:</h5>
+          <ul>
+            <li>
+              <div class="param-desc">
+                <p>세션 구성 옵션 객체</p>
+              </div>
 
-    
+              <dl>
+                <dt>Type</dt>
+                <dd>
+                  <span class="param-type">Promise.&lt;Object></span>
+                </dd>
+              </dl>
+            </li>
 
-    
+            <li>
+              <div class="param-desc">
+                <p>returns.secret - 세션 암호화 비밀 키</p>
+              </div>
 
-    
+              <dl>
+                <dt>Type</dt>
+                <dd>
+                  <span class="param-type">string</span>
+                </dd>
+              </dl>
+            </li>
 
-    
+            <li>
+              <div class="param-desc">
+                <p>returns.resave - 세션 재저장 여부</p>
+              </div>
 
-    
+              <dl>
+                <dt>Type</dt>
+                <dd>
+                  <span class="param-type">boolean</span>
+                </dd>
+              </dl>
+            </li>
 
-    
+            <li>
+              <div class="param-desc">
+                <p>
+                  returns.saveUninitialized - 초기화되지 않은 세션 저장 여부
+                </p>
+              </div>
 
-    
+              <dl>
+                <dt>Type</dt>
+                <dd>
+                  <span class="param-type">boolean</span>
+                </dd>
+              </dl>
+            </li>
 
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_config_sessionConfig.mjs.html">src/config/sessionConfig.mjs</a>, <a href="src_config_sessionConfig.mjs.html#line1">line 1</a>
-    </li></ul></dd>
-    
+            <li>
+              <div class="param-desc">
+                <p>returns.name - 세션 쿠키 이름</p>
+              </div>
 
-    
+              <dl>
+                <dt>Type</dt>
+                <dd>
+                  <span class="param-type">string</span>
+                </dd>
+              </dl>
+            </li>
 
-    
+            <li>
+              <div class="param-desc">
+                <p>returns.store - Redis 세션 저장소</p>
+              </div>
 
-    
-</dl>
+              <dl>
+                <dt>Type</dt>
+                <dd>
+                  <span class="param-type">Object</span>
+                </dd>
+              </dl>
+            </li>
 
+            <li>
+              <div class="param-desc">
+                <p>returns.cookie - 쿠키 설정</p>
+              </div>
 
+              <dl>
+                <dt>Type</dt>
+                <dd>
+                  <span class="param-type">Object</span>
+                </dd>
+              </dl>
+            </li>
+          </ul>
 
+          <h5>Example</h5>
 
+          <pre
+            class="prettyprint"
+          ><code>const config = await getSessionConfig();</code></pre>
 
+          <h4 class="name" id="~getUserFromSession">
+            <span class="type-signature">(inner) </span>getUserFromSession<span
+              class="signature"
+              >(session)</span
+            ><span class="type-signature"> &rarr; {string|null}</span>
+          </h4>
 
+          <div class="description">
+            <p>세션에서 저장된 사용자 ID를 추출합니다</p>
+          </div>
 
+          <h5>Parameters:</h5>
 
+          <table class="params">
+            <thead>
+              <tr>
+                <th>Name</th>
 
+                <th>Type</th>
 
+                <th class="last">Description</th>
+              </tr>
+            </thead>
 
+            <tbody>
+              <tr>
+                <td class="name"><code>session</code></td>
 
+                <td class="type">
+                  <span class="param-type">Object</span>
+                </td>
 
+                <td class="description last"><p>세션 객체</p></td>
+              </tr>
+            </tbody>
+          </table>
 
+          <dl class="details">
+            <dt class="tag-source">Source:</dt>
+            <dd class="tag-source">
+              <ul class="dummy">
+                <li>
+                  <a href="src_config_sessionConfig.mjs.html"
+                    >src/config/sessionConfig.mjs</a
+                  >,
+                  <a href="src_config_sessionConfig.mjs.html#line136"
+                    >line 136</a
+                  >
+                </li>
+              </ul>
+            </dd>
+          </dl>
 
+          <h5>Returns:</h5>
 
+          <div class="param-desc">
+            <p>사용자 ID 또는 null</p>
+          </div>
 
+          <dl>
+            <dt>Type</dt>
+            <dd>
+              <span class="param-type">string</span>
+              |
 
+              <span class="param-type">null</span>
+            </dd>
+          </dl>
 
+          <h5>Example</h5>
 
-        
-    
+          <pre
+            class="prettyprint"
+          ><code>const userId = getUserFromSession(req.session);</code></pre>
+
+          <h4 class="name" id="~initRedisClient">
+            <span class="type-signature">(async, inner) </span
+            >initRedisClient<span class="signature">()</span
+            ><span class="type-signature"> &rarr; {Promise.&lt;Object>}</span>
+          </h4>
+
+          <div class="description">
+            <p>Redis 서버에 연결하고 클라이언트 인스턴스를 초기화합니다</p>
+          </div>
+
+          <dl class="details">
+            <dt class="tag-source">Source:</dt>
+            <dd class="tag-source">
+              <ul class="dummy">
+                <li>
+                  <a href="src_config_sessionConfig.mjs.html"
+                    >src/config/sessionConfig.mjs</a
+                  >,
+                  <a href="src_config_sessionConfig.mjs.html#line33">line 33</a>
+                </li>
+              </ul>
+            </dd>
+          </dl>
+
+          <h5>Throws:</h5>
+
+          <dl>
+            <dt>
+              <div class="param-desc">
+                <p>Redis 연결 실패 시 에러 발생</p>
+              </div>
+            </dt>
+            <dd></dd>
+            <dt>
+              <dl>
+                <dt>Type</dt>
+                <dd>
+                  <span class="param-type">Error</span>
+                </dd>
+              </dl>
+            </dt>
+            <dd></dd>
+          </dl>
+
+          <h5>Returns:</h5>
+
+          <div class="param-desc">
+            <p>Redis 클라이언트 객체</p>
+          </div>
+
+          <dl>
+            <dt>Type</dt>
+            <dd>
+              <span class="param-type">Promise.&lt;Object></span>
+            </dd>
+          </dl>
+
+          <h5>Example</h5>
+
+          <pre
+            class="prettyprint"
+          ><code>const client = await initRedisClient();</code></pre>
+
+          <h4 class="name" id="~storeUserInSession">
+            <span class="type-signature">(inner) </span>storeUserInSession<span
+              class="signature"
+              >(session, userId)</span
+            ><span class="type-signature"></span>
+          </h4>
+
+          <div class="description">
+            <p>Passport 형식으로 세션에 사용자 ID를 저장합니다</p>
+          </div>
+
+          <h5>Parameters:</h5>
+
+          <table class="params">
+            <thead>
+              <tr>
+                <th>Name</th>
+
+                <th>Type</th>
+
+                <th class="last">Description</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              <tr>
+                <td class="name"><code>session</code></td>
+
+                <td class="type">
+                  <span class="param-type">Object</span>
+                </td>
+
+                <td class="description last"><p>세션 객체</p></td>
+              </tr>
+
+              <tr>
+                <td class="name"><code>userId</code></td>
+
+                <td class="type">
+                  <span class="param-type">string</span>
+                </td>
+
+                <td class="description last"><p>저장할 평문 사용자 ID</p></td>
+              </tr>
+            </tbody>
+          </table>
+
+          <dl class="details">
+            <dt class="tag-source">Source:</dt>
+            <dd class="tag-source">
+              <ul class="dummy">
+                <li>
+                  <a href="src_config_sessionConfig.mjs.html"
+                    >src/config/sessionConfig.mjs</a
+                  >,
+                  <a href="src_config_sessionConfig.mjs.html#line119"
+                    >line 119</a
+                  >
+                </li>
+              </ul>
+            </dd>
+          </dl>
+
+          <h5>Example</h5>
+
+          <pre
+            class="prettyprint"
+          ><code>storeUserInSession(req.session, 'user123');</code></pre>
+        </article>
+      </section>
     </div>
 
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-        <h3 class="subsection-title">Members</h3>
-
-        
-            
-<h4 class="name" id="~SESSION_SECRET"><span class="type-signature">(inner, constant) </span>SESSION_SECRET<span class="type-signature"> :string</span></h4>
-
-
-
-
-<div class="description">
-    <p>세션 비밀 키 (프로덕션에서는 환경 변수로 관리)</p>
-</div>
-
-
-
-    <h5>Type:</h5>
-    <ul>
+    <nav>
+      <h2><a href="index.html">Home</a></h2>
+      <h3>Modules</h3>
+      <ul>
+        <li><a href="module-apiRouter.html">apiRouter</a></li>
+        <li><a href="module-auth.html">auth</a></li>
+        <li><a href="module-logWithTimestamp.html">logWithTimestamp</a></li>
+        <li><a href="module-sessionConfig.html">sessionConfig</a></li>
+      </ul>
+      <h3>Global</h3>
+      <ul>
+        <li><a href="global.html#ALLOWED_DOMAINS">ALLOWED_DOMAINS</a></li>
+        <li><a href="global.html#FREE_MODELS">FREE_MODELS</a></li>
+        <li><a href="global.html#PAID_MODELS">PAID_MODELS</a></li>
+        <li><a href="global.html#PULL_INTERVAL">PULL_INTERVAL</a></li>
+        <li><a href="global.html#SENSITIVE_FIELDS">SENSITIVE_FIELDS</a></li>
+        <li><a href="global.html#SENSITIVE_HEADERS">SENSITIVE_HEADERS</a></li>
+        <li><a href="global.html#addAdminField">addAdminField</a></li>
+        <li><a href="global.html#addChatMessages">addChatMessages</a></li>
+        <li><a href="global.html#apiRateLimiter">apiRateLimiter</a></li>
+        <li><a href="global.html#app">app</a></li>
+        <li><a href="global.html#checkAdminStatus">checkAdminStatus</a></li>
+        <li><a href="global.html#colors">colors</a></li>
+        <li><a href="global.html#completeTask">completeTask</a></li>
         <li>
-            
-<span class="param-type">string</span>
-
-
+          <a href="global.html#createBodySizeLimiter">createBodySizeLimiter</a>
         </li>
-    </ul>
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_config_sessionConfig.mjs.html">src/config/sessionConfig.mjs</a>, <a href="src_config_sessionConfig.mjs.html#line19">line 19</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-        
-            
-<h4 class="name" id="~redisClient"><span class="type-signature">(inner) </span>redisClient<span class="type-signature"> :Object|null</span></h4>
-
-
-
-
-<div class="description">
-    <p>Redis 클라이언트 인스턴스</p>
-</div>
-
-
-
-    <h5>Type:</h5>
-    <ul>
+        <li><a href="global.html#createChatRoom">createChatRoom</a></li>
+        <li><a href="global.html#createExpressApp">createExpressApp</a></li>
+        <li><a href="global.html#createHttpsServer">createHttpsServer</a></li>
+        <li><a href="global.html#createPlanner">createPlanner</a></li>
+        <li><a href="global.html#createRateLimiter">createRateLimiter</a></li>
+        <li><a href="global.html#createTask">createTask</a></li>
+        <li><a href="global.html#createUser">createUser</a></li>
+        <li><a href="global.html#createWordList">createWordList</a></li>
+        <li><a href="global.html#db">db</a></li>
+        <li><a href="global.html#decryptData">decryptData</a></li>
+        <li><a href="global.html#deleteChatRoom">deleteChatRoom</a></li>
+        <li><a href="global.html#deletePlanner">deletePlanner</a></li>
+        <li><a href="global.html#deleteTask">deleteTask</a></li>
+        <li><a href="global.html#deleteWordList">deleteWordList</a></li>
+        <li><a href="global.html#encryptData">encryptData</a></li>
         <li>
-            
-<span class="param-type">Object</span>
-|
-
-<span class="param-type">null</span>
-
-
+          <a href="global.html#errorLoggingMiddleware"
+            >errorLoggingMiddleware</a
+          >
         </li>
-    </ul>
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_config_sessionConfig.mjs.html">src/config/sessionConfig.mjs</a>, <a href="src_config_sessionConfig.mjs.html#line25">line 25</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-        
-            
-<h4 class="name" id="~redisStore"><span class="type-signature">(inner) </span>redisStore<span class="type-signature"> :Object|null</span></h4>
-
-
-
-
-<div class="description">
-    <p>Redis 기반 세션 저장소 인스턴스</p>
-</div>
-
-
-
-    <h5>Type:</h5>
-    <ul>
+        <li><a href="global.html#executeGitPull">executeGitPull</a></li>
+        <li><a href="global.html#executeTransaction">executeTransaction</a></li>
+        <li><a href="global.html#formatDate">formatDate</a></li>
+        <li><a href="global.html#formatDateForMySQL">formatDateForMySQL</a></li>
         <li>
-            
-<span class="param-type">Object</span>
-|
-
-<span class="param-type">null</span>
-
-
+          <a href="global.html#generateAutoResponse">generateAutoResponse</a>
         </li>
-    </ul>
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_config_sessionConfig.mjs.html">src/config/sessionConfig.mjs</a>, <a href="src_config_sessionConfig.mjs.html#line31">line 31</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-        
-    
-
-    
-        <h3 class="subsection-title">Methods</h3>
-
-        
-            
-
-    
-
-    
-    <h4 class="name" id="~closeRedisConnection"><span class="type-signature">(async, inner) </span>closeRedisConnection<span class="signature">()</span><span class="type-signature"> &rarr; {Promise.&lt;void>}</span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    <p>Redis 클라이언트 연결을 안전하게 종료합니다</p>
-</div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_config_sessionConfig.mjs.html">src/config/sessionConfig.mjs</a>, <a href="src_config_sessionConfig.mjs.html#line150">line 150</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">Promise.&lt;void></span>
-
-
-    </dd>
-</dl>
-
-    
-
-
-
-
-    <h5>Example</h5>
-    
-    <pre class="prettyprint"><code>await closeRedisConnection();</code></pre>
-
-
-
-        
-            
-
-    
-
-    
-    <h4 class="name" id="~getSessionConfig"><span class="type-signature">(async, inner) </span>getSessionConfig<span class="signature">()</span><span class="type-signature"> &rarr; {Promise.&lt;Object>|string|boolean|boolean|string|Object|Object}</span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    <p>세션 구성 옵션을 생성하고 반환합니다</p>
-</div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_config_sessionConfig.mjs.html">src/config/sessionConfig.mjs</a>, <a href="src_config_sessionConfig.mjs.html#line81">line 81</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-<ul>
         <li>
-<div class="param-desc">
-    <p>세션 구성 옵션 객체</p>
-</div>
-
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">Promise.&lt;Object></span>
-
-
-    </dd>
-</dl>
-</li>
-    
+          <a href="global.html#generateCustomResponse"
+            >generateCustomResponse</a
+          >
+        </li>
         <li>
-<div class="param-desc">
-    <p>returns.secret - 세션 암호화 비밀 키</p>
-</div>
-
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">string</span>
-
-
-    </dd>
-</dl>
-</li>
-    
+          <a href="global.html#generateSecureToken">generateSecureToken</a>
+        </li>
+        <li><a href="global.html#getCSPDirectives">getCSPDirectives</a></li>
+        <li><a href="global.html#getChatMessages">getChatMessages</a></li>
+        <li><a href="global.html#getChatRooms">getChatRooms</a></li>
+        <li><a href="global.html#getCorsConfig">getCorsConfig</a></li>
+        <li><a href="global.html#getCorsOptions">getCorsOptions</a></li>
         <li>
-<div class="param-desc">
-    <p>returns.resave - 세션 재저장 여부</p>
-</div>
-
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">boolean</span>
-
-
-    </dd>
-</dl>
-</li>
-    
+          <a href="global.html#getCurrentMySQLDateTime"
+            >getCurrentMySQLDateTime</a
+          >
+        </li>
         <li>
-<div class="param-desc">
-    <p>returns.saveUninitialized - 초기화되지 않은 세션 저장 여부</p>
-</div>
-
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">boolean</span>
-
-
-    </dd>
-</dl>
-</li>
-    
+          <a href="global.html#getCustomCorsConfig">getCustomCorsConfig</a>
+        </li>
         <li>
-<div class="param-desc">
-    <p>returns.name - 세션 쿠키 이름</p>
-</div>
-
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">string</span>
-
-
-    </dd>
-</dl>
-</li>
-    
+          <a href="global.html#getDevSecurityConfig">getDevSecurityConfig</a>
+        </li>
+        <li><a href="global.html#getEnvFilePaths">getEnvFilePaths</a></li>
+        <li><a href="global.html#getEnvironmentInfo">getEnvironmentInfo</a></li>
         <li>
-<div class="param-desc">
-    <p>returns.store - Redis 세션 저장소</p>
-</div>
-
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">Object</span>
-
-
-    </dd>
-</dl>
-</li>
-    
+          <a href="global.html#getEnvironmentSecurityConfig"
+            >getEnvironmentSecurityConfig</a
+          >
+        </li>
+        <li><a href="global.html#getHashedUserId">getHashedUserId</a></li>
+        <li><a href="global.html#getNextId">getNextId</a></li>
+        <li><a href="global.html#getPlannerById">getPlannerById</a></li>
+        <li><a href="global.html#getPlanners">getPlanners</a></li>
+        <li><a href="global.html#getSecurityConfig">getSecurityConfig</a></li>
+        <li><a href="global.html#getTaskById">getTaskById</a></li>
+        <li><a href="global.html#getTasks">getTasks</a></li>
+        <li><a href="global.html#getTimestamp">getTimestamp</a></li>
+        <li><a href="global.html#getUser">getUser</a></li>
+        <li><a href="global.html#getYearEndDate">getYearEndDate</a></li>
+        <li><a href="global.html#getYearStartDate">getYearStartDate</a></li>
+        <li><a href="global.html#gracefulShutdown">gracefulShutdown</a></li>
+        <li><a href="global.html#hashUserId">hashUserId</a></li>
+        <li><a href="global.html#initializeApp">initializeApp</a></li>
+        <li><a href="global.html#initializeSession">initializeSession</a></li>
+        <li><a href="global.html#isAdmin">isAdmin</a></li>
+        <li><a href="global.html#isEncrypted">isEncrypted</a></li>
+        <li><a href="global.html#isRegistered">isRegistered</a></li>
+        <li><a href="global.html#isUserExists">isUserExists</a></li>
+        <li><a href="global.html#levels">levels</a></li>
         <li>
-<div class="param-desc">
-    <p>returns.cookie - 쿠키 설정</p>
-</div>
-
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">Object</span>
-
-
-    </dd>
-</dl>
-</li>
-    </ul>
-
-
-
-
-    <h5>Example</h5>
-    
-    <pre class="prettyprint"><code>const config = await getSessionConfig();</code></pre>
-
-
-
-        
-            
-
-    
-
-    
-    <h4 class="name" id="~getUserFromSession"><span class="type-signature">(inner) </span>getUserFromSession<span class="signature">(session)</span><span class="type-signature"> &rarr; {string|null}</span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    <p>세션에서 저장된 사용자 ID를 추출합니다</p>
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>session</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Object</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>세션 객체</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_config_sessionConfig.mjs.html">src/config/sessionConfig.mjs</a>, <a href="src_config_sessionConfig.mjs.html#line136">line 136</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
-<div class="param-desc">
-    <p>사용자 ID 또는 null</p>
-</div>
-
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">string</span>
-|
-
-<span class="param-type">null</span>
-
-
-    </dd>
-</dl>
-
-    
-
-
-
-
-    <h5>Example</h5>
-    
-    <pre class="prettyprint"><code>const userId = getUserFromSession(req.session);</code></pre>
-
-
-
-        
-            
-
-    
-
-    
-    <h4 class="name" id="~initRedisClient"><span class="type-signature">(async, inner) </span>initRedisClient<span class="signature">()</span><span class="type-signature"> &rarr; {Promise.&lt;Object>}</span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    <p>Redis 서버에 연결하고 클라이언트 인스턴스를 초기화합니다</p>
-</div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_config_sessionConfig.mjs.html">src/config/sessionConfig.mjs</a>, <a href="src_config_sessionConfig.mjs.html#line33">line 33</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Throws:</h5>
-
-        
-
-<dl>
-    <dt>
-        <div class="param-desc">
-        <p>Redis 연결 실패 시 에러 발생</p>
-        </div>
-    </dt>
-    <dd></dd>
-    <dt>
-        <dl>
-            <dt>
-                Type
-            </dt>
-            <dd>
-                
-<span class="param-type">Error</span>
-
-
-            </dd>
-        </dl>
-    </dt>
-    <dd></dd>
-</dl>
-
-
-    
-
-
-<h5>Returns:</h5>
-
-        
-<div class="param-desc">
-    <p>Redis 클라이언트 객체</p>
-</div>
-
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">Promise.&lt;Object></span>
-
-
-    </dd>
-</dl>
-
-    
-
-
-
-
-    <h5>Example</h5>
-    
-    <pre class="prettyprint"><code>const client = await initRedisClient();</code></pre>
-
-
-
-        
-            
-
-    
-
-    
-    <h4 class="name" id="~storeUserInSession"><span class="type-signature">(inner) </span>storeUserInSession<span class="signature">(session, userId)</span><span class="type-signature"></span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    <p>Passport 형식으로 세션에 사용자 ID를 저장합니다</p>
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>session</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Object</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>세션 객체</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>userId</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>저장할 평문 사용자 ID</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_config_sessionConfig.mjs.html">src/config/sessionConfig.mjs</a>, <a href="src_config_sessionConfig.mjs.html#line119">line 119</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    <h5>Example</h5>
-    
-    <pre class="prettyprint"><code>storeUserInSession(req.session, 'user123');</code></pre>
-
-
-
-        
-    
-
-    
-
-    
-</article>
-
-</section>
-
-
-
-
-</div>
-
-<nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-apiRouter.html">apiRouter</a></li><li><a href="module-auth.html">auth</a></li><li><a href="module-logWithTimestamp.html">logWithTimestamp</a></li><li><a href="module-sessionConfig.html">sessionConfig</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ALLOWED_DOMAINS">ALLOWED_DOMAINS</a></li><li><a href="global.html#FREE_MODELS">FREE_MODELS</a></li><li><a href="global.html#PAID_MODELS">PAID_MODELS</a></li><li><a href="global.html#PULL_INTERVAL">PULL_INTERVAL</a></li><li><a href="global.html#SENSITIVE_FIELDS">SENSITIVE_FIELDS</a></li><li><a href="global.html#SENSITIVE_HEADERS">SENSITIVE_HEADERS</a></li><li><a href="global.html#addAdminField">addAdminField</a></li><li><a href="global.html#addChatMessages">addChatMessages</a></li><li><a href="global.html#apiRateLimiter">apiRateLimiter</a></li><li><a href="global.html#app">app</a></li><li><a href="global.html#checkAdminStatus">checkAdminStatus</a></li><li><a href="global.html#colors">colors</a></li><li><a href="global.html#completeTask">completeTask</a></li><li><a href="global.html#createBodySizeLimiter">createBodySizeLimiter</a></li><li><a href="global.html#createChatRoom">createChatRoom</a></li><li><a href="global.html#createExpressApp">createExpressApp</a></li><li><a href="global.html#createHttpsServer">createHttpsServer</a></li><li><a href="global.html#createPlanner">createPlanner</a></li><li><a href="global.html#createRateLimiter">createRateLimiter</a></li><li><a href="global.html#createTask">createTask</a></li><li><a href="global.html#createUser">createUser</a></li><li><a href="global.html#createWordList">createWordList</a></li><li><a href="global.html#db">db</a></li><li><a href="global.html#decryptData">decryptData</a></li><li><a href="global.html#deleteChatRoom">deleteChatRoom</a></li><li><a href="global.html#deletePlanner">deletePlanner</a></li><li><a href="global.html#deleteTask">deleteTask</a></li><li><a href="global.html#deleteWordList">deleteWordList</a></li><li><a href="global.html#encryptData">encryptData</a></li><li><a href="global.html#errorLoggingMiddleware">errorLoggingMiddleware</a></li><li><a href="global.html#executeGitPull">executeGitPull</a></li><li><a href="global.html#executeTransaction">executeTransaction</a></li><li><a href="global.html#formatDate">formatDate</a></li><li><a href="global.html#formatDateForMySQL">formatDateForMySQL</a></li><li><a href="global.html#generateAutoResponse">generateAutoResponse</a></li><li><a href="global.html#generateCustomResponse">generateCustomResponse</a></li><li><a href="global.html#generateSecureToken">generateSecureToken</a></li><li><a href="global.html#getCSPDirectives">getCSPDirectives</a></li><li><a href="global.html#getChatMessages">getChatMessages</a></li><li><a href="global.html#getChatRooms">getChatRooms</a></li><li><a href="global.html#getCorsConfig">getCorsConfig</a></li><li><a href="global.html#getCorsOptions">getCorsOptions</a></li><li><a href="global.html#getCurrentMySQLDateTime">getCurrentMySQLDateTime</a></li><li><a href="global.html#getCustomCorsConfig">getCustomCorsConfig</a></li><li><a href="global.html#getDevSecurityConfig">getDevSecurityConfig</a></li><li><a href="global.html#getEnvFilePaths">getEnvFilePaths</a></li><li><a href="global.html#getEnvironmentInfo">getEnvironmentInfo</a></li><li><a href="global.html#getEnvironmentSecurityConfig">getEnvironmentSecurityConfig</a></li><li><a href="global.html#getHashedUserId">getHashedUserId</a></li><li><a href="global.html#getNextId">getNextId</a></li><li><a href="global.html#getPlannerById">getPlannerById</a></li><li><a href="global.html#getPlanners">getPlanners</a></li><li><a href="global.html#getSecurityConfig">getSecurityConfig</a></li><li><a href="global.html#getTaskById">getTaskById</a></li><li><a href="global.html#getTasks">getTasks</a></li><li><a href="global.html#getTimestamp">getTimestamp</a></li><li><a href="global.html#getUser">getUser</a></li><li><a href="global.html#getYearEndDate">getYearEndDate</a></li><li><a href="global.html#getYearStartDate">getYearStartDate</a></li><li><a href="global.html#gracefulShutdown">gracefulShutdown</a></li><li><a href="global.html#hashUserId">hashUserId</a></li><li><a href="global.html#initializeApp">initializeApp</a></li><li><a href="global.html#initializeSession">initializeSession</a></li><li><a href="global.html#isAdmin">isAdmin</a></li><li><a href="global.html#isEncrypted">isEncrypted</a></li><li><a href="global.html#isRegistered">isRegistered</a></li><li><a href="global.html#isUserExists">isUserExists</a></li><li><a href="global.html#levels">levels</a></li><li><a href="global.html#loadEnvironmentVariables">loadEnvironmentVariables</a></li><li><a href="global.html#loadSSLOptions">loadSSLOptions</a></li><li><a href="global.html#logWithTimestamp">logWithTimestamp</a></li><li><a href="global.html#loginRateLimiter">loginRateLimiter</a></li><li><a href="global.html#maskSensitiveData">maskSensitiveData</a></li><li><a href="global.html#maskSensitiveHeaders">maskSensitiveHeaders</a></li><li><a href="global.html#openRouter">openRouter</a></li><li><a href="global.html#optionalAuth">optionalAuth</a></li><li><a href="global.html#options">options</a></li><li><a href="global.html#performanceMonitoringMiddleware">performanceMonitoringMiddleware</a></li><li><a href="global.html#removeAdminUser">removeAdminUser</a></li><li><a href="global.html#renamePlanner">renamePlanner</a></li><li><a href="global.html#requestLoggingMiddleware">requestLoggingMiddleware</a></li><li><a href="global.html#requireAdmin">requireAdmin</a></li><li><a href="global.html#requireAuth">requireAuth</a></li><li><a href="global.html#responseLoggingMiddleware">responseLoggingMiddleware</a></li><li><a href="global.html#safeStringify">safeStringify</a></li><li><a href="global.html#securityHeaders">securityHeaders</a></li><li><a href="global.html#server">server</a></li><li><a href="global.html#setAdminUser">setAdminUser</a></li><li><a href="global.html#setDefaultEnvironmentVariables">setDefaultEnvironmentVariables</a></li><li><a href="global.html#setupBodyParsing">setupBodyParsing</a></li><li><a href="global.html#setupCorsMiddleware">setupCorsMiddleware</a></li><li><a href="global.html#setupErrorHandling">setupErrorHandling</a></li><li><a href="global.html#setupLoggingMiddleware">setupLoggingMiddleware</a></li><li><a href="global.html#setupProcessHandlers">setupProcessHandlers</a></li><li><a href="global.html#setupSecurityMiddleware">setupSecurityMiddleware</a></li><li><a href="global.html#setupTestLoggingMiddleware">setupTestLoggingMiddleware</a></li><li><a href="global.html#summarizeMemory">summarizeMemory</a></li><li><a href="global.html#testDatabaseConnection">testDatabaseConnection</a></li><li><a href="global.html#updateTask">updateTask</a></li><li><a href="global.html#updateUser">updateUser</a></li><li><a href="global.html#validateOrigin">validateOrigin</a></li><li><a href="global.html#validateRequiredEnvironmentVariables">validateRequiredEnvironmentVariables</a></li><li><a href="global.html#validateUserData">validateUserData</a></li><li><a href="global.html#verifyUserId">verifyUserId</a></li></ul>
-</nav>
-
-<br class="clear">
-
-<footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Thu Jun 12 2025 20:26:11 GMT+0900 (대한민국 표준시)
-</footer>
-
-<script> prettyPrint(); </script>
-<script src="scripts/linenumber.js"> </script>
-</body>
+          <a href="global.html#loadEnvironmentVariables"
+            >loadEnvironmentVariables</a
+          >
+        </li>
+        <li><a href="global.html#loadSSLOptions">loadSSLOptions</a></li>
+        <li><a href="global.html#logWithTimestamp">logWithTimestamp</a></li>
+        <li><a href="global.html#loginRateLimiter">loginRateLimiter</a></li>
+        <li><a href="global.html#maskSensitiveData">maskSensitiveData</a></li>
+        <li>
+          <a href="global.html#maskSensitiveHeaders">maskSensitiveHeaders</a>
+        </li>
+        <li><a href="global.html#openRouter">openRouter</a></li>
+        <li><a href="global.html#optionalAuth">optionalAuth</a></li>
+        <li><a href="global.html#options">options</a></li>
+        <li>
+          <a href="global.html#performanceMonitoringMiddleware"
+            >performanceMonitoringMiddleware</a
+          >
+        </li>
+        <li><a href="global.html#removeAdminUser">removeAdminUser</a></li>
+        <li><a href="global.html#renamePlanner">renamePlanner</a></li>
+        <li>
+          <a href="global.html#requestLoggingMiddleware"
+            >requestLoggingMiddleware</a
+          >
+        </li>
+        <li><a href="global.html#requireAdmin">requireAdmin</a></li>
+        <li><a href="global.html#requireAuth">requireAuth</a></li>
+        <li>
+          <a href="global.html#responseLoggingMiddleware"
+            >responseLoggingMiddleware</a
+          >
+        </li>
+        <li><a href="global.html#safeStringify">safeStringify</a></li>
+        <li><a href="global.html#securityHeaders">securityHeaders</a></li>
+        <li><a href="global.html#server">server</a></li>
+        <li><a href="global.html#setAdminUser">setAdminUser</a></li>
+        <li>
+          <a href="global.html#setDefaultEnvironmentVariables"
+            >setDefaultEnvironmentVariables</a
+          >
+        </li>
+        <li><a href="global.html#setupBodyParsing">setupBodyParsing</a></li>
+        <li>
+          <a href="global.html#setupCorsMiddleware">setupCorsMiddleware</a>
+        </li>
+        <li><a href="global.html#setupErrorHandling">setupErrorHandling</a></li>
+        <li>
+          <a href="global.html#setupLoggingMiddleware"
+            >setupLoggingMiddleware</a
+          >
+        </li>
+        <li>
+          <a href="global.html#setupProcessHandlers">setupProcessHandlers</a>
+        </li>
+        <li>
+          <a href="global.html#setupSecurityMiddleware"
+            >setupSecurityMiddleware</a
+          >
+        </li>
+        <li>
+          <a href="global.html#setupTestLoggingMiddleware"
+            >setupTestLoggingMiddleware</a
+          >
+        </li>
+        <li><a href="global.html#summarizeMemory">summarizeMemory</a></li>
+        <li>
+          <a href="global.html#testDatabaseConnection"
+            >testDatabaseConnection</a
+          >
+        </li>
+        <li><a href="global.html#updateTask">updateTask</a></li>
+        <li><a href="global.html#updateUser">updateUser</a></li>
+        <li><a href="global.html#validateOrigin">validateOrigin</a></li>
+        <li>
+          <a href="global.html#validateRequiredEnvironmentVariables"
+            >validateRequiredEnvironmentVariables</a
+          >
+        </li>
+        <li><a href="global.html#validateUserData">validateUserData</a></li>
+        <li><a href="global.html#verifyUserId">verifyUserId</a></li>
+      </ul>
+    </nav>
+
+    <br class="clear" />
+
+    <footer>
+      Documentation generated by
+      <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Thu Jun 12
+      2025 20:26:11 GMT+0900 (대한민국 표준시)
+    </footer>
+
+    <script>
+      prettyPrint();
+    </script>
+    <script src="scripts/linenumber.js"></script>
+  </body>
 </html>
