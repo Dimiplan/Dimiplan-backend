@@ -1,6 +1,6 @@
 {
   "source": {
-    "include": ["./src/", "./index.mjs"],
+    "include": ["./src/routes/"],
     "includePattern": "\\.(js|mjs)$",
     "exclude": ["./node_modules/", "./logs/", "./keys/", "./admin/"]
   },
