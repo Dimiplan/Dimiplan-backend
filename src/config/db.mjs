@@ -70,9 +70,6 @@ if (logger.isTestEnvironment) {
  *   await trx('users').insert(userData);
  * });
  */
-/**
- * @type {Object}
- */
 export const db = knex(dbConfig);
 
 /**
