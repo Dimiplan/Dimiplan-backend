@@ -16,7 +16,7 @@ const router = Router();
 router.use(isAdmin);
 
 /**
- * 시스템 상태 조회
+ * @name 시스템 상태 조회
  * 서버 실행 시간, 메모리 사용량, CPU 사용률 등 시스템 정보 제공
  *
  * @route GET /api/admin/system-status
@@ -42,7 +42,7 @@ router.get("/system-status", async (req, res) => {
 });
 
 /**
- * 로그 파일 목록 조회
+ * @name 로그 파일 목록 조회
  * logs 디렉토리의 로그 파일 목록과 크기 정보 제공
  *
  * @route GET /api/admin/logs
@@ -81,7 +81,7 @@ router.get("/logs", async (req, res) => {
 });
 
 /**
- * 특정 로그 파일 내용 조회
+ * @name 특정 로그 파일 내용 조회
  * 로그 파일의 최근 N줄 또는 전체 내용 제공
  *
  * @route GET /api/admin/logs/:filename
@@ -127,7 +127,7 @@ router.get("/logs/:filename", async (req, res) => {
 });
 
 /**
- * 데이터베이스 테이블 목록 조회
+ * @name 데이터베이스 테이블 목록 조회
  * 데이터베이스의 모든 테이블 목록과 기본 정보 제공
  *
  * @route GET /api/admin/database/tables
@@ -163,7 +163,7 @@ router.get("/database/tables", async (req, res) => {
 });
 
 /**
- * 특정 테이블 데이터 조회
+ * @name 특정 테이블 데이터 조회
  * 페이지네이션을 지원하는 테이블 데이터 조회
  *
  * @route GET /api/admin/database/tables/:tableName
@@ -234,7 +234,7 @@ router.get("/database/tables/:tableName", async (req, res) => {
 });
 
 /**
- * 사용자 통계 정보 조회
+ * @name 사용자 통계 정보 조회
  * 총 사용자 수, 활성 사용자 수, 최근 가입자 등 통계 제공
  *
  * @route GET /api/admin/stats/users
@@ -267,7 +267,7 @@ router.get("/stats/users", async (req, res) => {
 });
 
 /**
- * API 엔드포인트 문서 조회
+ * @name API 엔드포인트 문서 조회
  * JSDoc 주석을 파싱하여 API 문서 생성
  *
  * @route GET /api/admin/docs
@@ -406,7 +406,7 @@ router.get("/docs", async (req, res) => {
 });
 
 /**
- * JSDoc 문서 재생성
+ * @name JSDoc 문서 재생성
  * JSDoc JSON 파일을 재생성하여 최신 문서화 정보 업데이트
  *
  * @route POST /api/admin/docs/regenerate

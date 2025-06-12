@@ -14,7 +14,7 @@ import logger from "../../utils/logger.mjs";
 const router = Router();
 
 /**
- * 사용자 정보 업데이트
+ * @name 사용자 정보 업데이트
  * 프로필 정보 수정 API로 사용자의 이름, 학년, 반, 이메일, 프로필 이미지를 업데이트합니다
  *
  * @route POST /api/user/update
@@ -45,7 +45,7 @@ router.post("/update", isAuthenticated, async (req, res) => {
 });
 
 /**
- * 사용자 등록 상태 확인
+ * @name 사용자 등록 상태 확인
  * 사용자의 회원가입 완료 여부를 확인합니다 (이름 설정 여부 기준)
  *
  * @route GET /api/user/registered
@@ -65,7 +65,7 @@ router.get("/registered", isAuthenticated, async (req, res) => {
 });
 
 /**
- * 현재 사용자 정보 조회
+ * @name 현재 사용자 정보 조회
  * 로그인된 사용자의 프로필 정보를 반환합니다
  *
  * @route GET /api/user/get

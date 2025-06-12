@@ -21,7 +21,7 @@ const router = Router();
 router.use(isAuthenticated, isUserRegistered);
 
 /**
- * 사용자의 모든 채팅방 목록 조회
+ * @name 사용자의 모든 채팅방 목록 조회
  * 인증된 사용자의 채팅방 목록을 반환합니다
  *
  * @route GET /api/ai/getRoomList
@@ -43,7 +43,7 @@ router.get("/getRoomList", async (req, res) => {
 });
 
 /**
- * 새로운 채팅방 생성
+ * @name 새로운 채팅방 생성
  * 사용자가 지정한 이름으로 새 채팅방을 생성합니다
  *
  * @route POST /api/ai/addRoom
@@ -78,7 +78,7 @@ router.post("/addRoom", async (req, res) => {
 });
 
 /**
- * 특정 채팅방의 모든 메시지 조회
+ * @name 특정 채팅방의 모든 메시지 조회
  * 지정된 채팅방 ID의 모든 대화 내역을 반환합니다
  *
  * @route GET /api/ai/getChatInRoom
@@ -112,7 +112,7 @@ router.get("/getChatInRoom", async (req, res) => {
 });
 
 /**
- * AI 자동 응답 생성
+ * @name AI 자동 응답 생성
  * 사용자가 입력한 프롬프트에 대한 AI 응답을 생성하고 메시지를 저장합니다
  * 채팅방 ID가 없으면 새 채팅방을 자동으로 생성합니다
  *
@@ -150,7 +150,7 @@ router.post("/auto", async (req, res) => {
 });
 
 /**
- * 수동 AI 모델 선택 후 응답 생성
+ * @name 수동 AI 모델 선택 후 응답 생성
  * 사용자가 선택한 특정 AI 모델로 프롬프트에 대한 응답을 생성하고 메시지를 저장합니다
  * 채팅방 ID가 없으면 새 채팅방을 자동으로 생성합니다
  *

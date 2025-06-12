@@ -19,7 +19,7 @@ const router = Router();
 router.use(isAuthenticated, isUserRegistered);
 
 /**
- * 새로운 작업 생성
+ * @name 새로운 작업 생성
  * 사용자의 작업 추가 요청을 처리하여 새 작업을 생성합니다
  *
  * @route POST /api/task/add
@@ -50,7 +50,7 @@ router.post("/add", async (req, res) => {
 });
 
 /**
- * 작업 정보 수정
+ * @name 작업 정보 수정
  * 사용자의 작업 정보 업데이트 요청을 처리합니다
  *
  * @route POST /api/task/update
@@ -86,7 +86,7 @@ router.post("/update", async (req, res) => {
 });
 
 /**
- * 작업 삭제
+ * @name 작업 삭제
  * 사용자의 작업 삭제 요청을 처리합니다
  *
  * @route POST /api/task/delete
@@ -111,7 +111,7 @@ router.post("/delete", async (req, res) => {
 });
 
 /**
- * 작업 완료 표시
+ * @name 작업 완료 표시
  * 사용자의 작업 완료 요청을 처리합니다
  *
  * @route POST /api/task/complete
@@ -136,7 +136,7 @@ router.post("/complete", async (req, res) => {
 });
 
 /**
- * 작업 조회
+ * @name 작업 조회
  * 사용자의 전체 작업 또는 특정 플래너의 작업을 조회합니다
  *
  * @route GET /api/task/get
