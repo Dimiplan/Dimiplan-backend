@@ -2,25 +2,31 @@
  * 플래너 모델
  * 암호화와 함께 모든 플래너 관련 데이터베이스 작업을 처리합니다
  * 플래너 생성, 조회, 수정, 삭제 기능과 이름 암호화/복호화를 제공합니다
- * 
+ *
  * @fileoverview 플래너 관리 시스템의 데이터 모델 모듈
  */
 import db from "../config/db.mjs";
 import { getNextId, executeTransaction } from "../utils/dbUtils.mjs";
-import {hashUserId, encryptData, decryptData, getTimestamp,} from "../utils/cryptoUtils.mjs";
+import {
+  hashUserId,
+  encryptData,
+  decryptData,
+  getTimestamp,
+} from "../utils/cryptoUtils.mjs";
 import logger from "../utils/logger.mjs";
 
+// eslint-disable-next-line jsdoc/require-returns
 /**
  * 새 플래너 생성
  * 사용자별로 고유한 플래너 ID를 발급하고 이름을 암호화하여 새 플래너를 생성합니다
  * 같은 이름의 플래너가 이미 존재하는 경우 오류를 발생시킵니다
- * 
+ *
  * @async
  * @function createPlanner
  * @param {string} uid - 사용자 ID (평문)
  * @param {string} name - 플래너 이름
  * @param {number} [isDaily=0] - 일일 플래너 여부 (0: 일반, 1: 일일)
- * @returns {Promise<Object>} 생성된 플래너 데이터
+ * @returns {Promise<object>} 생성된 플래너 데이터
  * @returns {string} returns.owner - 사용자 ID (평문)
  * @returns {string} returns.name - 플래너 이름 (평문)
  * @returns {number} returns.id - 플래너 ID
@@ -72,16 +78,17 @@ export const createPlanner = async (uid, name, isDaily) => {
   }
 };
 
+// eslint-disable-next-line jsdoc/require-returns
 /**
  * ID로 플래너 가져오기
  * 지정된 ID의 플래너를 데이터베이스에서 조회하고 암호화된 이름을 복호화하여 반환합니다
  * 플래너가 존재하지 않으면 null을 반환합니다
- * 
+ *
  * @async
  * @function getPlannerById
  * @param {string} uid - 사용자 ID (평문)
  * @param {number} id - 플래너 ID
- * @returns {Promise<Object|null>} 플래너 데이터 또는 찾지 못한 경우 null
+ * @returns {Promise<object | null>} 플래너 데이터 또는 찾지 못한 경우 null
  * @returns {string} returns.owner - 사용자 ID (평문)
  * @returns {string} returns.name - 플래너 이름 (복호화된 평문)
  * @returns {number} returns.id - 플래너 ID
@@ -121,15 +128,16 @@ export const getPlannerById = async (uid, id) => {
   }
 };
 
+// eslint-disable-next-line jsdoc/require-returns
 /**
  * 모든 플래너 가져오기
  * 사용자의 모든 플래너를 데이터베이스에서 조회하고 암호화된 이름을 복호화하여 반환합니다
  * 일일 플래너를 먼저, 다음에 ID 순으로 정렬되어 반환됩니다
- * 
+ *
  * @async
  * @function getPlanners
  * @param {string} uid - 사용자 ID (평문)
- * @returns {Promise<Array<Object>>} 플래너 객체 배열
+ * @returns {Promise<Array<object>>} 플래너 객체 배열
  * @returns {string} returns[].owner - 사용자 ID (평문)
  * @returns {string} returns[].name - 플래너 이름 (복호화된 평문)
  * @returns {number} returns[].id - 플래너 ID
@@ -163,17 +171,18 @@ export const getPlanners = async (uid) => {
   }
 };
 
+// eslint-disable-next-line jsdoc/require-returns
 /**
  * 플래너 이름 변경
  * 지정된 플래너가 존재하는지 확인하고, 새 이름이 기존 플래너와 충돌하지 않는지 검사합니다
  * 새 이름을 암호화하여 데이터베이스에 업데이트하고 평문 데이터를 반환합니다
- * 
+ *
  * @async
  * @function renamePlanner
  * @param {string} uid - 사용자 ID (평문)
  * @param {number} id - 플래너 ID
  * @param {string} newName - 새 플래너 이름
- * @returns {Promise<Object>} 업데이트된 플래너 데이터
+ * @returns {Promise<object>}ßß 업데이트된 플래너 데이터
  * @returns {string} returns.owner - 사용자 ID (평문)
  * @returns {string} returns.name - 새 플래너 이름 (평문)
  * @returns {number} returns.id - 플래너 ID
@@ -237,7 +246,7 @@ export const renamePlanner = async (uid, id, newName) => {
  * 플래너와 그 안의 모든 계획 삭제
  * 지정된 플래너가 존재하는지 확인한 후, 트랜잭션을 사용하여 안전하게 삭제합니다
  * 플래너와 관련된 모든 계획을 원자적으로 삭제하여 데이터 일관성을 보장합니다
- * 
+ *
  * @async
  * @function deletePlanner
  * @param {string} uid - 사용자 ID (평문)

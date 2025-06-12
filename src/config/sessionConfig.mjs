@@ -20,13 +20,13 @@ const SESSION_SECRET = process.env.SESSION_SECRET || generateSecureToken();
 
 /**
  * Redis 클라이언트 인스턴스
- * @type {Object|null}
+ * @type {object | null}
  */
 let redisClient;
 
 /**
  * Redis 기반 세션 저장소 인스턴스
- * @type {Object|null}
+ * @type {object | null}
  */
 let redisStore;
 
@@ -35,7 +35,7 @@ let redisStore;
  * @async
  * @function initRedisClient
  * @description Redis 서버에 연결하고 클라이언트 인스턴스를 초기화합니다
- * @returns {Promise<Object>} Redis 클라이언트 객체
+ * @returns {Promise<object>} Redis 클라이언트 객체
  * @throws {Error} Redis 연결 실패 시 에러 발생
  * @example
  * const client = await initRedisClient();
@@ -78,18 +78,19 @@ export const initRedisClient = async () => {
   return redisClient;
 };
 
+// eslint-disable-next-line jsdoc/require-returns
 /**
  * Redis 기반 세션 저장소 구성
  * @async
  * @function getSessionConfig
  * @description 세션 구성 옵션을 생성하고 반환합니다
- * @returns {Promise<Object>} 세션 구성 옵션 객체
+ * @returns {Promise<object>} 세션 구성 옵션 객체
  * @returns {string} returns.secret - 세션 암호화 비밀 키
  * @returns {boolean} returns.resave - 세션 재저장 여부
  * @returns {boolean} returns.saveUninitialized - 초기화되지 않은 세션 저장 여부
  * @returns {string} returns.name - 세션 쿠키 이름
- * @returns {Object} returns.store - Redis 세션 저장소
- * @returns {Object} returns.cookie - 쿠키 설정
+ * @returns {object} returns.store - Redis 세션 저장소
+ * @returns {object} returns.cookie - 쿠키 설정
  * @example
  * const config = await getSessionConfig();
  */
@@ -120,7 +121,7 @@ export const getSessionConfig = async () => {
  * 세션에 사용자 ID 저장
  * @function storeUserInSession
  * @description Passport 형식으로 세션에 사용자 ID를 저장합니다
- * @param {Object} session - 세션 객체
+ * @param {object} session - 세션 객체
  * @param {string} userId - 저장할 평문 사용자 ID
  * @example
  * storeUserInSession(req.session, 'user123');
@@ -137,7 +138,7 @@ export const storeUserInSession = (session, userId) => {
  * 세션에서 사용자 ID 추출
  * @function getUserFromSession
  * @description 세션에서 저장된 사용자 ID를 추출합니다
- * @param {Object} session - 세션 객체
+ * @param {object} session - 세션 객체
  * @returns {string|null} 사용자 ID 또는 null
  * @example
  * const userId = getUserFromSession(req.session);

@@ -9,12 +9,11 @@
   "scripts": {
     "dev": "bun --watch index.mjs",
     "auto-pull": "bun src/scripts/autoPull.mjs",
-    "lint": "eslint src/ index.mjs --ext .mjs,.js",
-    "lint:fix": "eslint src/ index.mjs --ext .mjs,.js --fix",
+    "lint": "eslint src/ index.mjs --ext .mjs,.js --config eslint.config.mjs",
+    "lint:fix": "eslint src/ index.mjs --ext .mjs,.js --config eslint.config.mjs --fix",
     "docs": "jsdoc -c .jsdoc.config.json",
-    "docs:clean": "rm -rf docs/ && npm run docs",
-    "docs:json": "jsdoc -c .jsdoc.config.json -X > docs/api-docs.json",
-    "docs:serve": "npm run docs:json && node -e \"console.log('JSDoc JSON generated at docs/api-docs.json')\""
+    "docs:clean": "rm -rf docs/ && bun run docs",
+    "docs:json": "jsdoc -c .jsdoc.config.json -X > docs/api-docs.json"
   },
   "keywords": [],
   "author": "",
@@ -44,7 +43,11 @@
   "devDependencies": {
     "@eslint/js": "^9.28.0",
     "eslint": "^9.28.0",
+    "eslint-config-prettier": "^10.1.5",
+    "eslint-plugin-jsdoc": "^50.8.0",
+    "eslint-plugin-prettier": "^5.4.1",
     "globals": "^16.2.0",
-    "jsdoc": "^4.0.4"
+    "jsdoc": "^4.0.4",
+    "prettier": "^3.5.3"
   }
 }

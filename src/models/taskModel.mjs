@@ -2,19 +2,24 @@
  * 계획/작업 모델
  * 암호화와 함께 모든 계획/작업 관련 데이터베이스 작업을 처리합니다
  * 작업 생성, 조회, 수정, 삭제, 완료 처리 기능과 내용 암호화/복호화를 제공합니다
- * 
+ *
  * @fileoverview 플래너 내 작업 관리 시스템의 데이터 모델 모듈
  */
 import db from "../config/db.mjs";
 import { getNextId } from "../utils/dbUtils.mjs";
-import {hashUserId, encryptData, decryptData, getTimestamp} from "../utils/cryptoUtils.mjs";
+import {
+  hashUserId,
+  encryptData,
+  decryptData,
+  getTimestamp,
+} from "../utils/cryptoUtils.mjs";
 import logger from "../utils/logger.mjs";
 
 /**
  * 날짜 문자열을 YYYY-MM-DD 형식으로 포맷팅
  * JavaScript Date 객체로 변환 후 MySQL 날짜 형식으로 리포맷팅합니다
  * null 또는 빈 문자열인 경우 null을 반환합니다
- * 
+ *
  * @function formatDate
  * @param {string|null} dateString - 날짜 문자열 또는 null
  * @returns {string|null} 포맷팅된 날짜 (YYYY-MM-DD) 또는 null
@@ -28,11 +33,12 @@ export const formatDate = (dateString) => {
   return new Date(dateString).toISOString().slice(0, 10);
 };
 
+// eslint-disable-next-line jsdoc/require-returns
 /**
  * 새 작업 생성
  * 지정된 플래너에 새 작업을 생성합니다. 플래너 존재 여부를 확인하고,
  * 작엄 내용을 암호화하여 데이터베이스에 저장합니다
- * 
+ *
  * @async
  * @function createTask
  * @param {string} uid - 사용자 ID (평문)
@@ -41,7 +47,7 @@ export const formatDate = (dateString) => {
  * @param {string|null} [startDate=null] - 시작 날짜 (YYYY-MM-DD 형식)
  * @param {string|null} [dueDate=null] - 마감 날짜 (YYYY-MM-DD 형식)
  * @param {number} [priority=1] - 우선순위 (1-5, 높을수록 중요)
- * @returns {Promise<Object>} 생성된 작업 데이터
+ * @returns {Promise<object>} 생성된 작업 데이터
  * @returns {string} returns.owner - 사용자 ID (평문)
  * @returns {string} returns.contents - 작업 내용 (평문)
  * @returns {number} returns.id - 작업 ID
@@ -119,12 +125,12 @@ export const createTask = async (
  * 복호화된 내용과 함께 ID로 작업 가져오기
  * 지정된 ID의 작업을 데이터베이스에서 조회하고 암호화된 내용을 복호화하여 반환합니다
  * 작업이 존재하지 않으면 null을 반환합니다
- * 
+ *
  * @async
  * @function getTaskById
  * @param {string} uid - 사용자 ID (평문)
  * @param {number} id - 작업 ID
- * @returns {Promise<Object|null>} 작업 데이터 또는 찾지 못한 경우 null
+ * @returns {Promise<object | null>} 작업 데이터 또는 찾지 못한 경우 null
  * @throws {Error} 데이터베이스 오류 시 예외 발생
  * @example
  * const task = await getTaskById('user123', 5);
@@ -151,17 +157,18 @@ export const getTaskById = async (uid, id) => {
   }
 };
 
+// eslint-disable-next-line jsdoc/require-returns
 /**
  * 복호화된 내용과 함께 작업 가져오기 (특정 플래너 또는 전체)
  * 사용자의 작업을 조회합니다. 플래너 ID와 완료 상태에 따라 필터링할 수 있습니다
  * 암호화된 작업 내용을 복호화하여 평문으로 반환하고, 우선순위와 ID 순으로 정렬합니다
- * 
+ *
  * @async
  * @function getTasks
  * @param {string} uid - 사용자 ID (평문)
  * @param {number|null} [plannerId=null] - 플래너 ID (없으면 모든 작업 가져옴)
  * @param {boolean|string|null} [isCompleted=null] - 완료 상태 (null이면 모든 상태, 'true'/true: 완료된 작업, 'false'/false: 미완료 작업)
- * @returns {Promise<Array<Object>>} 작업 객체 배열
+ * @returns {Promise<Array<object>>} 작업 객체 배열
  * @returns {string} returns[].owner - 사용자 ID (평문)
  * @returns {string} returns[].contents - 작업 내용 (복호화된 평문)
  * @returns {number} returns[].id - 작업 ID
@@ -174,7 +181,7 @@ export const getTaskById = async (uid, id) => {
  * @example
  * // 모든 작업 조회
  * const allTasks = await getTasks('user123');
- * 
+ *
  * // 특정 플래너의 미완료 작업 조회
  * const pendingTasks = await getTasks('user123', 1, false);
  */
@@ -229,19 +236,19 @@ export const getTasks = async (uid, plannerId = null, isCompleted = null) => {
  * 작업 업데이트
  * 지정된 작업의 정보를 업데이트합니다. 작업이 존재하는지 확인하고,
  * 제공된 데이터를 기반으로 날짜 포맷팅 및 내용 암호화를 수행합니다
- * 
+ *
  * @async
  * @function updateTask
  * @param {string} uid - 사용자 ID (평문)
  * @param {number} id - 업데이트할 작업 ID
- * @param {Object} updateData - 업데이트할 데이터
+ * @param {object} updateData - 업데이트할 데이터
  * @param {string} [updateData.contents] - 업데이트할 작업 내용
  * @param {number} [updateData.priority] - 업데이트할 우선순위
  * @param {number} [updateData.from] - 업데이트할 플래너 ID
  * @param {string} [updateData.startDate] - 업데이트할 시작 날짜
  * @param {string} [updateData.dueDate] - 업데이트할 마감 날짜
  * @param {number} [updateData.isCompleted] - 업데이트할 완료 상태
- * @returns {Promise<Object>} 업데이트된 작업 데이터 (복호화된 내용 포함)
+ * @returns {Promise<object>} 업데이트된 작업 데이터 (복호화된 내용 포함)
  * @throws {Error} 작업을 찾을 수 없거나 데이터베이스 오류 시 예외 발생
  * @example
  * const updated = await updateTask('user123', 5, {
@@ -290,7 +297,7 @@ export const updateTask = async (uid, id, updateData) => {
  * 작업 삭제
  * 지정된 작업이 존재하는지 확인한 후 데이터베이스에서 삭제합니다
  * 삭제 성공 시 로그에 기록하고 true를 반환합니다
- * 
+ *
  * @async
  * @function deleteTask
  * @param {string} uid - 사용자 ID (평문)
@@ -330,12 +337,12 @@ export const deleteTask = async (uid, id) => {
  * 작업을 완료로 표시
  * 지정된 작업의 완료 상태를 1로 설정하고 업데이트 시간을 기록합니다
  * 작업이 존재하는지 확인한 후 완료 처리하고 복호화된 데이터를 반환합니다
- * 
+ *
  * @async
  * @function completeTask
  * @param {string} uid - 사용자 ID (평문)
  * @param {number} id - 완료 처리할 작업 ID
- * @returns {Promise<Object>} 업데이트된 작업 데이터 (복호화된 내용 포함)
+ * @returns {Promise<object>} 업데이트된 작업 데이터 (복호화된 내용 포함)
  * @throws {Error} 작업을 찾을 수 없을 때 또는 데이터베이스 오류 시 예외 발생
  * @example
  * const completed = await completeTask('user123', 5);
@@ -362,4 +369,3 @@ export const completeTask = async (uid, id) => {
     throw error;
   }
 };
-

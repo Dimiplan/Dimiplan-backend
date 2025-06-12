@@ -13,7 +13,7 @@ import { isAuthenticated } from "../../middleware/auth.mjs";
 
 /**
  * Express 라우터 인스턴스
- * @type {Object}
+ * @type {object}
  * @constant
  */
 const router = Router();

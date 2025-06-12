@@ -1,7 +1,7 @@
 /**
  * 데이터베이스 연결 구성 모듈
  * MySQL 데이터베이스 연결 및 Knex.js 설정 관리
- * 
+ *
  * @fileoverview Knex.js 기반 MySQL 데이터베이스 연결 설정
  */
 import knex from "knex";
@@ -11,8 +11,8 @@ import logger from "../utils/logger.mjs";
 /**
  * 데이터베이스 연결 옵션 객체
  * 환경 변수에서 데이터베이스 연결 정보를 읽어옵니다
- * 
- * @type {Object}
+ *
+ * @type {object}
  * @property {string} host - 데이터베이스 호스트 주소
  * @property {number} port - 데이터베이스 포트 번호
  * @property {string} user - 데이터베이스 사용자명
@@ -32,8 +32,8 @@ export const options = {
 /**
  * Knex.js 데이터베이스 설정 구성
  * MySQL 클라이언트 및 연결 옵션을 포함합니다
- * 
- * @type {Object}
+ *
+ * @type {object}
  * @private
  */
 const dbConfig = {
@@ -47,24 +47,47 @@ const dbConfig = {
  */
 if (logger.isTestEnvironment) {
   dbConfig.log = {
+    /**
+     * @param message
+     * @returns {void}
+     */
     warn: (message) => logger.warn(message),
+    /**
+     * @param message
+     * @returns {void}
+     */
     error: (message) => logger.error(message),
+    /**
+     * @param message
+     * @returns {void}
+     */
     deprecate: (message) => logger.warn(message),
   };
 
+  /**
+   * @param result
+   * @returns {object}
+   */
   dbConfig.postProcessResponse = (result) => result;
+
+  /**
+   *
+   * @param value
+   * @param origImpl
+   * @returns {string}
+   */
   dbConfig.wrapIdentifier = (value, origImpl) => origImpl(value);
 }
 
 /**
  * Knex.js 데이터베이스 인스턴스
  * 애플리케이션 전반에서 사용되는 메인 데이터베이스 연결 객체
- * 
- * @type {Object}
+ *
+ * @type {object}
  * @example
  * // 사용자 조회
  * const users = await db('users').select('*');
- * 
+ *
  * // 트랜잭션 사용
  * await db.transaction(async (trx) => {
  *   await trx('users').insert(userData);

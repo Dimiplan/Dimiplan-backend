@@ -2,10 +2,17 @@
  * 암호화 유틸리티 함수
  * 보안 데이터 저장 및 검색을 위한 암호화 기능을 제공합니다
  * SHA3 해싱, AES 암호화/복호화, 사용자 ID 해싱 및 데이터 검증 기능을 포함합니다
- * 
+ *
  * @fileoverview 사용자 데이터 보안을 위한 암호화 및 해싱 유틸리티 모듈
  */
-import { createHmac, createHash, timingSafeEqual, createCipheriv, createDecipheriv, randomBytes } from "crypto";
+import {
+  createHmac,
+  createHash,
+  timingSafeEqual,
+  createCipheriv,
+  createDecipheriv,
+  randomBytes,
+} from "crypto";
 import { formatDateForMySQL } from "./dateUtils.mjs";
 import "../config/dotenv.mjs"; // 환경 변수 로드
 
@@ -16,14 +23,15 @@ const MASTER_IV = process.env.CRYPTO_MASTER_IV;
 // 사용자 ID 해싱을 위한 솔트
 const UID_SALT = process.env.UID_SALT;
 
+// eslint-disable-next-line jsdoc/require-returns
 /**
  * 특정 사용자를 위한 파생 암호화 키 생성
  * 마스터 키와 사용자 ID로부터 결정론적이지만 안전한 암호화 키를 파생합니다
  * HMAC-SHA256을 사용하여 사용자별로 고유한 키와 IV를 생성합니다
- * 
+ *
  * @function getUserEncryptionKey
  * @param {string} userId - 원본 사용자 ID
- * @returns {Object} 암호화에 사용할 키와 초기화 벡터(IV)
+ * @returns {object} 암호화에 사용할 키와 초기화 벡터(IV)
  * @returns {Buffer} returns.key - AES-256 암호화 키 (32바이트)
  * @returns {Buffer} returns.iv - AES 초기화 벡터 (16바이트)
  * @private
@@ -34,9 +42,7 @@ const UID_SALT = process.env.UID_SALT;
  */
 const getUserEncryptionKey = (userId) => {
   // 마스터 키와 사용자 ID로부터 결정론적이지만 안전한 키 파생
-  const keyMaterial = createHmac("sha256", MASTER_KEY)
-    .update(userId)
-    .digest();
+  const keyMaterial = createHmac("sha256", MASTER_KEY).update(userId).digest();
 
   // 키의 첫 32바이트 사용
   const key = keyMaterial.slice(0, 32);
@@ -54,7 +60,7 @@ const getUserEncryptionKey = (userId) => {
  * SHA3로 사용자 ID 해시
  * 레인보우 테이블 공격 방지를 위해 솔트를 추가하여 사용자 ID를 해싱합니다
  * 데이터베이스에서 사용자 식별을 위한 안전한 해시 값을 생성합니다
- * 
+ *
  * @function hashUserId
  * @param {string} userId - 원본 사용자 ID
  * @returns {string} SHA3-256으로 해시된 사용자 ID (16진수 문자열)
@@ -74,7 +80,7 @@ export const hashUserId = (userId) => {
  * 평문 사용자 ID와 해시된 사용자 ID 일치 여부 확인
  * 타이밍 공격 방지를 위해 timingSafeEqual을 사용하여 안전하게 비교합니다
  * 데이터베이스에서 사용자 인증 시 사용됩니다
- * 
+ *
  * @function verifyUserId
  * @param {string} plainUserId - 원본 사용자 ID
  * @param {string} hashedUserId - 비교할 해시된 사용자 ID
@@ -97,16 +103,16 @@ export const verifyUserId = (plainUserId, hashedUserId) => {
  * 특정 사용자를 위한 데이터 암호화
  * AES-256-CBC 암호화를 사용하여 사용자별 데이터를 안전하게 암호화합니다
  * 객체는 JSON 문자열로 변환 후 암호화되며, 문자열은 그대로 사용됩니다
- * 
+ *
  * @function encryptData
  * @param {string} userId - 원본 사용자 ID
- * @param {string|Object} data - 암호화할 데이터 (객체는 JSON 문자열로 변환)
+ * @param {string | object} data - 암호화할 데이터 (객체는 JSON 문자열로 변환)
  * @returns {string} 16진수 문자열로 암호화된 데이터
  * @throws {Error} 데이터 암호화 실패 시 예외 발생
  * @example
  * // 문자열 암호화
  * const encrypted = encryptData('user123', '마이 비밀 데이터');
- * 
+ *
  * // 객체 암호화
  * const encryptedObj = encryptData('user123', { secret: '비밀', value: 42 });
  */
@@ -135,17 +141,17 @@ export const encryptData = (userId, data) => {
  * 특정 사용자의 암호화된 데이터 복호화
  * AES-256-CBC 복호화를 사용하여 사용자별 데이터를 안전하게 복호화합니다
  * parseJson 옵션에 따라 JSON 객체로 파싱하거나 문자열로 반환합니다
- * 
+ *
  * @function decryptData
  * @param {string} userId - 원본 사용자 ID
  * @param {string} encryptedData - 암호화된 데이터 (16진수 문자열)
  * @param {boolean} [parseJson=false] - JSON 파싱 여부
- * @returns {string|Object} 복호화된 데이터
+ * @returns {string | object} 복호화된 데이터
  * @throws {Error} 데이터 복호화 실패 시 예외 발생
  * @example
  * // 문자열 복호화
  * const decrypted = decryptData('user123', encryptedData);
- * 
+ *
  * // JSON 객체 복호화
  * const decryptedObj = decryptData('user123', encryptedData, true);
  */
@@ -171,7 +177,7 @@ export const decryptData = (userId, encryptedData, parseJson = false) => {
  * 주어진 문자열이 암호화된 데이터일 가능성 확인
  * AES 암호화 데이터의 최소 길이와 16진수 형식을 기준으로 판단합니다
  * 이 함수는 완벽한 검증이 아닌 휴리스틱 기반 판단입니다
- * 
+ *
  * @function isEncrypted
  * @param {string} data - 확인할 데이터
  * @returns {boolean} 암호화된 데이터로 보이는지 여부
@@ -190,7 +196,7 @@ export const isEncrypted = (data) => {
 /**
  * 안전한 무작위 문자열 생성
  * 암호학적으로 안전한 난수 생성기를 사용하여 토큰, 비밀번호, API 키 등에 사용할 수 있는 랜덤 문자열을 생성합니다
- * 
+ *
  * @function generateSecureToken
  * @param {number} [length=32] - 생성할 문자열 길이 (바이트 단위, 최종 16진수 문자열은 2배 길이)
  * @returns {string} 16진수 형식의 랜덤 문자열
@@ -198,7 +204,7 @@ export const isEncrypted = (data) => {
  * // 32바이트 (64자) 토큰 생성
  * const token = generateSecureToken(); // 기본 32바이트
  * console.log(token.length); // 64
- * 
+ *
  * // 16바이트 (32자) 토큰 생성
  * const shortToken = generateSecureToken(16);
  * console.log(shortToken.length); // 32
@@ -211,7 +217,7 @@ export const generateSecureToken = (length = 32) => {
  * MySQL 호환 타임스탬프 생성
  * 현재 시간을 MySQL datetime 형식으로 변환하여 반환합니다
  * dateUtils.mjs의 formatDateForMySQL 함수를 내부적으로 사용합니다
- * 
+ *
  * @function getTimestamp
  * @returns {string} MySQL 호환 타임스탬프 (YYYY-MM-DD HH:MM:SS 형식)
  * @example
