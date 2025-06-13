@@ -271,7 +271,7 @@ router.get("/docs", async (req, res) => {
         method: item.route.type,
         path: item.route.name,
         name: item.name,
-        parameters: item.bodyparams || item.queryparams || [],
+        params: item.bodyparams || item.queryparams || [],
         routeParams: item.routeparams || [],
         returns: item.returns
           ? {
