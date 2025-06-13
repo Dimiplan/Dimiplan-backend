@@ -261,124 +261,30 @@ router.get("/stats/users", async (req, res) => {
  */
 router.get("/docs", async (req, res) => {
   try {
-    // JSDoc JSON 파일 경로
     const docsPath = join(process.cwd(), "docs", "api-docs.json");
 
-    // JSDoc JSON 파일이 없으면 생성
-    if (!readFileSync(docsPath, "utf8").length) {
-      const { exec } = await import("child_process");
-      await new Promise((resolve, reject) => {
-        exec("npm run docs:json", (error, stdout, stderr) => {
-          if (error) reject(error);
-          else resolve(stdout);
-        });
-      });
-    }
-
-    // JSDoc 데이터 읽기
+    // api-docs.json 파일 읽기
     const jsdocData = JSON.parse(readFileSync(docsPath, "utf8"));
 
-    // API 라우터에서 함수들 추출
-    const apiDocs = [];
-    const apiDir = join(process.cwd(), "src", "routes", "api");
-    const apiFiles = readdirSync(apiDir).filter((file) =>
-      file.endsWith(".mjs"),
-    );
-
-    // JSDoc 데이터에서 라우터 함수들만 필터링
-    for (const item of jsdocData) {
-      if (item.kind === "function" && item.description) {
-        // 파일에서 라우터 정의 찾기
-        for (const file of apiFiles) {
-          const filePath = join(apiDir, file);
-          const content = readFileSync(filePath, "utf8");
-
-          // Express 라우터 패턴 찾기
-          const routerMatches = content.match(
-            new RegExp(
-              `router\\.(get|post|put|delete|patch)\\s*\\(\\s*["']([^"']+)["']`,
-              "g",
-            ),
-          );
-
-          if (routerMatches) {
-            for (const match of routerMatches) {
-              const routeMatch = match.match(
-                /router\.(get|post|put|delete|patch)\s*\(\s*["']([^"']+)["']/,
-              );
-              if (routeMatch) {
-                const method = routeMatch[1].toUpperCase();
-                const path = `/api/admin${routeMatch[2]}`;
-
-                // JSDoc 정보와 매칭
-                if (
-                  content.includes(item.name) ||
-                  (item.longname && content.includes(item.longname))
-                ) {
-                  apiDocs.push({
-                    file: file.replace(".mjs", ""),
-                    method,
-                    path,
-                    brief:
-                      item.description.replace(/<[^>]*>/g, "").trim() ||
-                      item.name,
-                    details: item.comment
-                      ? item.comment
-                          .split("\n")
-                          .find((line) => line.includes("@details"))
-                          ?.replace(/.*@details\s*/, "") || ""
-                      : "",
-                    returns: item.returns
-                      ? item.returns[0]?.description
-                          ?.replace(/<[^>]*>/g, "")
-                          .trim() || ""
-                      : "",
-                    params: item.params || [],
-                    examples: item.examples || [],
-                  });
-                  break;
-                }
-              }
+    // 라우터 정보만 필터링
+    const apiDocs = jsdocData
+      .filter((item) => item.route && item.name)
+      .map((item) => ({
+        file: item.meta?.filename?.replace(".mjs", "") || "unknown",
+        method: item.route.type,
+        path: item.route.name,
+        name: item.name,
+        parameters: item.params || [],
+        returns: item.returns
+          ? {
+              type: item.returns[0]?.type?.names?.[0] || "unknown",
+              description:
+                item.returns[0]?.description?.replace(/<[^>]*>/g, "").trim() ||
+                "",
             }
-          }
-        }
-      }
-    }
-
-    // 기존 doxygen 방식도 병행 지원 (이전 호환성)
-    for (const file of apiFiles) {
-      const filePath = join(apiDir, file);
-      const content = readFileSync(filePath, "utf8");
-
-      const doxygenBlocks = content.match(/\/\*\*[\s\S]*?\*\//g) || [];
-
-      for (const block of doxygenBlocks) {
-        const briefMatch = block.match(/@brief\s+(.*)/);
-        const detailsMatch = block.match(/@details\s+(.*)/);
-        const routeMatch = block.match(/@route\s+(\w+)\s+(\/[^\s]*)/);
-        const returnsMatch = block.match(/@returns\s+(.*)/);
-
-        if (briefMatch && routeMatch) {
-          // 중복 체크
-          const exists = apiDocs.some(
-            (doc) =>
-              doc.method === routeMatch[1].toUpperCase() &&
-              doc.path === routeMatch[2],
-          );
-
-          if (!exists) {
-            apiDocs.push({
-              file: file.replace(".mjs", ""),
-              method: routeMatch[1].toUpperCase(),
-              path: routeMatch[2],
-              brief: briefMatch[1],
-              details: detailsMatch ? detailsMatch[1] : "",
-              returns: returnsMatch ? returnsMatch[1] : "",
-            });
-          }
-        }
-      }
-    }
+          : null,
+      }))
+      .sort((a, b) => a.path.localeCompare(b.path));
 
     logger.info("API 문서 조회", {
       admin: req.user?.email,
@@ -401,7 +307,7 @@ router.post("/docs/regenerate", async (req, res) => {
     const { exec } = await import("child_process");
 
     await new Promise((resolve, reject) => {
-      exec("bun run docs:json", (error, stdout, stderr) => {
+      exec("bun run docs && bun run docs:json", (error, stdout, stderr) => {
         if (error) {
           logger.error("JSDoc 재생성 실패", { error: error.message, stderr });
           reject(error);
