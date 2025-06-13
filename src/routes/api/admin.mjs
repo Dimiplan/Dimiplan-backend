@@ -51,7 +51,7 @@ router.get("/system-status", async (req, res) => {
 router.get("/ai-usage", async (req, res) => {
   try {
     const usage = await getUsage();
-    res.json({ success: true, data: usage });
+    res.json({ success: true, data: usage["data"] });
   } catch (error) {
     logger.error("AI 사용량 조회 실패", { error: error.message });
     res.status(500).json({ success: false, message: "AI 사용량 조회 실패" });
