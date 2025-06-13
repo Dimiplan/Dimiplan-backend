@@ -86,7 +86,6 @@ router.get("/logs", async (req, res) => {
 router.get("/logs/:filename", async (req, res) => {
   try {
     const { filename } = req.params;
-    const lines = parseInt(req.query.lines) || 100;
 
     if (!filename.endsWith(".log")) {
       return res
@@ -97,21 +96,19 @@ router.get("/logs/:filename", async (req, res) => {
     const filePath = join(process.cwd(), "logs", filename);
     const content = readFileSync(filePath, "utf8");
     const allLines = content.split("\n").reverse(); // 최신 로그가 위에 오도록 역순 정렬
-    const recentLines = lines > 0 ? allLines.slice(-lines) : allLines;
 
     logger.info("로그 파일 내용 조회", {
       admin: req.user?.email,
       filename,
-      lines: recentLines.length,
+      lines: allLines.length,
     });
 
     res.json({
       success: true,
       data: {
         filename,
-        totalLines: allLines.length,
-        displayedLines: recentLines.length,
-        content: recentLines.join("\n"),
+        lines: allLines.length,
+        content: allLines.join("\n"),
       },
     });
   } catch (error) {
@@ -274,7 +271,8 @@ router.get("/docs", async (req, res) => {
         method: item.route.type,
         path: item.route.name,
         name: item.name,
-        parameters: item.params || [],
+        parameters: item.bodyparams || item.queryparams || [],
+        routeParams: item.routeparams || [],
         returns: item.returns
           ? {
               type: item.returns[0]?.type?.names?.[0] || "unknown",
