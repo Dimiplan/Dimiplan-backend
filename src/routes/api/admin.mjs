@@ -27,7 +27,7 @@ router.get("/system-status", async (req, res) => {
       memory: process.memoryUsage(),
       platform: process.platform,
       nodeVersion: process.version,
-      environment: process.env.NODE_ENV || "development",
+      environment: process.env.NODE_ENV,
       timestamp: new Date().toISOString(),
     };
 
@@ -96,7 +96,7 @@ router.get("/logs/:filename", async (req, res) => {
 
     const filePath = join(process.cwd(), "logs", filename);
     const content = readFileSync(filePath, "utf8");
-    const allLines = content.split("\n");
+    const allLines = content.split("\n").reverse(); // 최신 로그가 위에 오도록 역순 정렬
     const recentLines = lines > 0 ? allLines.slice(-lines) : allLines;
 
     logger.info("로그 파일 내용 조회", {
