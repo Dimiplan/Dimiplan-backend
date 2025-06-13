@@ -9,7 +9,7 @@ import { join } from "path";
 import { db } from "../../config/db.mjs";
 import logger from "../../utils/logger.mjs";
 import { isAdmin } from "../../middleware/adminAuth.mjs";
-import os from "os";
+import os, { loadavg } from "os";
 
 const router = Router();
 
@@ -27,6 +27,7 @@ router.get("/system-status", async (req, res) => {
       uptime: process.uptime(),
       totalmem: os.totalmem(),
       freemem: os.freemem(),
+      loadavg: os.loadavg()[0],
       platform: process.platform,
       nodeVersion: process.version,
       environment: process.env.NODE_ENV,
