@@ -401,7 +401,7 @@ router.post("/docs/regenerate", async (req, res) => {
     const { exec } = await import("child_process");
 
     await new Promise((resolve, reject) => {
-      exec("npm run docs:json", (error, stdout, stderr) => {
+      exec("bun run docs:json", (error, stdout, stderr) => {
         if (error) {
           logger.error("JSDoc 재생성 실패", { error: error.message, stderr });
           reject(error);
