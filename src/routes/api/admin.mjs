@@ -9,6 +9,7 @@ import { join } from "path";
 import { db } from "../../config/db.mjs";
 import logger from "../../utils/logger.mjs";
 import { isAdmin } from "../../middleware/adminAuth.mjs";
+import os from "os";
 
 const router = Router();
 
@@ -24,7 +25,8 @@ router.get("/system-status", async (req, res) => {
   try {
     const systemInfo = {
       uptime: process.uptime(),
-      memory: process.memoryUsage(),
+      totalmem: os.totalmem(),
+      freemem: os.freemem(),
       platform: process.platform,
       nodeVersion: process.version,
       environment: process.env.NODE_ENV,
