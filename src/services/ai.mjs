@@ -12,6 +12,7 @@ import {
   createChatRoom,
   getChatMessages,
 } from "../models/chat.mjs";
+import { createClient } from "redis";
 
 /**
  * OpenRouter API 클라이언트 인스턴스
@@ -54,6 +55,26 @@ const FREE_MODELS = [
  * const quickModel = PAID_MODELS[0]; // "anthropic/claude-3.7-sonnet:thinking"
  */
 const PAID_MODELS = ["anthropic/claude-3.7-sonnet:thinking", "openai/o3"];
+
+/**
+ * OpenRouter API 사용량 정보 조회
+ * @returns {Promise<object>} OpenRouter API 사용량 정보
+ */
+export const getUsage = async () => {
+  try {
+    const res = await fetch("https://openrouter.ai/api/v1/credits", {
+      headers: {
+        Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
+      },
+    });
+    const data = await res.json();
+    logger.info("API 사용량 조회", { usage: data });
+    return data.data;
+  } catch (error) {
+    logger.error("API 사용량 조회 실패", { error: error.message });
+    throw error;
+  }
+};
 
 /**
  * 채팅 이력을 요약해 메모리로 전달

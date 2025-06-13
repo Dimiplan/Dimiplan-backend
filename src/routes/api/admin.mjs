@@ -10,6 +10,7 @@ import { db } from "../../config/db.mjs";
 import logger from "../../utils/logger.mjs";
 import { isAdmin } from "../../middleware/adminAuth.mjs";
 import os, { loadavg } from "os";
+import { getUsage } from "../../services/ai.mjs";
 
 const router = Router();
 
@@ -39,6 +40,21 @@ router.get("/system-status", async (req, res) => {
   } catch (error) {
     logger.error("시스템 상태 조회 실패", { error: error.message });
     res.status(500).json({ success: false, message: "시스템 상태 조회 실패" });
+  }
+});
+
+/**
+ * @name AI 사용량 정보 조회
+ * @route {GET} /api/admin/ai-usage
+ * @returns {object} AI 사용량 정보
+ */
+router.get("/ai-usage", async (req, res) => {
+  try {
+    const usage = await getUsage();
+    res.json({ success: true, data: usage });
+  } catch (error) {
+    logger.error("AI 사용량 조회 실패", { error: error.message });
+    res.status(500).json({ success: false, message: "AI 사용량 조회 실패" });
   }
 });
 
