@@ -204,7 +204,7 @@ router.get("/google/callback/failure", (req, res) => {
 /**
  * @name 사용자 ID로 로그인 (모바일 앱용)
  * @route {POST} /auth/login
- * @param {string} userId - 사용자 ID (필수)
+ * @param {string} userId - 사용자 ID
  * @param {string} [email] - 사용자 이메일
  * @param {string} [photo] - 프로필 사진 URL
  * @param {string} [name] - 사용자 이름

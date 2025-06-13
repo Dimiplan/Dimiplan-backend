@@ -130,7 +130,7 @@ const summarizeMemory = async (userId, room) => {
  * @function generateAutoResponse
  * @param {string} userId - 사용자 ID
  * @param {string} prompt - 사용자 입력 프롬프트
- * @param {string|number} [room] - 채팅방 ID (선택사항, 없으면 새 채팅방 생성)
+ * @param {string|number} [room] - 채팅방 ID
  * @returns {Promise<object>} AI 응답 객체
  * @returns {string} returns.message - AI가 생성한 응답 메시지
  * @returns {string|number} returns.room - 사용된 채팅방 ID
@@ -242,7 +242,7 @@ export const generateAutoResponse = async (userId, prompt, room) => {
  * @param {string} userId - 사용자 ID
  * @param {string} prompt - 사용자 입력 프롬프트
  * @param {string} model - 사용자가 선택한 AI 모델 (무료 모델 목록에 있어야 함)
- * @param {string|number} [room] - 채팅방 ID (선택사항, 없으면 새 채팅방 생성)
+ * @param {string|number} [room] - 채팅방 ID
  * @returns {Promise<string>} AI가 생성한 응답 메시지
  * @throws {Error} 선택된 모델이 목록에 없거나 AI API 호출 실패 시 예외 발생
  * @example

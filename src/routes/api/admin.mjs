@@ -80,7 +80,7 @@ router.get("/logs", async (req, res) => {
  * @name 특정 로그 파일 내용 조회
  * @route {GET} /api/admin/logs/:filename
  * @param {string} filename - 로그 파일명
- * @param {number} [lines=100] - 조회할 라인 수 (query parameter)
+ * @param {number} [lines=100] - 조회할 라인 수
  * @returns {object} 로그 파일 내용
  */
 router.get("/logs/:filename", async (req, res) => {

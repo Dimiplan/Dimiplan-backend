@@ -21,9 +21,9 @@ router.use(isAuthenticated, isUserRegistered);
 /**
  * @name 새로운 작업 생성
  * @route {POST} /api/task/add
- * @bodyparam {string} contents - 작업 내용 (필수)
+ * @bodyparam {string} contents - 작업 내용
  * @bodyparam {number} priority - 작업 우선순위
- * @bodyparam {string} from - 작업 출처 (필수)
+ * @bodyparam {string} from - 작업 출처
  * @bodyparam {string} startDate - 시작 날짜
  * @bodyparam {string} dueDate - 마감 날짜
  * @returns {object} 성공 메시지
@@ -50,7 +50,7 @@ router.post("/add", async (req, res) => {
 /**
  * @name 작업 정보 수정
  * @route {POST} /api/task/update
- * @bodyparam {string} id - 작업 ID (필수)
+ * @bodyparam {string} id - 작업 ID
  * @bodyparam {string} [contents] - 수정할 작업 내용
  * @bodyparam {number} [priority] - 수정할 우선순위
  * @bodyparam {string} [from] - 수정할 출처
@@ -84,7 +84,7 @@ router.post("/update", async (req, res) => {
 /**
  * @name 작업 삭제
  * @route {POST} /api/task/delete
- * @bodyparam {string} id - 삭제할 작업 ID (필수)
+ * @bodyparam {string} id - 삭제할 작업 ID
  * @returns {object} 성공 메시지
  * @throws {404} 작업을 찾을 수 없는 경우
  */
@@ -107,7 +107,7 @@ router.post("/delete", async (req, res) => {
 /**
  * @name 작업 완료 표시
  * @route {POST} /api/task/complete
- * @bodyparam {string} id - 완료 처리할 작업 ID (필수)
+ * @bodyparam {string} id - 완료 처리할 작업 ID
  * @returns {object} 성공 메시지
  * @throws {404} 작업을 찾을 수 없는 경우
  */
@@ -130,8 +130,8 @@ router.post("/complete", async (req, res) => {
 /**
  * @name 작업 조회
  * @route {GET} /api/task/get
- * @queryparam {string} [id] - 플래너 ID (query parameter, 선택사항)
- * @queryparam {boolean} [isCompleted] - 완료 상태 필터 (query parameter)
+ * @queryparam {string} [id] - 플래너 ID
+ * @queryparam {boolean} [isCompleted] - 완료 상태 필터
  * @returns {Array} 작업 목록 배열
  * @throws {404} 작업이나 플래너를 찾을 수 없는 경우
  * @example

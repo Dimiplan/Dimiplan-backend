@@ -21,9 +21,9 @@ router.use(isAuthenticated, isUserRegistered);
 /**
  * @name 새로운 플래너 생성
  * @route {POST} /api/planner/add
- * @bodyparam {string} name - 플래너 이름 (필수)
+ * @bodyparam {string} name - 플래너 이름
  * @bodyparam {boolean} isDaily - 일일 플래너 여부
- * @bodyparam {string} from - 플래너 출처 (필수)
+ * @bodyparam {string} from - 플래너 출처
  * @returns {object} 성공 메시지
  * @example
  * POST /api/planner/add
@@ -47,8 +47,8 @@ router.post("/add", async (req, res) => {
 /**
  * @name 플래너 이름 변경
  * @route {POST} /api/planner/rename
- * @bodyparam {string} id - 플래너 ID (필수)
- * @bodyparam {string} name - 새 플래너 이름 (필수)
+ * @bodyparam {string} id - 플래너 ID
+ * @bodyparam {string} name - 새 플래너 이름
  * @returns {object} 성공 메시지
  * @example
  * POST /api/planner/rename
@@ -72,7 +72,7 @@ router.post("/rename", async (req, res) => {
 /**
  * @name 플래너 삭제
  * @route {POST} /api/planner/delete
- * @bodyparam {string} id - 삭제할 플래너 ID (필수)
+ * @bodyparam {string} id - 삭제할 플래너 ID
  * @returns {object} 성공 메시지
  * @throws {404} 플래너를 찾을 수 없는 경우
  * @example
@@ -102,7 +102,7 @@ router.post("/delete", async (req, res) => {
 /**
  * @name 특정 플래너 정보 조회
  * @route {GET} /api/planner/getInfo
- * @queryparam {string} id - 플래너 ID (query parameter, 필수)
+ * @queryparam {string} id - 플래너 ID
  * @returns {object} 플래너 상세 정보
  * @throws {404} 플래너를 찾을 수 없는 경우
  * @example
