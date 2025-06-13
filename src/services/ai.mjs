@@ -69,7 +69,7 @@ export const getUsage = async () => {
     });
     const data = await res.json();
     logger.info("API 사용량 조회", { usage: data });
-    return data.data;
+    return data.data["data"];
   } catch (error) {
     logger.error("API 사용량 조회 실패", { error: error.message });
     throw error;
