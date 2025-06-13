@@ -28,23 +28,9 @@ const ALLOWED_DOMAINS = [".dimiplan.com", ".dimiplan-mobile.pages.dev"];
  * validateOrigin(origin, callback);
  */
 const validateOrigin = (origin, callback) => {
-  // 개발 환경에서는 origin이 없는 경우 허용 (Postman, 로컬 개발 등)
-  const isDevelopment = process.env.NODE_ENV === "development";
-
-  if (!origin) {
-    if (isDevelopment) {
-      return callback(null, true);
-    }
-    // 프로덕션에서는 origin이 없는 요청 차단
-    return callback(new Error("CORS: Origin이 제공되지 않았습니다"), false);
-  }
-
   // null origin 처리 (파일:// 프로토콜 등)
-  if (origin === "null") {
-    if (isDevelopment) {
-      return callback(null, true);
-    }
-    return callback(new Error("CORS: null origin은 허용되지 않습니다"), false);
+  if (origin === "null" || !origin) {
+    return callback(null, true);
   }
 
   // 허용된 도메인 확인
