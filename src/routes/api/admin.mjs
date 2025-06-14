@@ -365,15 +365,18 @@ router.post("/docs/regenerate", async (req, res) => {
     const { exec } = await import("child_process");
 
     await new Promise((resolve, reject) => {
-      exec("bun run docs && bun run docs:json", (error, stdout, stderr) => {
-        if (error) {
-          logger.error("JSDoc 재생성 실패", { error: error.message, stderr });
-          reject(error);
-        } else {
-          logger.info("JSDoc 재생성 성공", { stdout });
-          resolve(stdout);
-        }
-      });
+      exec(
+        "bun run docs:clean && bun run docs:json",
+        (error, stdout, stderr) => {
+          if (error) {
+            logger.error("JSDoc 재생성 실패", { error: error.message, stderr });
+            reject(error);
+          } else {
+            logger.info("JSDoc 재생성 성공", { stdout });
+            resolve(stdout);
+          }
+        },
+      );
     });
 
     logger.info("JSDoc 문서 재생성 완료", { admin: req.user?.email });
