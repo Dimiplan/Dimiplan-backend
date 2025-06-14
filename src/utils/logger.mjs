@@ -118,9 +118,8 @@ try {
 const isTestEnvironment = process.env.NODE_ENV === "test";
 
 // 로그 레벨 설정
-const logLevel = isTestEnvironment
-  ? "verbose"
-  : process.env.LOG_LEVEL || "info";
+const logLevel =
+  process.env.LOG_LEVEL || isTestEnvironment ? "verbose" : "info";
 
 // 로거 생성
 export const logger = createLogger({
