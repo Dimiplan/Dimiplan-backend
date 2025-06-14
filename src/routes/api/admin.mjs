@@ -326,7 +326,8 @@ router.get("/docs", async (req, res) => {
     const jsdocData = JSON.parse(readFileSync(docsPath, "utf8"));
 
     // 라우터 정보만 필터링
-    const apiDocs = jsdocData
+    // Generate and sort API docs, then dedupe identical routes
+    let apiDocs = jsdocData
       .filter((item) => item.route && item.name)
       .map((item) => ({
         file: item.meta?.filename?.replace(".mjs", "") || "unknown",
@@ -341,6 +342,13 @@ router.get("/docs", async (req, res) => {
         })),
       }))
       .sort((a, b) => a.path.localeCompare(b.path));
+    // Remove duplicate routes (keep first occurrence)
+    const seen = new Set();
+    apiDocs = apiDocs.filter((doc) => {
+      if (seen.has(doc.path)) return false;
+      seen.add(doc.path);
+      return true;
+    });
 
     logger.info("API 문서 조회", {
       admin: req.user?.email,
