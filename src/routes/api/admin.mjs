@@ -335,14 +335,10 @@ router.get("/docs", async (req, res) => {
         name: item.name,
         params: item.bodyparams || item.queryparams || [],
         routeParams: item.routeparams || [],
-        returns: item.returns
-          ? {
-              type: item.returns[0]?.type?.names?.[0] || "unknown",
-              description:
-                item.returns[0]?.description?.replace(/<[^>]*>/g, "").trim() ||
-                "",
-            }
-          : null,
+        returns: item.returns.map((ret) => ({
+          type: ret.type,
+          description: ret.description?.replace(/<[^>]*>/g, "").trim() || "",
+        })),
       }))
       .sort((a, b) => a.path.localeCompare(b.path));
 
