@@ -26,7 +26,7 @@ router.use(isAuthenticated, isUserRegistered);
  * @bodyparam {string} from - 작업 출처
  * @bodyparam {string} startDate - 시작 날짜
  * @bodyparam {string} dueDate - 마감 날짜
- * @returns {object} 성공 메시지
+ * @returns {string} message - 성공 메시지
  * @throws {404} 플래너를 찾을 수 없는 경우
  */
 router.post("/add", async (req, res) => {
@@ -57,7 +57,7 @@ router.post("/add", async (req, res) => {
  * @bodyparam {string} [startDate] - 수정할 시작 날짜
  * @bodyparam {string} [dueDate] - 수정할 마감 날짜
  * @bodyparam {boolean} [isCompleted] - 수정할 완료 상태
- * @returns {object} 성공 메시지
+ * @returns {string} message - 성공 메시지
  * @throws {404} 작업을 찾을 수 없는 경우
  */
 router.post("/update", async (req, res) => {
@@ -85,7 +85,7 @@ router.post("/update", async (req, res) => {
  * @name 작업 삭제
  * @route {POST} /api/task/delete
  * @bodyparam {string} id - 삭제할 작업 ID
- * @returns {object} 성공 메시지
+ * @returns {string} message - 성공 메시지
  * @throws {404} 작업을 찾을 수 없는 경우
  */
 router.post("/delete", async (req, res) => {
@@ -108,7 +108,7 @@ router.post("/delete", async (req, res) => {
  * @name 작업 완료 표시
  * @route {POST} /api/task/complete
  * @bodyparam {string} id - 완료 처리할 작업 ID
- * @returns {object} 성공 메시지
+ * @returns {string} message - 성공 메시지
  * @throws {404} 작업을 찾을 수 없는 경우
  */
 router.post("/complete", async (req, res) => {
@@ -132,7 +132,14 @@ router.post("/complete", async (req, res) => {
  * @route {GET} /api/task/get
  * @queryparam {string} [id] - 플래너 ID
  * @queryparam {boolean} [isCompleted] - 완료 상태 필터
- * @returns {Array} 작업 목록 배열
+ * @returns {string} [].owner - 사용자 ID
+ * @returns {string} [].contents - 작업 내용
+ * @returns {number} [].id - 작업 ID
+ * @returns {number} [].from - 플래너 ID
+ * @returns {string} [].startDate - 시작 날짜
+ * @returns {string} [].dueDate - 마감 날짜
+ * @returns {number} [].priority - 우선순위
+ * @returns {number} [].isCompleted - 완료 상태
  * @throws {404} 작업이나 플래너를 찾을 수 없는 경우
  * @example
  * GET /api/task/get?id=123&isCompleted=false

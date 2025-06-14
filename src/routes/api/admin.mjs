@@ -20,7 +20,15 @@ router.use(isAdmin);
 /**
  * @name 시스템 상태 조회
  * @route {GET} /api/admin/system-status
- * @returns {object} 시스템 상태 정보
+ * @returns {boolean} success - 요청 성공 여부
+ * @returns {number} data.uptime - 서버 실행 시간 (초)
+ * @returns {number} data.totalmem - 전체 메모리 (바이트)
+ * @returns {number} data.freemem - 사용 가능한 메모리 (바이트)
+ * @returns {number} data.loadavg - 시스템 로드 평균
+ * @returns {string} data.platform - 운영체제 플랫폼
+ * @returns {string} data.nodeVersion - Node.js 버전
+ * @returns {string} data.environment - 실행 환경
+ * @returns {string} data.timestamp - 조회 시간
  */
 router.get("/system-status", async (req, res) => {
   try {
@@ -46,7 +54,9 @@ router.get("/system-status", async (req, res) => {
 /**
  * @name AI 사용량 정보 조회
  * @route {GET} /api/admin/ai-usage
- * @returns {object} AI 사용량 정보
+ * @returns {boolean} success - 요청 성공 여부
+ * @returns {number} data.total_credits - AI 총 크레딧
+ * @returns {number} data.total_usage - AI 사용 크레딧
  */
 router.get("/ai-usage", async (req, res) => {
   try {
@@ -61,7 +71,11 @@ router.get("/ai-usage", async (req, res) => {
 /**
  * @name 로그 파일 목록 조회
  * @route {GET} /api/admin/logs
- * @returns {Array} 로그 파일 목록
+ * @returns {boolean} success - 요청 성공 여부
+ * @returns {string} data[].name - 로그 파일명
+ * @returns {number} data[].size - 파일 크기 (바이트)
+ * @returns {string} data[].modified - 수정 날짜
+ * @returns {string} data[].path - 파일 경로
  */
 router.get("/logs", async (req, res) => {
   try {
@@ -100,7 +114,10 @@ router.get("/logs", async (req, res) => {
  * @route {GET} /api/admin/logs/:filename
  * @param {string} filename - 로그 파일명
  * @param {number} [lines=100] - 조회할 라인 수
- * @returns {object} 로그 파일 내용
+ * @returns {boolean} success - 요청 성공 여부
+ * @returns {string} data.filename - 로그 파일명
+ * @returns {number} data.lines - 총 라인 수
+ * @returns {string} data.content - 로그 파일 내용
  */
 router.get("/logs/:filename", async (req, res) => {
   try {
@@ -139,7 +156,9 @@ router.get("/logs/:filename", async (req, res) => {
 /**
  * @name 데이터베이스 테이블 목록 조회
  * @route {GET} /api/admin/database/tables
- * @returns {Array} 테이블 목록
+ * @returns {boolean} success - 요청 성공 여부
+ * @returns {string} data[].name - 테이블명
+ * @returns {number} data[].rowCount - 테이블 행 수
  */
 router.get("/database/tables", async (req, res) => {
   try {
@@ -176,7 +195,18 @@ router.get("/database/tables", async (req, res) => {
  * @routeparam {string} tableName - 테이블명
  * @queryparam {number} [page=1] - 페이지 번호
  * @queryparam {number} [limit=50] - 페이지당 항목 수
- * @returns {object} 테이블 데이터와 페이지네이션 정보
+ * @returns {boolean} success - 요청 성공 여부
+ * @returns {string} data.tableName - 테이블명
+ * @returns {string} data.columns[].name - 컬럼명
+ * @returns {string} data.columns[].type - 컬럼 타입
+ * @returns {boolean} data.columns[].nullable - null 허용 여부
+ * @returns {string} data.columns[].key - 키 정보
+ * @returns {string} data.columns[].default - 기본값
+ * @returns {Array} data.rows - 테이블 데이터
+ * @returns {number} data.pagination.page - 현재 페이지
+ * @returns {number} data.pagination.limit - 페이지당 항목 수
+ * @returns {number} data.pagination.totalCount - 전체 항목 수
+ * @returns {number} data.pagination.totalPages - 전체 페이지 수
  */
 router.get("/database/tables/:tableName", async (req, res) => {
   try {
@@ -242,7 +272,12 @@ router.get("/database/tables/:tableName", async (req, res) => {
 /**
  * @name 사용자 통계 정보 조회
  * @route {GET} /api/admin/stats/users
- * @returns {object} 사용자 통계 정보
+ * @returns {boolean} success - 요청 성공 여부
+ * @returns {number} data.totalUsers - 전체 사용자 수
+ * @returns {number} data.activeUsers - 최근 30일 활성 사용자 수
+ * @returns {string} data.recentUsers[].id - 사용자 ID
+ * @returns {string} data.recentUsers[].email - 사용자 이메일
+ * @returns {string} data.recentUsers[].created_at - 가입 날짜
  */
 router.get("/stats/users", async (req, res) => {
   try {
@@ -273,7 +308,15 @@ router.get("/stats/users", async (req, res) => {
 /**
  * @name API 엔드포인트 문서 조회
  * @route {GET} /api/admin/docs
- * @returns {Array} API 엔드포인트 문서 목록
+ * @returns {boolean} success - 요청 성공 여부
+ * @returns {string} data[].file - 파일명
+ * @returns {string} data[].method - HTTP 메소드
+ * @returns {string} data[].path - API 경로
+ * @returns {string} data[].name - API 이름
+ * @returns {Array} data[].params - 파라미터 목록
+ * @returns {Array} data[].routeParams - 라우트 파라미터 목록
+ * @returns {string} data[].returns.type - 반환 타입
+ * @returns {string} data[].returns.description - 반환 설명
  */
 router.get("/docs", async (req, res) => {
   try {
@@ -317,7 +360,9 @@ router.get("/docs", async (req, res) => {
 /**
  * @name JSDoc 문서 재생성
  * @route {POST} /api/admin/docs/regenerate
- * @returns {object} 재생성 결과
+ * @returns {boolean} success - 요청 성공 여부
+ * @returns {string} message - 성공 메시지
+ * @returns {string} timestamp - 재생성 시간
  */
 router.post("/docs/regenerate", async (req, res) => {
   try {

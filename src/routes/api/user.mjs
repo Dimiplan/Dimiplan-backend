@@ -21,10 +21,11 @@ const router = Router();
  * @bodyparam {number} [class] - 반 (1-6)
  * @bodyparam {string} [email] - 이메일 주소
  * @bodyparam {string} [profile_image] - 프로필 이미지 URL
- * @returns {object} 업데이트 성공 메시지
+ * @returns {string} message - 업데이트 성공 메시지
  * @example
  * POST /api/user/update
  * Body: { "name": "홍길동", "grade": 2, "class": 3 }
+ * Response: { "message": "업데이트 완료" }
  */
 router.post("/update", isAuthenticated, async (req, res) => {
   try {
@@ -45,7 +46,7 @@ router.post("/update", isAuthenticated, async (req, res) => {
 /**
  * @name 사용자 등록 상태 확인
  * @route {GET} /api/user/registered
- * @returns {object} 등록 상태 정보 ({ registered: boolean })
+ * @returns {boolean} registered - 등록 상태 (true: 등록됨, false: 미등록)
  * @example
  * GET /api/user/registered
  * Response: { "registered": true }
@@ -63,7 +64,12 @@ router.get("/registered", isAuthenticated, async (req, res) => {
 /**
  * @name 현재 사용자 정보 조회
  * @route {GET} /api/user/get
- * @returns {object} 사용자 정보 객체
+ * @returns {string} id - 사용자 ID
+ * @returns {string} name - 사용자 이름
+ * @returns {number} grade - 학년
+ * @returns {number} class - 반
+ * @returns {string} email - 이메일 주소
+ * @returns {string} profile_image - 프로필 이미지 URL
  * @throws {404} 사용자를 찾을 수 없는 경우
  * @example
  * GET /api/user/get

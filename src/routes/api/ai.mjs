@@ -23,7 +23,10 @@ router.use(isAuthenticated, isUserRegistered);
 /**
  * @name 사용자의 모든 채팅방 목록 조회
  * @route {GET} /api/ai/getRoomList
- * @returns {object} roomData - 채팅방 목록 배열
+ * @returns {number} roomData[].id - 채팅방 ID
+ * @returns {string} roomData[].name - 채팅방 이름
+ * @returns {string} roomData[].created_at - 생성 날짜
+ * @returns {string} roomData[].owner - 소유자 ID
  * @example
  * GET /api/ai/getRoomList
  * Response: { "roomData": [{"id": 1, "name": "채팅방1", "created_at": "2023-01-01"}] }
@@ -44,7 +47,8 @@ router.get("/getRoomList", async (req, res) => {
  * @name 새로운 채팅방 생성
  * @route {POST} /api/ai/addRoom
  * @bodyparam {string} name - 생성할 채팅방 이름
- * @returns {object} 생성된 채팅방 정보와 성공 메시지
+ * @returns {string} message - 성공 메시지
+ * @returns {number} id - 생성된 채팅방 ID
  * @example
  * POST /api/ai/addRoom
  * Body: { "name": "새 채팅방" }
@@ -77,7 +81,11 @@ router.post("/addRoom", async (req, res) => {
  * @name 특정 채팅방의 모든 메시지 조회
  * @route {GET} /api/ai/getChatInRoom
  * @queryparam {string} from - 채팅방 ID
- * @returns {object} chatData - 채팅 메시지 배열
+ * @returns {number} chatData[].id - 메시지 ID
+ * @returns {string} chatData[].message - 메시지 내용
+ * @returns {string} chatData[].sender - 보낸이 (user/ai)
+ * @returns {string} chatData[].timestamp - 메시지 시간
+ * @returns {string} chatData[].room - 채팅방 ID
  * @example
  * GET /api/ai/getChatInRoom?from=123
  * Response: { "chatData": [{"id": 1, "message": "안녕하세요", "sender": "user"}] }
@@ -110,7 +118,9 @@ router.get("/getChatInRoom", async (req, res) => {
  * @route {POST} /api/ai/auto
  * @bodyparam {string} prompt - 사용자가 입력한 프롬프트
  * @bodyparam {string} [room] - 채팅방 ID
- * @returns {object} response - AI 응답과 채팅방 정보
+ * @returns {string} response.message - AI 응답 메시지
+ * @returns {string} response.room - 채팅방 ID
+ * @returns {string} response.timestamp - 응답 시간
  * @example
  * POST /api/ai/auto
  * Body: { "prompt": "안녕하세요", "room": "123" }

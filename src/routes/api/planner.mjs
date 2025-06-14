@@ -24,7 +24,7 @@ router.use(isAuthenticated, isUserRegistered);
  * @bodyparam {string} name - 플래너 이름
  * @bodyparam {boolean} isDaily - 일일 플래너 여부
  * @bodyparam {string} from - 플래너 출처
- * @returns {object} 성공 메시지
+ * @returns {string} message - 성공 메시지
  * @example
  * POST /api/planner/add
  * Body: { "name": "일정 플래너", "isDaily": true, "from": "web" }
@@ -49,7 +49,7 @@ router.post("/add", async (req, res) => {
  * @route {POST} /api/planner/rename
  * @bodyparam {string} id - 플래너 ID
  * @bodyparam {string} name - 새 플래너 이름
- * @returns {object} 성공 메시지
+ * @returns {string} message - 성공 메시지
  * @example
  * POST /api/planner/rename
  * Body: { "id": "123", "name": "새로운 이름" }
@@ -73,7 +73,7 @@ router.post("/rename", async (req, res) => {
  * @name 플래너 삭제
  * @route {POST} /api/planner/delete
  * @bodyparam {string} id - 삭제할 플래너 ID
- * @returns {object} 성공 메시지
+ * @returns {string} message - 성공 메시지
  * @throws {404} 플래너를 찾을 수 없는 경우
  * @example
  * POST /api/planner/delete
@@ -103,7 +103,12 @@ router.post("/delete", async (req, res) => {
  * @name 특정 플래너 정보 조회
  * @route {GET} /api/planner/getInfo
  * @queryparam {string} id - 플래너 ID
- * @returns {object} 플래너 상세 정보
+ * @returns {number} id - 플래너 ID
+ * @returns {string} name - 플래너 이름
+ * @returns {boolean} isDaily - 일일 플래너 여부
+ * @returns {string} from - 플래너 출처
+ * @returns {string} owner - 소유자 ID
+ * @returns {string} created_at - 생성 날짜
  * @throws {404} 플래너를 찾을 수 없는 경우
  * @example
  * GET /api/planner/getInfo?id=123
@@ -129,11 +134,16 @@ router.get("/getInfo", async (req, res) => {
 /**
  * @name 모든 플래너 조회
  * @route {GET} /api/planner/getPlanners
- * @returns {Array} 플래너 목록 배열
+ * @returns {number} [].id - 플래너 ID
+ * @returns {string} [].name - 플래너 이름
+ * @returns {boolean} [].isDaily - 일일 플래너 여부
+ * @returns {string} [].from - 플래너 출처
+ * @returns {string} [].owner - 소유자 ID
+ * @returns {string} [].created_at - 생성 날짜
  * @throws {404} 플래너가 없는 경우
  * @example
  * GET /api/planner/getPlanners
- * Response: [{"id": 1, "name": "플래널1", "isDaily": true}]
+ * Response: [{"id": 1, "name": "플래너1", "isDaily": true}]
  */
 router.get("/getPlanners", async (req, res) => {
   try {

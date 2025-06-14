@@ -208,7 +208,8 @@ router.get("/google/callback/failure", (req, res) => {
  * @param {string} [email] - 사용자 이메일
  * @param {string} [photo] - 프로필 사진 URL
  * @param {string} [name] - 사용자 이름
- * @returns {object} 로그인 성공 메시지와 세션 ID
+ * @returns {string} message - 로그인 성공 메시지
+ * @returns {string} sessionId - 세션 ID
  * @example
  * // POST /auth/login
  * // Body: { "userId": "123456", "email": "user@example.com" }
@@ -265,7 +266,7 @@ router.post("/login", (req, res, next) => {
 /**
  * @name 사용자 로그아웃
  * @route {GET} /auth/logout
- * @returns {object} 로그아웃 완료 메시지
+ * @returns {string} message - 로그아웃 완료 메시지
  * @example
  * // GET /auth/logout
  * // Response: { "message": "로그아웃 완료" }
