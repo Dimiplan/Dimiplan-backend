@@ -122,7 +122,7 @@ export const setupErrorHandling = (app) => {
     logger.error("애플리케이션 오류:", err);
 
     // 개발 환경에서는 상세 오류 정보 제공
-    const isDevelopment = process.env.NODE_ENV === "development";
+    const isDevelopment = process.env.NODE_ENV === "test";
 
     res.status(err.status || 500).json({
       message: err.message || "내부 서버 오류",

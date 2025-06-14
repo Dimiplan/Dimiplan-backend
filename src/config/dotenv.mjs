@@ -14,7 +14,7 @@ import { existsSync } from "fs";
  * @returns {string[]} 로드할 .env 파일 경로 배열
  */
 const getEnvFilePaths = () => {
-  const nodeEnv = process.env.NODE_ENV || "development";
+  const nodeEnv = process.env.NODE_ENV || "test";
   const paths = [];
 
   // 환경별 파일 우선 로드
@@ -65,7 +65,7 @@ const loadEnvironmentVariables = () => {
 const setDefaultEnvironmentVariables = () => {
   // 기본 NODE_ENV 설정
   if (!process.env.NODE_ENV) {
-    process.env.NODE_ENV = "development";
+    process.env.NODE_ENV = "test";
   }
 
   // 기본 포트 설정
@@ -134,9 +134,8 @@ export const getEnvironmentInfo = () => ({
   nodeEnv: process.env.NODE_ENV,
   port: process.env.PORT,
   logLevel: process.env.LOG_LEVEL,
-  isDevelopment: process.env.NODE_ENV === "development",
+  isDevelopment: process.env.NODE_ENV === "test",
   isProduction: process.env.NODE_ENV === "production",
-  isTest: process.env.NODE_ENV === "test",
 });
 
 // 환경 변수 로드 실행

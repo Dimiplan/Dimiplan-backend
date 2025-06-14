@@ -136,6 +136,6 @@ export const getDevSecurityConfig = () => {
  * app.use(helmet(config));
  */
 export const getEnvironmentSecurityConfig = () => {
-  const isDevelopment = process.env.NODE_ENV === "development";
+  const isDevelopment = process.env.NODE_ENV === "test";
   return isDevelopment ? getDevSecurityConfig() : getSecurityConfig();
 };

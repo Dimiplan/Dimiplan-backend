@@ -115,7 +115,7 @@ export const requestLoggingMiddleware = (req, res, next) => {
     headers: maskSensitiveHeaders(req.headers),
     query: maskSensitiveData(req.query),
     // body는 크기가 클 수 있으므로 개발 환경에서만 로깅
-    ...(process.env.NODE_ENV === "development" && {
+    ...(process.env.NODE_ENV === "test" && {
       body: maskSensitiveData(req.body),
     }),
   };
@@ -184,8 +184,8 @@ const logResponse = (req, res, body, startTime) => {
     duration: `${duration}ms`,
     timestamp: new Date().toISOString(),
     headers: maskSensitiveHeaders(res.getHeaders()),
-    // 응답 본문은 개발 환경에서만 로깅 (크기 제한)
-    ...(process.env.NODE_ENV === "development" &&
+    // 응답 본문은 테스트 환경에서만 로깅 (크기 제한)
+    ...(process.env.NODE_ENV === "test" &&
       body && {
         bodySize: Buffer.byteLength(JSON.stringify(body), "utf8"),
         body:
