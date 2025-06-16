@@ -14,7 +14,11 @@ import "./dotenv.mjs";
  *
  * @type {string[]}
  */
-const ALLOWED_DOMAINS = [".dimiplan.com", ".dimiplan-mobile.pages.dev"];
+const ALLOWED_DOMAINS = [
+  ".dimiplan.com",
+  ".dimiplan-mobile.pages.dev",
+  ".dimiplan-backend-admin-panel.pages.dev",
+];
 
 /**
  * Origin 검증 함수

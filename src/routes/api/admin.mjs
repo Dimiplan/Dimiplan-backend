@@ -403,4 +403,266 @@ router.post("/docs/regenerate", async (req, res) => {
   }
 });
 
+/**
+ * @name 특정 테이블 행 추가
+ * @route {POST} /api/admin/database/tables/:tableName
+ * @routeparam {string} tableName - 테이블명
+ * @bodyparam {object} data - 추가할 데이터
+ * @returns {boolean} success - 요청 성공 여부
+ * @returns {number} data.insertId - 추가된 행의 ID
+ */
+router.post("/database/tables/:tableName", async (req, res) => {
+  try {
+    const { tableName } = req.params;
+    const { data } = req.body;
+
+    if (!data || typeof data !== "object") {
+      return res.status(400).json({
+        success: false,
+        message: "데이터가 필요합니다",
+      });
+    }
+
+    const tableExists = await db.schema.hasTable(tableName);
+    if (!tableExists) {
+      return res.status(404).json({
+        success: false,
+        message: "테이블을 찾을 수 없습니다",
+      });
+    }
+
+    const [insertId] = await db(tableName).insert(data);
+
+    logger.info("데이터베이스 행 추가", {
+      admin: req.user?.email,
+      tableName,
+      insertId,
+    });
+
+    res.json({
+      success: true,
+      data: { insertId },
+    });
+  } catch (error) {
+    logger.error("데이터베이스 행 추가 실패", { error: error.message });
+    res.status(500).json({
+      success: false,
+      message: "데이터 추가 실패",
+    });
+  }
+});
+
+/**
+ * @name 특정 테이블 행 수정
+ * @route {PUT} /api/admin/database/tables/:tableName
+ * @routeparam {string} tableName - 테이블명
+ * @bodyparam {object} data - 수정할 데이터
+ * @bodyparam {object} where - 조건 (키-값 쌍)
+ * @returns {boolean} success - 요청 성공 여부
+ * @returns {number} data.affectedRows - 수정된 행 수
+ */
+router.put("/database/tables/:tableName", async (req, res) => {
+  try {
+    const { tableName } = req.params;
+    const { data, where } = req.body;
+
+    if (!data || typeof data !== "object") {
+      return res.status(400).json({
+        success: false,
+        message: "데이터가 필요합니다",
+      });
+    }
+
+    if (!where || typeof where !== "object") {
+      return res.status(400).json({
+        success: false,
+        message: "조건(where)이 필요합니다",
+      });
+    }
+
+    const tableExists = await db.schema.hasTable(tableName);
+    if (!tableExists) {
+      return res.status(404).json({
+        success: false,
+        message: "테이블을 찾을 수 없습니다",
+      });
+    }
+
+    let query = db(tableName);
+    Object.entries(where).forEach(([key, value]) => {
+      query = query.where(key, value);
+    });
+
+    const affectedRows = await query.update(data);
+
+    if (affectedRows === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "수정할 데이터를 찾을 수 없습니다",
+      });
+    }
+
+    logger.info("데이터베이스 행 수정", {
+      admin: req.user?.email,
+      tableName,
+      where,
+      affectedRows,
+    });
+
+    res.json({
+      success: true,
+      data: { affectedRows },
+    });
+  } catch (error) {
+    logger.error("데이터베이스 행 수정 실패", { error: error.message });
+    res.status(500).json({
+      success: false,
+      message: "데이터 수정 실패",
+    });
+  }
+});
+
+/**
+ * @name 특정 테이블 행 삭제
+ * @route {DELETE} /api/admin/database/tables/:tableName
+ * @bodyparam {object} where - 삭제 조건 (키-값 쌍)
+ * @returns {boolean} success - 요청 성공 여부
+ * @returns {number} data.affectedRows - 삭제된 행 수
+ */
+router.delete("/database/tables/:tableName", async (req, res) => {
+  try {
+    const { tableName } = req.params;
+    const { where } = req.body;
+
+    if (!where || typeof where !== "object") {
+      return res.status(400).json({
+        success: false,
+        message: "삭제 조건(where)이 필요합니다",
+      });
+    }
+
+    const tableExists = await db.schema.hasTable(tableName);
+    if (!tableExists) {
+      return res.status(404).json({
+        success: false,
+        message: "테이블을 찾을 수 없습니다",
+      });
+    }
+
+    let query = db(tableName);
+    Object.entries(where).forEach(([key, value]) => {
+      query = query.where(key, value);
+    });
+
+    const affectedRows = await query.del();
+
+    if (affectedRows === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "삭제할 데이터를 찾을 수 없습니다",
+      });
+    }
+
+    logger.info("데이터베이스 행 삭제", {
+      admin: req.user?.email,
+      tableName,
+      where,
+      affectedRows,
+    });
+
+    res.json({
+      success: true,
+      data: { affectedRows },
+    });
+  } catch (error) {
+    logger.error("데이터베이스 행 삭제 실패", { error: error.message });
+    res.status(500).json({
+      success: false,
+      message: "데이터 삭제 실패",
+    });
+  }
+});
+
+/**
+ * @name 로그 파일 삭제
+ * @route {DELETE} /api/admin/logs/:filename
+ * @routeparam {string} filename - 삭제할 로그 파일명
+ * @returns {boolean} success - 요청 성공 여부
+ * @returns {string} message - 성공 메시지
+ */
+router.delete("/logs/:filename", async (req, res) => {
+  try {
+    const { filename } = req.params;
+
+    if (!filename.endsWith(".log")) {
+      return res.status(400).json({
+        success: false,
+        message: "유효하지 않은 로그 파일",
+      });
+    }
+
+    const { unlinkSync } = await import("fs");
+    const filePath = join(process.cwd(), "logs", filename);
+
+    unlinkSync(filePath);
+
+    logger.info("로그 파일 삭제", {
+      admin: req.user?.email,
+      filename,
+    });
+
+    res.json({
+      success: true,
+      message: "로그 파일이 삭제되었습니다",
+    });
+  } catch (error) {
+    logger.error("로그 파일 삭제 실패", { error: error.message });
+    res.status(500).json({
+      success: false,
+      message: "로그 파일 삭제 실패",
+    });
+  }
+});
+
+/**
+ * @name 모든 로그 파일 비우기
+ * @route {POST} /api/admin/logs/clear
+ * @returns {boolean} success - 요청 성공 여부
+ * @returns {string} message - 성공 메시지
+ * @returns {number} data.clearedFiles - 비워진 파일 수
+ */
+router.post("/logs/clear", async (req, res) => {
+  try {
+    const { writeFileSync } = await import("fs");
+    const logsDir = join(process.cwd(), "logs");
+    const files = readdirSync(logsDir);
+
+    const logFiles = files.filter((file) => file.endsWith(".log"));
+    let clearedFiles = 0;
+
+    logFiles.forEach((file) => {
+      const filePath = join(logsDir, file);
+      writeFileSync(filePath, "");
+      clearedFiles++;
+    });
+
+    logger.info("모든 로그 파일 비우기", {
+      admin: req.user?.email,
+      clearedFiles,
+    });
+
+    res.json({
+      success: true,
+      message: "모든 로그 파일이 비워졌습니다",
+      data: { clearedFiles },
+    });
+  } catch (error) {
+    logger.error("로그 파일 비우기 실패", { error: error.message });
+    res.status(500).json({
+      success: false,
+      message: "로그 파일 비우기 실패",
+    });
+  }
+});
+
 export default router;
