@@ -4,7 +4,7 @@
     "": {
       "name": "backend",
       "dependencies": {
-        "connect-redis": "^8.1.0",
+        "connect-redis": "^9.0.0",
         "connect-session-knex": "^5.0.0",
         "cors": "^2.8.5",
         "dotenv": "^16.5.0",
@@ -305,7 +305,7 @@
 
     "concat-map": ["concat-map@0.0.1", "", {}, "sha512-/Srv4dswyQNBfohGpz9o6Yb3Gz3SrUDqBH5rTuhGR7ahtlbYKnVxw2bCFMRljaA7EXHaXZ8wsHdodFvbkhKmqg=="],
 
-    "connect-redis": ["connect-redis@8.1.0", "", { "peerDependencies": { "express-session": ">=1" } }, "sha512-Km0EYLDlmExF52UCss5gLGTtrukGC57G6WCC2aqEMft5Vr4xNWuM4tL+T97kWrw+vp40SXFteb6Xk/7MxgpwdA=="],
+    "connect-redis": ["connect-redis@9.0.0", "", { "peerDependencies": { "express-session": ">=1", "redis": ">=5" } }, "sha512-QwzyvUePTMvEzG1hy45gZYw3X3YHrjmEdSkayURlcZft7hqadQ3X39wYkmCqblK2rGlw+XItELYt6GnyG6DEIQ=="],
 
     "connect-session-knex": ["connect-session-knex@5.0.0", "", { "dependencies": { "knex": "3" } }, "sha512-LNmgZriKjmZPkPDsB8rspdqdrsQ+aAoSXFDJA3/1OQxt3nlAWzUNghhTsFAiY95Pcp/tTS18n8rRwiBCDBIz5g=="],
 
