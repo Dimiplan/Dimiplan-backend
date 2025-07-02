@@ -146,9 +146,9 @@ export const responseLoggingMiddleware = (req, res, next) => {
    * @param body
    * @returns {Response}
    */
-  res.send = function (body) {
-    logResponse(req, res, body, startTime);
-    return originalSend.apply(res, arguments);
+  res.send = (...args) => {
+    logResponse(req, res, args[0], startTime);
+    return originalSend.apply(res, args);
   };
 
   // json 메서드 오버라이드
@@ -156,9 +156,9 @@ export const responseLoggingMiddleware = (req, res, next) => {
    * @param body
    * @returns {Response}
    */
-  res.json = function (body) {
-    logResponse(req, res, body, startTime);
-    return originalJson.apply(res, arguments);
+  res.json = (...args) => {
+    logResponse(req, res, args[0], startTime);
+    return originalJson.apply(res, args);
   };
 
   next();

@@ -101,9 +101,9 @@ export const setupTestLoggingMiddleware = (app) => {
      * @param body
      * @returns {Response}
      */
-    res.send = function (body) {
-      logger.logResponse(req, res, body);
-      return originalSend.apply(res, arguments);
+    res.send = (...args) => {
+      logger.logResponse(req, res, args[0]);
+      return originalSend.apply(res, args);
     };
 
     next();
