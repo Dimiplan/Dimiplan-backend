@@ -4,12 +4,12 @@
  * @description /api 경로 아래의 모든 라우터 통합 관리
  */
 import { Router } from "express";
-import userRouter from "./user.mjs";
-import taskRouter from "./task.mjs";
-import plannerRouter from "./planner.mjs";
-import aiRouter from "./ai.mjs";
-import adminRouter from "./admin.mjs";
 import { isAuthenticated } from "../../middleware/auth.mjs";
+import adminRouter from "./admin.mjs";
+import aiRouter from "./ai.mjs";
+import plannerRouter from "./planner.mjs";
+import taskRouter from "./task.mjs";
+import userRouter from "./user.mjs";
 
 /**
  * Express 라우터 인스턴스

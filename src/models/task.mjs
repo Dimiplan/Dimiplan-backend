@@ -6,13 +6,13 @@
  * @fileoverview 플래너 내 작업 관리 시스템의 데이터 모델 모듈
  */
 import db from "../config/db.mjs";
-import { getNextId } from "../utils/db.mjs";
 import {
-  hashUserId,
-  encryptData,
-  decryptData,
-  getTimestamp,
+    decryptData,
+    encryptData,
+    getTimestamp,
+    hashUserId,
 } from "../utils/crypto.mjs";
+import { getNextId } from "../utils/db.mjs";
 import logger from "../utils/logger.mjs";
 
 /**
@@ -29,8 +29,8 @@ import logger from "../utils/logger.mjs";
  * formatDate(''); // null
  */
 export const formatDate = (dateString) => {
-  if (!dateString) return null;
-  return new Date(dateString).toISOString().slice(0, 10);
+    if (!dateString) return null;
+    return new Date(dateString).toISOString().slice(0, 10);
 };
 
 // eslint-disable-next-line jsdoc/require-returns
@@ -62,63 +62,63 @@ export const formatDate = (dateString) => {
  * console.log(task.id); // 새 작업 ID
  */
 export const createTask = async (
-  uid,
-  contents,
-  plannerId,
-  startDate = null,
-  dueDate = null,
-  priority = 1,
+    uid,
+    contents,
+    plannerId,
+    startDate = null,
+    dueDate = null,
+    priority = 1,
 ) => {
-  try {
-    const hashedUid = hashUserId(uid);
+    try {
+        const hashedUid = hashUserId(uid);
 
-    // 플래너가 존재하는지 확인
-    const planner = await db("planner")
-      .where({ owner: hashedUid, id: plannerId })
-      .first();
+        // 플래너가 존재하는지 확인
+        const planner = await db("planner")
+            .where({ owner: hashedUid, id: plannerId })
+            .first();
 
-    if (!planner) {
-      throw new Error("플래너를 찾을 수 없습니다");
+        if (!planner) {
+            throw new Error("플래너를 찾을 수 없습니다");
+        }
+
+        // 다음 계획 ID 가져오기
+        const planId = await getNextId(hashedUid, "planId");
+
+        // 날짜 포맷팅
+        const formattedStartDate = formatDate(startDate);
+        const formattedDueDate = formatDate(dueDate);
+
+        // 계획 내용 암호화
+        const encryptedContents = encryptData(uid, contents);
+
+        // 암호화된 데이터로 계획 생성
+        await db("plan").insert({
+            owner: hashedUid,
+            startDate: formattedStartDate,
+            dueDate: formattedDueDate,
+            contents: encryptedContents,
+            id: planId,
+            from: plannerId,
+            priority: priority || 1,
+            isCompleted: 0,
+            created_at: getTimestamp(),
+        });
+
+        // 응답용 평문 데이터 반환
+        return {
+            owner: uid,
+            startDate: formattedStartDate,
+            dueDate: formattedDueDate,
+            contents: contents,
+            id: planId,
+            from: plannerId,
+            priority: priority || 1,
+            isCompleted: 0,
+        };
+    } catch (error) {
+        logger.error("계획 생성 오류:", error);
+        throw error;
     }
-
-    // 다음 계획 ID 가져오기
-    const planId = await getNextId(hashedUid, "planId");
-
-    // 날짜 포맷팅
-    const formattedStartDate = formatDate(startDate);
-    const formattedDueDate = formatDate(dueDate);
-
-    // 계획 내용 암호화
-    const encryptedContents = encryptData(uid, contents);
-
-    // 암호화된 데이터로 계획 생성
-    await db("plan").insert({
-      owner: hashedUid,
-      startDate: formattedStartDate,
-      dueDate: formattedDueDate,
-      contents: encryptedContents,
-      id: planId,
-      from: plannerId,
-      priority: priority || 1,
-      isCompleted: 0,
-      created_at: getTimestamp(),
-    });
-
-    // 응답용 평문 데이터 반환
-    return {
-      owner: uid,
-      startDate: formattedStartDate,
-      dueDate: formattedDueDate,
-      contents: contents,
-      id: planId,
-      from: plannerId,
-      priority: priority || 1,
-      isCompleted: 0,
-    };
-  } catch (error) {
-    logger.error("계획 생성 오류:", error);
-    throw error;
-  }
 };
 
 /**
@@ -139,22 +139,24 @@ export const createTask = async (
  * }
  */
 export const getTaskById = async (uid, id) => {
-  try {
-    const hashedUid = hashUserId(uid);
-    const task = await db("plan").where({ owner: hashedUid, id: id }).first();
+    try {
+        const hashedUid = hashUserId(uid);
+        const task = await db("plan")
+            .where({ owner: hashedUid, id: id })
+            .first();
 
-    if (!task) return null;
+        if (!task) return null;
 
-    // 작업 내용 복호화
-    return {
-      ...task,
-      owner: uid, // 애플리케이션 로직을 위해 원본 ID 사용
-      contents: decryptData(uid, task.contents),
-    };
-  } catch (error) {
-    logger.error("ID로 작업 가져오기 오류:", error);
-    throw error;
-  }
+        // 작업 내용 복호화
+        return {
+            ...task,
+            owner: uid, // 애플리케이션 로직을 위해 원본 ID 사용
+            contents: decryptData(uid, task.contents),
+        };
+    } catch (error) {
+        logger.error("ID로 작업 가져오기 오류:", error);
+        throw error;
+    }
 };
 
 // eslint-disable-next-line jsdoc/require-returns
@@ -186,50 +188,52 @@ export const getTaskById = async (uid, id) => {
  * const pendingTasks = await getTasks('user123', 1, false);
  */
 export const getTasks = async (uid, plannerId = null, isCompleted = null) => {
-  try {
-    const hashedUid = hashUserId(uid);
+    try {
+        const hashedUid = hashUserId(uid);
 
-    // 특정 플래너의 작업을 요청한 경우, 플래너가 존재하는지 확인
-    if (plannerId !== null) {
-      const planner = await db("planner")
-        .where({ owner: hashedUid, id: plannerId })
-        .first();
+        // 특정 플래너의 작업을 요청한 경우, 플래너가 존재하는지 확인
+        if (plannerId !== null) {
+            const planner = await db("planner")
+                .where({ owner: hashedUid, id: plannerId })
+                .first();
 
-      if (!planner) {
-        throw new Error("플래너를 찾을 수 없습니다");
-      }
+            if (!planner) {
+                throw new Error("플래너를 찾을 수 없습니다");
+            }
+        }
+
+        // 쿼리 구성
+        let query = db("plan").where({ owner: hashedUid });
+
+        // 특정 플래너의 작업만 필터링
+        if (plannerId !== null) {
+            query = query.where({ from: plannerId });
+        }
+
+        if (isCompleted !== null) {
+            query = query.where({
+                isCompleted: isCompleted === "true" ? 1 : 0,
+            });
+        }
+
+        // 정렬 적용
+        const tasks = await query.orderByRaw(
+            "isCompleted ASC, priority DESC, id ASC",
+        );
+
+        // 작업 내용 복호화
+        return tasks.map((task) => ({
+            ...task,
+            owner: uid, // 애플리케이션 로직을 위해 원본 ID 사용
+            contents: decryptData(uid, task.contents),
+        }));
+    } catch (error) {
+        const errorMsg = plannerId
+            ? "플래너의 작업 가져오기 오류:"
+            : "모든 작업 가져오기 오류:";
+        logger.error(errorMsg, error);
+        throw error;
     }
-
-    // 쿼리 구성
-    let query = db("plan").where({ owner: hashedUid });
-
-    // 특정 플래너의 작업만 필터링
-    if (plannerId !== null) {
-      query = query.where({ from: plannerId });
-    }
-
-    if (isCompleted !== null) {
-      query = query.where({ isCompleted: isCompleted === "true" ? 1 : 0 });
-    }
-
-    // 정렬 적용
-    const tasks = await query.orderByRaw(
-      "isCompleted ASC, priority DESC, id ASC",
-    );
-
-    // 작업 내용 복호화
-    return tasks.map((task) => ({
-      ...task,
-      owner: uid, // 애플리케이션 로직을 위해 원본 ID 사용
-      contents: decryptData(uid, task.contents),
-    }));
-  } catch (error) {
-    const errorMsg = plannerId
-      ? "플래너의 작업 가져오기 오류:"
-      : "모든 작업 가져오기 오류:";
-    logger.error(errorMsg, error);
-    throw error;
-  }
 };
 
 /**
@@ -258,39 +262,43 @@ export const getTasks = async (uid, plannerId = null, isCompleted = null) => {
  * });
  */
 export const updateTask = async (uid, id, updateData) => {
-  try {
-    const hashedUid = hashUserId(uid);
-    const task = await db("plan").where({ owner: hashedUid, id: id }).first();
+    try {
+        const hashedUid = hashUserId(uid);
+        const task = await db("plan")
+            .where({ owner: hashedUid, id: id })
+            .first();
 
-    if (!task) {
-      throw new Error("작업을 찾을 수 없습니다");
+        if (!task) {
+            throw new Error("작업을 찾을 수 없습니다");
+        }
+
+        // 제공된 경우 날짜 포맷팅
+        const formattedData = { ...updateData };
+        if (formattedData.startDate !== undefined) {
+            formattedData.startDate = formatDate(formattedData.startDate);
+        }
+        if (formattedData.dueDate !== undefined) {
+            formattedData.dueDate = formatDate(formattedData.dueDate);
+        }
+
+        // 제공된 경우 내용 암호화
+        if (formattedData.contents !== undefined) {
+            formattedData.contents = encryptData(uid, formattedData.contents);
+        }
+
+        // 업데이트 타임스탬프 추가
+        formattedData.updated_at = getTimestamp();
+
+        await db("plan")
+            .where({ owner: hashedUid, id: id })
+            .update(formattedData);
+
+        // 복호화된 내용과 함께 업데이트된 작업 가져오기
+        return await getTaskById(uid, id);
+    } catch (error) {
+        logger.error("작업 업데이트 오류:", error);
+        throw error;
     }
-
-    // 제공된 경우 날짜 포맷팅
-    const formattedData = { ...updateData };
-    if (formattedData.startDate !== undefined) {
-      formattedData.startDate = formatDate(formattedData.startDate);
-    }
-    if (formattedData.dueDate !== undefined) {
-      formattedData.dueDate = formatDate(formattedData.dueDate);
-    }
-
-    // 제공된 경우 내용 암호화
-    if (formattedData.contents !== undefined) {
-      formattedData.contents = encryptData(uid, formattedData.contents);
-    }
-
-    // 업데이트 타임스탬프 추가
-    formattedData.updated_at = getTimestamp();
-
-    await db("plan").where({ owner: hashedUid, id: id }).update(formattedData);
-
-    // 복호화된 내용과 함께 업데이트된 작업 가져오기
-    return await getTaskById(uid, id);
-  } catch (error) {
-    logger.error("작업 업데이트 오류:", error);
-    throw error;
-  }
 };
 
 /**
@@ -313,24 +321,26 @@ export const updateTask = async (uid, id, updateData) => {
  * }
  */
 export const deleteTask = async (uid, id) => {
-  try {
-    const hashedUid = hashUserId(uid);
-    const task = await db("plan").where({ owner: hashedUid, id: id }).first();
+    try {
+        const hashedUid = hashUserId(uid);
+        const task = await db("plan")
+            .where({ owner: hashedUid, id: id })
+            .first();
 
-    if (!task) {
-      throw new Error("작업을 찾을 수 없습니다");
+        if (!task) {
+            throw new Error("작업을 찾을 수 없습니다");
+        }
+
+        await db("plan").where({ owner: hashedUid, id: id }).del();
+
+        logger.info(
+            `작업 삭제됨: ${hashedUid.substring(0, 8)}... - 작업 ID: ${id}`,
+        );
+        return true;
+    } catch (error) {
+        logger.error("작업 삭제 오류:", error);
+        throw error;
     }
-
-    await db("plan").where({ owner: hashedUid, id: id }).del();
-
-    logger.info(
-      `작업 삭제됨: ${hashedUid.substring(0, 8)}... - 작업 ID: ${id}`,
-    );
-    return true;
-  } catch (error) {
-    logger.error("작업 삭제 오류:", error);
-    throw error;
-  }
 };
 
 /**
@@ -349,23 +359,25 @@ export const deleteTask = async (uid, id) => {
  * console.log(completed.isCompleted); // 1
  */
 export const completeTask = async (uid, id) => {
-  try {
-    const hashedUid = hashUserId(uid);
-    const task = await db("plan").where({ owner: hashedUid, id: id }).first();
+    try {
+        const hashedUid = hashUserId(uid);
+        const task = await db("plan")
+            .where({ owner: hashedUid, id: id })
+            .first();
 
-    if (!task) {
-      throw new Error("작업을 찾을 수 없습니다");
+        if (!task) {
+            throw new Error("작업을 찾을 수 없습니다");
+        }
+
+        await db("plan").where({ owner: hashedUid, id: id }).update({
+            isCompleted: 1,
+            updated_at: getTimestamp(),
+        });
+
+        // 복호화된 내용과 함께 업데이트된 작업 가져오기
+        return await getTaskById(uid, id);
+    } catch (error) {
+        logger.error("작업 완료 처리 오류:", error);
+        throw error;
     }
-
-    await db("plan").where({ owner: hashedUid, id: id }).update({
-      isCompleted: 1,
-      updated_at: getTimestamp(),
-    });
-
-    // 복호화된 내용과 함께 업데이트된 작업 가져오기
-    return await getTaskById(uid, id);
-  } catch (error) {
-    logger.error("작업 완료 처리 오류:", error);
-    throw error;
-  }
 };

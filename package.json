@@ -1,55 +1,55 @@
 {
-  "name": "backend",
-  "version": "1.0.0",
-  "description": "",
-  "exports": {
-    ".": "./index.mjs",
-    "./auto-pull": "./src/scripts/autoPull.mjs"
-  },
-  "scripts": {
-    "dev": "bun --watch index.mjs",
-    "auto-pull": "bun src/scripts/autoPull.mjs",
-    "lint": "eslint src/ index.mjs --ext .mjs,.js --config eslint.config.mjs",
-    "lint:fix": "eslint src/ index.mjs --ext .mjs,.js --config eslint.config.mjs --fix",
-    "docs": "jsdoc -c .jsdoc.config.json src/routes/",
-    "docs:clean": "rm -rf docs/ && bun run docs",
-    "docs:json": "jsdoc -c .jsdoc.config.json src/routes/ -X > docs/api-docs.json"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "module",
-  "dependencies": {
-    "connect-redis": "^9.0.0",
-    "connect-session-knex": "^5.0.0",
-    "cors": "^2.8.5",
-    "dotenv": "^17.0.0",
-    "express": "^5.1.0",
-    "express-formidable": "^1.2.0",
-    "express-session": "^1.18.1",
-    "helmet": "^8.1.0",
-    "https": "^1.0.0",
-    "mysql": "^2.18.1",
-    "nodemon": "^3.1.10",
-    "openai": "^5.8.2",
-    "passport": "^0.7.0",
-    "passport-custom": "^1.1.1",
-    "passport-google-oauth20": "^2.0.0",
-    "redis": "^5.5.6",
-    "styled-components": "^6.1.19",
-    "winston": "^3.17.0"
-  },
-  "devDependencies": {
-    "@biomejs/biome": "2.0.6",
-    "@eslint/js": "^9.30.0",
-    "eslint": "^9.30.0",
-    "eslint-config-prettier": "^10.1.5",
-    "eslint-plugin-jsdoc": "^51.2.3",
-    "eslint-plugin-prettier": "^5.5.1",
-    "globals": "^16.2.0",
-    "jsdoc": "^4.0.4",
-    "jsdoc-route-plugin": "^0.1.0",
-    "prettier": "^3.6.2",
-    "wrangler": "4.22.0"
-  }
+    "name": "backend",
+    "version": "1.0.0",
+    "description": "",
+    "exports": {
+        ".": "./index.mjs",
+        "./auto-pull": "./src/scripts/autoPull.mjs"
+    },
+    "scripts": {
+        "dev": "bun --watch index.mjs",
+        "auto-pull": "bun src/scripts/autoPull.mjs",
+        "lint": "eslint src/ index.mjs --ext .mjs,.js --config eslint.config.mjs",
+        "lint:fix": "eslint src/ index.mjs --ext .mjs,.js --config eslint.config.mjs --fix",
+        "docs": "jsdoc -c .jsdoc.config.json src/routes/",
+        "docs:clean": "rm -rf docs/ && bun run docs",
+        "docs:json": "jsdoc -c .jsdoc.config.json src/routes/ -X > docs/api-docs.json"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "type": "module",
+    "dependencies": {
+        "connect-redis": "^9.0.0",
+        "connect-session-knex": "^5.0.0",
+        "cors": "^2.8.5",
+        "dotenv": "^17.0.0",
+        "express": "^5.1.0",
+        "express-formidable": "^1.2.0",
+        "express-session": "^1.18.1",
+        "helmet": "^8.1.0",
+        "https": "^1.0.0",
+        "mysql": "^2.18.1",
+        "nodemon": "^3.1.10",
+        "openai": "^5.8.2",
+        "passport": "^0.7.0",
+        "passport-custom": "^1.1.1",
+        "passport-google-oauth20": "^2.0.0",
+        "redis": "^5.5.6",
+        "styled-components": "^6.1.19",
+        "winston": "^3.17.0"
+    },
+    "devDependencies": {
+        "@biomejs/biome": "2.0.6",
+        "@eslint/js": "^9.30.0",
+        "eslint": "^9.30.0",
+        "eslint-config-prettier": "^10.1.5",
+        "eslint-plugin-jsdoc": "^51.2.3",
+        "eslint-plugin-prettier": "^5.5.1",
+        "globals": "^16.2.0",
+        "jsdoc": "^4.0.4",
+        "jsdoc-route-plugin": "^0.1.0",
+        "prettier": "^3.6.2",
+        "wrangler": "4.22.0"
+    }
 }

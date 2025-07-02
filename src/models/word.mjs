@@ -7,13 +7,6 @@
  * @todo 단어 추가, 수정, 암호화 기능 추가 필요
  */
 import db from "../config/db.mjs";
-import { getNextId, executeTransaction } from "../utils/db.mjs";
-import {
-  hashUserId,
-  encryptData,
-  decryptData,
-  getTimestamp,
-} from "../utils/crypto.mjs";
 import { error as _error } from "../utils/logger.mjs";
 
 /**
@@ -31,24 +24,24 @@ import { error as _error } from "../utils/logger.mjs";
  * console.log(wordList.name); // '영어 단어장'
  */
 export const createWordList = async (name) => {
-  try {
-    // 같은 이름의 단어장 존재 여부 확인
-    const existingWordList = await db("wordLists")
-      .where({ name: name })
-      .first();
+    try {
+        // 같은 이름의 단어장 존재 여부 확인
+        const existingWordList = await db("wordLists")
+            .where({ name: name })
+            .first();
 
-    if (existingWordList) {
-      throw new Error("동일 이름의 단어장이 존재합니다");
+        if (existingWordList) {
+            throw new Error("동일 이름의 단어장이 존재합니다");
+        }
+
+        // 단어장 생성
+        await db("wordLists").insert({ name: name });
+
+        return { name: name };
+    } catch (error) {
+        _error("단어장 생성 오류:", error);
+        throw error;
     }
-
-    // 단어장 생성
-    await db("wordLists").insert({ name: name });
-
-    return { name: name };
-  } catch (error) {
-    _error("단어장 생성 오류:", error);
-    throw error;
-  }
 };
 
 /**
@@ -70,18 +63,20 @@ export const createWordList = async (name) => {
  * }
  */
 export const deleteWordList = async (id) => {
-  try {
-    // 단어장 존재 여부 확인
-    const existingWordList = await db("wordLists").where({ id: id }).first();
+    try {
+        // 단어장 존재 여부 확인
+        const existingWordList = await db("wordLists")
+            .where({ id: id })
+            .first();
 
-    if (!existingWordList) {
-      throw new Error("단어장이 존재하지 않습니다");
+        if (!existingWordList) {
+            throw new Error("단어장이 존재하지 않습니다");
+        }
+
+        // 단어장 삭제
+        await db("wordLists").where({ id: id }).del();
+    } catch (error) {
+        _error("단어장 삭제 오류:", error);
+        throw error;
     }
-
-    // 단어장 삭제
-    await db("wordLists").where({ id: id }).del();
-  } catch (error) {
-    _error("단어장 삭제 오류:", error);
-    throw error;
-  }
 };

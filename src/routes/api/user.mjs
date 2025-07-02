@@ -5,9 +5,9 @@
 import { Router } from "express";
 import { isAuthenticated } from "../../middleware/auth.mjs";
 import {
-  updateUserInfo,
-  checkUserRegistration,
-  getUserInfo,
+    checkUserRegistration,
+    getUserInfo,
+    updateUserInfo,
 } from "../../services/user.mjs";
 import logger from "../../utils/logger.mjs";
 
@@ -28,19 +28,21 @@ const router = Router();
  * Response: { "message": "업데이트 완료" }
  */
 router.post("/update", isAuthenticated, async (req, res) => {
-  try {
-    await updateUserInfo(req.userId, req.body);
-    res.status(200).json({ message: "업데이트 완료" });
-  } catch (error) {
-    if (error.message === "INVALID_DATA") {
-      return res.status(400).json({ message: "잘못된 요청" });
+    try {
+        await updateUserInfo(req.userId, req.body);
+        res.status(200).json({ message: "업데이트 완료" });
+    } catch (error) {
+        if (error.message === "INVALID_DATA") {
+            return res.status(400).json({ message: "잘못된 요청" });
+        }
+        if (error.message === "NO_UPDATE_FIELDS") {
+            return res
+                .status(400)
+                .json({ message: "업데이트할 필드가 없습니다" });
+        }
+        logger.error("사용자 정보 업데이트 중 오류:", error);
+        res.status(500).json({ message: "서버 내부 오류" });
     }
-    if (error.message === "NO_UPDATE_FIELDS") {
-      return res.status(400).json({ message: "업데이트할 필드가 없습니다" });
-    }
-    logger.error("사용자 정보 업데이트 중 오류:", error);
-    res.status(500).json({ message: "서버 내부 오류" });
-  }
 });
 
 /**
@@ -52,13 +54,13 @@ router.post("/update", isAuthenticated, async (req, res) => {
  * Response: { "registered": true }
  */
 router.get("/registered", isAuthenticated, async (req, res) => {
-  try {
-    const result = await checkUserRegistration(req.userId);
-    res.status(result.registered ? 200 : 410).json(result);
-  } catch (error) {
-    logger.error("등록 상태 확인 중 오류:", error);
-    res.status(500).json({ message: "서버 내부 오류" });
-  }
+    try {
+        const result = await checkUserRegistration(req.userId);
+        res.status(result.registered ? 200 : 410).json(result);
+    } catch (error) {
+        logger.error("등록 상태 확인 중 오류:", error);
+        res.status(500).json({ message: "서버 내부 오류" });
+    }
 });
 
 /**
@@ -76,16 +78,16 @@ router.get("/registered", isAuthenticated, async (req, res) => {
  * Response: { "id": "123", "name": "홍길동", "grade": 1, "class": 1, "email": "user@example.com" }
  */
 router.get("/get", isAuthenticated, async (req, res) => {
-  try {
-    const user = await getUserInfo(req.userId);
-    res.status(200).json(user);
-  } catch (error) {
-    if (error.message === "USER_NOT_FOUND") {
-      return res.status(404).json({ message: "사용자를 찾을 수 없음" });
+    try {
+        const user = await getUserInfo(req.userId);
+        res.status(200).json(user);
+    } catch (error) {
+        if (error.message === "USER_NOT_FOUND") {
+            return res.status(404).json({ message: "사용자를 찾을 수 없음" });
+        }
+        logger.error("사용자 정보 조회 중 오류:", error);
+        res.status(500).json({ message: "서버 내부 오류" });
     }
-    logger.error("사용자 정보 조회 중 오류:", error);
-    res.status(500).json({ message: "서버 내부 오류" });
-  }
 });
 
 export default router;

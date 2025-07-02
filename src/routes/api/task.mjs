@@ -5,11 +5,11 @@
 import { Router } from "express";
 import { isAuthenticated, isUserRegistered } from "../../middleware/auth.mjs";
 import {
-  addTask,
-  updateTaskInfo,
-  removeTask,
-  markTaskComplete,
-  getTaskList,
+    addTask,
+    getTaskList,
+    markTaskComplete,
+    removeTask,
+    updateTaskInfo,
 } from "../../services/task.mjs";
 import logger from "../../utils/logger.mjs";
 
@@ -30,21 +30,23 @@ router.use(isAuthenticated, isUserRegistered);
  * @throws {404} 플래너를 찾을 수 없는 경우
  */
 router.post("/add", async (req, res) => {
-  try {
-    await addTask(req.userId, req.body);
-    res.status(201).json({ message: "작업이 성공적으로 추가되었습니다" });
-  } catch (error) {
-    if (error.message === "REQUIRED_FIELDS_MISSING") {
-      return res
-        .status(400)
-        .json({ message: "내용과 출처는 필수 입력 항목입니다" });
+    try {
+        await addTask(req.userId, req.body);
+        res.status(201).json({ message: "작업이 성공적으로 추가되었습니다" });
+    } catch (error) {
+        if (error.message === "REQUIRED_FIELDS_MISSING") {
+            return res
+                .status(400)
+                .json({ message: "내용과 출처는 필수 입력 항목입니다" });
+        }
+        if (error.message === "PLANNER_NOT_FOUND") {
+            return res
+                .status(404)
+                .json({ message: "플래너를 찾을 수 없습니다" });
+        }
+        logger.error(`작업 추가 중 오류`, error);
+        res.status(500).json({ message: "서버 내부 오류" });
     }
-    if (error.message === "PLANNER_NOT_FOUND") {
-      return res.status(404).json({ message: "플래너를 찾을 수 없습니다" });
-    }
-    logger.error(`작업 추가 중 오류`, error);
-    res.status(500).json({ message: "서버 내부 오류" });
-  }
 });
 
 /**
@@ -61,24 +63,26 @@ router.post("/add", async (req, res) => {
  * @throws {404} 작업을 찾을 수 없는 경우
  */
 router.post("/update", async (req, res) => {
-  try {
-    await updateTaskInfo(req.userId, req.body);
-    res.status(200).json({ message: "작업이 성공적으로 업데이트되었습니다" });
-  } catch (error) {
-    if (error.message === "REQUIRED_FIELDS_MISSING") {
-      return res.status(400).json({ message: "작업 ID는 필수입니다" });
+    try {
+        await updateTaskInfo(req.userId, req.body);
+        res.status(200).json({
+            message: "작업이 성공적으로 업데이트되었습니다",
+        });
+    } catch (error) {
+        if (error.message === "REQUIRED_FIELDS_MISSING") {
+            return res.status(400).json({ message: "작업 ID는 필수입니다" });
+        }
+        if (error.message === "NO_UPDATE_DATA") {
+            return res
+                .status(400)
+                .json({ message: "업데이트할 데이터가 필요합니다" });
+        }
+        if (error.message === "TASK_NOT_FOUND") {
+            return res.status(404).json({ message: "작업을 찾을 수 없습니다" });
+        }
+        logger.error(`작업 업데이트 중 오류`, error);
+        res.status(500).json({ message: "서버 내부 오류" });
     }
-    if (error.message === "NO_UPDATE_DATA") {
-      return res
-        .status(400)
-        .json({ message: "업데이트할 데이터가 필요합니다" });
-    }
-    if (error.message === "TASK_NOT_FOUND") {
-      return res.status(404).json({ message: "작업을 찾을 수 없습니다" });
-    }
-    logger.error(`작업 업데이트 중 오류`, error);
-    res.status(500).json({ message: "서버 내부 오류" });
-  }
 });
 
 /**
@@ -89,19 +93,19 @@ router.post("/update", async (req, res) => {
  * @throws {404} 작업을 찾을 수 없는 경우
  */
 router.post("/delete", async (req, res) => {
-  try {
-    await removeTask(req.userId, req.body);
-    res.status(200).json({ message: "작업이 성공적으로 삭제되었습니다" });
-  } catch (error) {
-    if (error.message === "REQUIRED_FIELDS_MISSING") {
-      return res.status(400).json({ message: "작업 ID는 필수입니다" });
+    try {
+        await removeTask(req.userId, req.body);
+        res.status(200).json({ message: "작업이 성공적으로 삭제되었습니다" });
+    } catch (error) {
+        if (error.message === "REQUIRED_FIELDS_MISSING") {
+            return res.status(400).json({ message: "작업 ID는 필수입니다" });
+        }
+        if (error.message === "TASK_NOT_FOUND") {
+            return res.status(404).json({ message: "작업을 찾을 수 없습니다" });
+        }
+        logger.error(`작업 삭제 중 오류`, error);
+        res.status(500).json({ message: "서버 내부 오류" });
     }
-    if (error.message === "TASK_NOT_FOUND") {
-      return res.status(404).json({ message: "작업을 찾을 수 없습니다" });
-    }
-    logger.error(`작업 삭제 중 오류`, error);
-    res.status(500).json({ message: "서버 내부 오류" });
-  }
 });
 
 /**
@@ -112,19 +116,19 @@ router.post("/delete", async (req, res) => {
  * @throws {404} 작업을 찾을 수 없는 경우
  */
 router.post("/complete", async (req, res) => {
-  try {
-    await markTaskComplete(req.userId, req.body);
-    res.status(200).json({ message: "작업이 성공적으로 완료되었습니다" });
-  } catch (error) {
-    if (error.message === "REQUIRED_FIELDS_MISSING") {
-      return res.status(400).json({ message: "작업 ID는 필수입니다" });
+    try {
+        await markTaskComplete(req.userId, req.body);
+        res.status(200).json({ message: "작업이 성공적으로 완료되었습니다" });
+    } catch (error) {
+        if (error.message === "REQUIRED_FIELDS_MISSING") {
+            return res.status(400).json({ message: "작업 ID는 필수입니다" });
+        }
+        if (error.message === "TASK_NOT_FOUND") {
+            return res.status(404).json({ message: "작업을 찾을 수 없습니다" });
+        }
+        logger.error(`작업 완료 중 오류`, error);
+        res.status(500).json({ message: "서버 내부 오류" });
     }
-    if (error.message === "TASK_NOT_FOUND") {
-      return res.status(404).json({ message: "작업을 찾을 수 없습니다" });
-    }
-    logger.error(`작업 완료 중 오류`, error);
-    res.status(500).json({ message: "서버 내부 오류" });
-  }
 });
 
 /**
@@ -145,20 +149,22 @@ router.post("/complete", async (req, res) => {
  * GET /api/task/get?id=123&isCompleted=false
  */
 router.get("/get", async (req, res) => {
-  try {
-    const { id, isCompleted } = req.query;
-    const tasks = await getTaskList(req.userId, id, isCompleted);
-    res.status(200).json(tasks);
-  } catch (error) {
-    if (error.message === "TASKS_NOT_FOUND") {
-      return res.status(404).json({ message: "작업을 찾을 수 없습니다" });
+    try {
+        const { id, isCompleted } = req.query;
+        const tasks = await getTaskList(req.userId, id, isCompleted);
+        res.status(200).json(tasks);
+    } catch (error) {
+        if (error.message === "TASKS_NOT_FOUND") {
+            return res.status(404).json({ message: "작업을 찾을 수 없습니다" });
+        }
+        if (error.message === "PLANNER_NOT_FOUND") {
+            return res
+                .status(404)
+                .json({ message: "플래너를 찾을 수 없습니다" });
+        }
+        logger.error(`작업 조회 중 오류`, error);
+        res.status(500).json({ message: "서버 내부 오류" });
     }
-    if (error.message === "PLANNER_NOT_FOUND") {
-      return res.status(404).json({ message: "플래너를 찾을 수 없습니다" });
-    }
-    logger.error(`작업 조회 중 오류`, error);
-    res.status(500).json({ message: "서버 내부 오류" });
-  }
 });
 
 export default router;
