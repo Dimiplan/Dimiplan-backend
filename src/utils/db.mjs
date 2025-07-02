@@ -28,12 +28,12 @@ import logger from "./logger.mjs";
  * });
  */
 export const executeTransaction = async (transactionFn) => {
-    try {
-        return await db.transaction(transactionFn);
-    } catch (error) {
-        logger.error("데이터베이스 트랜잭션 오류:", error);
-        throw error;
-    }
+  try {
+    return await db.transaction(transactionFn);
+  } catch (error) {
+    logger.error("데이터베이스 트랜잭션 오류:", error);
+    throw error;
+  }
 };
 
 /**
@@ -57,42 +57,40 @@ export const executeTransaction = async (transactionFn) => {
  * console.log(newRoomId); // 사용자별 순차적 ID
  */
 export const getNextId = async (uid, idType) => {
-    try {
-        // 사용자의 userid 테이블 존재 여부 확인
-        const userData = await db("userid")
-            .where({ owner: uid })
-            .select(idType)
-            .first();
+  try {
+    // 사용자의 userid 테이블 존재 여부 확인
+    const userData = await db("userid")
+      .where({ owner: uid })
+      .select(idType)
+      .first();
 
-        if (!userData) {
-            // 사용자 ID 초기화
-            await db("userid").insert({
-                owner: uid,
-                plannerId: 1,
-                planId: 1,
-                roomId: 1,
-                chatId: 1,
-            });
+    if (!userData) {
+      // 사용자 ID 초기화
+      await db("userid").insert({
+        owner: uid,
+        plannerId: 1,
+        planId: 1,
+        roomId: 1,
+        chatId: 1,
+      });
 
-            logger.info(`새 사용자 ID 초기화 - 사용자: ${uid}`);
-            return 1;
-        }
-
-        const currentId = userData[idType];
-
-        // 다음 ID로 업데이트
-        await db("userid")
-            .where({ owner: uid })
-            .update({ [idType]: currentId + 1 });
-
-        logger.verbose(
-            `다음 ${idType} ID 발급 - 사용자: ${uid}, ID: ${currentId}`,
-        );
-        return currentId;
-    } catch (error) {
-        logger.error(`다음 ${idType} ID 조회 중 오류 - 사용자: ${uid}`, error);
-        throw error;
+      logger.info(`새 사용자 ID 초기화 - 사용자: ${uid}`);
+      return 1;
     }
+
+    const currentId = userData[idType];
+
+    // 다음 ID로 업데이트
+    await db("userid")
+      .where({ owner: uid })
+      .update({ [idType]: currentId + 1 });
+
+    logger.verbose(`다음 ${idType} ID 발급 - 사용자: ${uid}, ID: ${currentId}`);
+    return currentId;
+  } catch (error) {
+    logger.error(`다음 ${idType} ID 조회 중 오류 - 사용자: ${uid}`, error);
+    throw error;
+  }
 };
 
 /**
@@ -119,12 +117,12 @@ export const getNextId = async (uid, idType) => {
  * });
  */
 export const testDatabaseConnection = async () => {
-    try {
-        await db.raw("SELECT 1");
-        logger.info("데이터베이스 연결 성공");
-        return true;
-    } catch (error) {
-        logger.error("데이터베이스 연결 실패:", error);
-        return false;
-    }
+  try {
+    await db.raw("SELECT 1");
+    logger.info("데이터베이스 연결 성공");
+    return true;
+  } catch (error) {
+    logger.error("데이터베이스 연결 실패:", error);
+    return false;
+  }
 };

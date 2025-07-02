@@ -7,10 +7,10 @@
  */
 import { db } from "../config/db.mjs";
 import {
-    decryptData,
-    encryptData,
-    getTimestamp,
-    hashUserId,
+  decryptData,
+  encryptData,
+  getTimestamp,
+  hashUserId,
 } from "../utils/crypto.mjs";
 import { getNextId } from "../utils/db.mjs";
 import logger from "../utils/logger.mjs";
@@ -35,30 +35,30 @@ import logger from "../utils/logger.mjs";
  * console.log(newRoom.id); // 1, 2, 3, ...
  */
 export const createChatRoom = async (uid, name) => {
-    try {
-        const hashedUid = hashUserId(uid);
-        const roomId = await getNextId(hashedUid, "roomId");
+  try {
+    const hashedUid = hashUserId(uid);
+    const roomId = await getNextId(hashedUid, "roomId");
 
-        // 방 이름 암호화
-        const encryptedName = encryptData(uid, name);
+    // 방 이름 암호화
+    const encryptedName = encryptData(uid, name);
 
-        await db("chat_rooms").insert({
-            owner: hashedUid,
-            id: roomId,
-            name: encryptedName,
-            isProcessing: 0,
-            created_at: getTimestamp(),
-        });
+    await db("chat_rooms").insert({
+      owner: hashedUid,
+      id: roomId,
+      name: encryptedName,
+      isProcessing: 0,
+      created_at: getTimestamp(),
+    });
 
-        return {
-            owner: uid,
-            id: roomId,
-            name: name, // 응답용 평문 반환
-        };
-    } catch (error) {
-        logger.error("채팅방 생성 오류:", error);
-        throw error;
-    }
+    return {
+      owner: uid,
+      id: roomId,
+      name: name, // 응답용 평문 반환
+    };
+  } catch (error) {
+    logger.error("채팅방 생성 오류:", error);
+    throw error;
+  }
 };
 
 // eslint-disable-next-line jsdoc/require-returns
@@ -82,22 +82,22 @@ export const createChatRoom = async (uid, name) => {
  * console.log(rooms[0].name); // '복호화된 채팅방 이름'
  */
 export const getChatRooms = async (uid) => {
-    try {
-        const hashedUid = hashUserId(uid);
-        const rooms = await db("chat_rooms")
-            .where({ owner: hashedUid })
-            .orderBy("id", "desc");
+  try {
+    const hashedUid = hashUserId(uid);
+    const rooms = await db("chat_rooms")
+      .where({ owner: hashedUid })
+      .orderBy("id", "desc");
 
-        // 방 이름 복호화
-        return rooms.map((room) => ({
-            ...room,
-            owner: uid, // 애플리케이션 로직을 위해 원본 ID 사용
-            name: decryptData(uid, room.name),
-        }));
-    } catch (error) {
-        logger.error("채팅방 가져오기 오류:", error);
-        throw error;
-    }
+    // 방 이름 복호화
+    return rooms.map((room) => ({
+      ...room,
+      owner: uid, // 애플리케이션 로직을 위해 원본 ID 사용
+      name: decryptData(uid, room.name),
+    }));
+  } catch (error) {
+    logger.error("채팅방 가져오기 오류:", error);
+    throw error;
+  }
 };
 
 // eslint-disable-next-line jsdoc/require-returns
@@ -125,63 +125,63 @@ export const getChatRooms = async (uid) => {
  * console.log(messages[1].sender); // 'ai'
  */
 export const addChatMessages = async (uid, roomId, userMessage, aiMessage) => {
-    try {
-        const hashedUid = hashUserId(uid);
+  try {
+    const hashedUid = hashUserId(uid);
 
-        // 다음 채팅 ID 가져오기
-        const chatId = await getNextId(hashedUid, "chatId");
-        const timestamp = getTimestamp();
+    // 다음 채팅 ID 가져오기
+    const chatId = await getNextId(hashedUid, "chatId");
+    const timestamp = getTimestamp();
 
-        // 메시지 암호화
-        const encryptedUserMessage = encryptData(uid, userMessage);
-        const encryptedAiMessage = encryptData(uid, aiMessage);
+    // 메시지 암호화
+    const encryptedUserMessage = encryptData(uid, userMessage);
+    const encryptedAiMessage = encryptData(uid, aiMessage);
 
-        // 사용자 메시지 추가
-        await db("chat").insert({
-            from: roomId,
-            owner: hashedUid,
-            id: chatId,
-            message: encryptedUserMessage,
-            sender: "user",
-            created_at: timestamp,
-        });
+    // 사용자 메시지 추가
+    await db("chat").insert({
+      from: roomId,
+      owner: hashedUid,
+      id: chatId,
+      message: encryptedUserMessage,
+      sender: "user",
+      created_at: timestamp,
+    });
 
-        // AI 응답 추가
-        await db("chat").insert({
-            from: roomId,
-            owner: hashedUid,
-            id: chatId + 1,
-            message: encryptedAiMessage,
-            sender: "ai",
-            created_at: timestamp,
-        });
+    // AI 응답 추가
+    await db("chat").insert({
+      from: roomId,
+      owner: hashedUid,
+      id: chatId + 1,
+      message: encryptedAiMessage,
+      sender: "ai",
+      created_at: timestamp,
+    });
 
-        // 채팅 ID 카운터 업데이트
-        await db("userid")
-            .where({ owner: hashedUid })
-            .update({ chatId: chatId + 2 });
+    // 채팅 ID 카운터 업데이트
+    await db("userid")
+      .where({ owner: hashedUid })
+      .update({ chatId: chatId + 2 });
 
-        // 응답용 평문 메시지 반환
-        return [
-            {
-                from: roomId,
-                owner: uid,
-                id: chatId,
-                message: userMessage,
-                sender: "user",
-            },
-            {
-                from: roomId,
-                owner: uid,
-                id: chatId + 1,
-                message: aiMessage,
-                sender: "ai",
-            },
-        ];
-    } catch (error) {
-        logger.error("채팅 메시지 추가 오류:", error);
-        throw error;
-    }
+    // 응답용 평문 메시지 반환
+    return [
+      {
+        from: roomId,
+        owner: uid,
+        id: chatId,
+        message: userMessage,
+        sender: "user",
+      },
+      {
+        from: roomId,
+        owner: uid,
+        id: chatId + 1,
+        message: aiMessage,
+        sender: "ai",
+      },
+    ];
+  } catch (error) {
+    logger.error("채팅 메시지 추가 오류:", error);
+    throw error;
+  }
 };
 
 // eslint-disable-next-line jsdoc/require-returns
@@ -207,22 +207,22 @@ export const addChatMessages = async (uid, roomId, userMessage, aiMessage) => {
  * messages.forEach(msg => console.log(`${msg.sender}: ${msg.message}`));
  */
 export const getChatMessages = async (uid, roomId) => {
-    try {
-        const hashedUid = hashUserId(uid);
-        const messages = await db("chat")
-            .where({ owner: hashedUid, from: roomId })
-            .orderBy("id", "asc");
+  try {
+    const hashedUid = hashUserId(uid);
+    const messages = await db("chat")
+      .where({ owner: hashedUid, from: roomId })
+      .orderBy("id", "asc");
 
-        // 메시지 내용 복호화
-        return messages.map((message) => ({
-            ...message,
-            owner: uid, // 애플리케이션 로직을 위해 원본 ID 사용
-            message: decryptData(uid, message.message),
-        }));
-    } catch (error) {
-        logger.error("채팅 메시지 가져오기 오류:", error);
-        throw error;
-    }
+    // 메시지 내용 복호화
+    return messages.map((message) => ({
+      ...message,
+      owner: uid, // 애플리케이션 로직을 위해 원본 ID 사용
+      message: decryptData(uid, message.message),
+    }));
+  } catch (error) {
+    logger.error("채팅 메시지 가져오기 오류:", error);
+    throw error;
+  }
 };
 
 /**
@@ -245,35 +245,33 @@ export const getChatMessages = async (uid, roomId) => {
  * }
  */
 export const deleteChatRoom = async (uid, roomId) => {
-    try {
-        const hashedUid = hashUserId(uid);
+  try {
+    const hashedUid = hashUserId(uid);
 
-        // 방이 존재하는지 확인
-        const room = await db("chat_rooms")
-            .where({ owner: hashedUid, id: roomId })
-            .first();
+    // 방이 존재하는지 확인
+    const room = await db("chat_rooms")
+      .where({ owner: hashedUid, id: roomId })
+      .first();
 
-        if (!room) {
-            throw new Error("채팅방을 찾을 수 없습니다");
-        }
-
-        // 모든 작업이 함께 성공 또는 실패하도록 트랜잭션으로 실행
-        await db.transaction(async (trx) => {
-            // 방의 모든 메시지 삭제
-            await trx("chat").where({ owner: hashedUid, from: roomId }).del();
-
-            // 방 삭제
-            await trx("chat_rooms")
-                .where({ owner: hashedUid, id: roomId })
-                .del();
-        });
-
-        logger.info(
-            `채팅방 삭제됨: ${hashedUid.substring(0, 8)}... - 방 ID: ${roomId}`,
-        );
-        return true;
-    } catch (error) {
-        logger.error("채팅방 삭제 오류:", error);
-        throw error;
+    if (!room) {
+      throw new Error("채팅방을 찾을 수 없습니다");
     }
+
+    // 모든 작업이 함께 성공 또는 실패하도록 트랜잭션으로 실행
+    await db.transaction(async (trx) => {
+      // 방의 모든 메시지 삭제
+      await trx("chat").where({ owner: hashedUid, from: roomId }).del();
+
+      // 방 삭제
+      await trx("chat_rooms").where({ owner: hashedUid, id: roomId }).del();
+    });
+
+    logger.info(
+      `채팅방 삭제됨: ${hashedUid.substring(0, 8)}... - 방 ID: ${roomId}`,
+    );
+    return true;
+  } catch (error) {
+    logger.error("채팅방 삭제 오류:", error);
+    throw error;
+  }
 };

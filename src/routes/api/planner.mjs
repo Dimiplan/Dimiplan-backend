@@ -5,11 +5,11 @@
 import { Router } from "express";
 import { isAuthenticated, isUserRegistered } from "../../middleware/auth.mjs";
 import {
-    addPlanner,
-    getAllPlanners,
-    getPlannerInfo,
-    removePlanner,
-    updatePlannerName,
+  addPlanner,
+  getAllPlanners,
+  getPlannerInfo,
+  removePlanner,
+  updatePlannerName,
 } from "../../services/planner.mjs";
 import logger from "../../utils/logger.mjs";
 
@@ -30,18 +30,18 @@ router.use(isAuthenticated, isUserRegistered);
  * Body: { "name": "일정 플래너", "isDaily": true, "from": "web" }
  */
 router.post("/add", async (req, res) => {
-    try {
-        await addPlanner(req.userId, req.body);
-        res.status(201).json({ message: "플래너가 성공적으로 추가되었습니다" });
-    } catch (error) {
-        if (error.message === "REQUIRED_FIELDS_MISSING") {
-            return res
-                .status(400)
-                .json({ message: "이름과 출처는 필수 입력 항목입니다" });
-        }
-        logger.error(`플래너 추가 중 오류`, error);
-        res.status(500).json({ message: "서버 내부 오류" });
+  try {
+    await addPlanner(req.userId, req.body);
+    res.status(201).json({ message: "플래너가 성공적으로 추가되었습니다" });
+  } catch (error) {
+    if (error.message === "REQUIRED_FIELDS_MISSING") {
+      return res
+        .status(400)
+        .json({ message: "이름과 출처는 필수 입력 항목입니다" });
     }
+    logger.error(`플래너 추가 중 오류`, error);
+    res.status(500).json({ message: "서버 내부 오류" });
+  }
 });
 
 /**
@@ -55,20 +55,18 @@ router.post("/add", async (req, res) => {
  * Body: { "id": "123", "name": "새로운 이름" }
  */
 router.post("/rename", async (req, res) => {
-    try {
-        await updatePlannerName(req.userId, req.body);
-        res.status(200).json({
-            message: "플래너 이름이 성공적으로 변경되었습니다",
-        });
-    } catch (error) {
-        if (error.message === "REQUIRED_FIELDS_MISSING") {
-            return res
-                .status(400)
-                .json({ message: "플래너 ID와 이름은 필수입니다" });
-        }
-        logger.error(`플래너 이름 변경 중 오류`, error);
-        res.status(500).json({ message: "서버 내부 오류" });
+  try {
+    await updatePlannerName(req.userId, req.body);
+    res.status(200).json({
+      message: "플래너 이름이 성공적으로 변경되었습니다",
+    });
+  } catch (error) {
+    if (error.message === "REQUIRED_FIELDS_MISSING") {
+      return res.status(400).json({ message: "플래너 ID와 이름은 필수입니다" });
     }
+    logger.error(`플래너 이름 변경 중 오류`, error);
+    res.status(500).json({ message: "서버 내부 오류" });
+  }
 });
 
 /**
@@ -82,26 +80,24 @@ router.post("/rename", async (req, res) => {
  * Body: { "id": "123" }
  */
 router.post("/delete", async (req, res) => {
-    try {
-        await removePlanner(req.userId, req.body);
-        res.status(200).json({
-            message: "플래너와 관련된 모든 플랜이 성공적으로 삭제되었습니다",
-        });
-    } catch (error) {
-        if (error.message === "REQUIRED_FIELDS_MISSING") {
-            return res.status(400).json({ message: "플래너 ID는 필수입니다" });
-        }
-        if (error.message === "PLANNER_NOT_FOUND") {
-            return res
-                .status(404)
-                .json({ message: "플래너를 찾을 수 없습니다" });
-        }
-        logger.error(`플래너 삭제 중 오류`, error);
-        res.status(500).json({
-            message: "플래너 삭제 중 오류 발생",
-            error: error.message,
-        });
+  try {
+    await removePlanner(req.userId, req.body);
+    res.status(200).json({
+      message: "플래너와 관련된 모든 플랜이 성공적으로 삭제되었습니다",
+    });
+  } catch (error) {
+    if (error.message === "REQUIRED_FIELDS_MISSING") {
+      return res.status(400).json({ message: "플래너 ID는 필수입니다" });
     }
+    if (error.message === "PLANNER_NOT_FOUND") {
+      return res.status(404).json({ message: "플래너를 찾을 수 없습니다" });
+    }
+    logger.error(`플래너 삭제 중 오류`, error);
+    res.status(500).json({
+      message: "플래너 삭제 중 오류 발생",
+      error: error.message,
+    });
+  }
 });
 
 /**
@@ -119,24 +115,22 @@ router.post("/delete", async (req, res) => {
  * GET /api/planner/getInfo?id=123
  */
 router.get("/getInfo", async (req, res) => {
-    try {
-        const planner = await getPlannerInfo(req.userId, req.query.id);
-        res.status(200).json(planner);
-    } catch (error) {
-        if (error.message === "REQUIRED_FIELDS_MISSING") {
-            return res.status(400).json({ message: "잘못된 요청" });
-        }
-        if (error.message === "PLANNER_NOT_FOUND") {
-            return res
-                .status(404)
-                .json({ message: "플래너를 찾을 수 없습니다" });
-        }
-        logger.error(`플래너 정보 조회 중 오류`, error);
-        res.status(500).json({
-            message: "플래너 정보 조회 중 오류 발생",
-            error: error.message,
-        });
+  try {
+    const planner = await getPlannerInfo(req.userId, req.query.id);
+    res.status(200).json(planner);
+  } catch (error) {
+    if (error.message === "REQUIRED_FIELDS_MISSING") {
+      return res.status(400).json({ message: "잘못된 요청" });
     }
+    if (error.message === "PLANNER_NOT_FOUND") {
+      return res.status(404).json({ message: "플래너를 찾을 수 없습니다" });
+    }
+    logger.error(`플래너 정보 조회 중 오류`, error);
+    res.status(500).json({
+      message: "플래너 정보 조회 중 오류 발생",
+      error: error.message,
+    });
+  }
 });
 
 /**
@@ -154,21 +148,19 @@ router.get("/getInfo", async (req, res) => {
  * Response: [{"id": 1, "name": "플래너1", "isDaily": true}]
  */
 router.get("/getPlanners", async (req, res) => {
-    try {
-        const planners = await getAllPlanners(req.userId);
-        res.status(200).json(planners);
-    } catch (error) {
-        if (error.message === "PLANNERS_NOT_FOUND") {
-            return res
-                .status(404)
-                .json({ message: "플래너를 찾을 수 없습니다" });
-        }
-        logger.error(`플래너 목록 조회 중 오류`, error);
-        res.status(500).json({
-            message: "플래너 목록 조회 중 오류 발생",
-            error: error.message,
-        });
+  try {
+    const planners = await getAllPlanners(req.userId);
+    res.status(200).json(planners);
+  } catch (error) {
+    if (error.message === "PLANNERS_NOT_FOUND") {
+      return res.status(404).json({ message: "플래너를 찾을 수 없습니다" });
     }
+    logger.error(`플래너 목록 조회 중 오류`, error);
+    res.status(500).json({
+      message: "플래너 목록 조회 중 오류 발생",
+      error: error.message,
+    });
+  }
 });
 
 export default router;

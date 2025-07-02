@@ -1,16 +1,16 @@
 {
-    "source": {
-        "include": ["./src/routes/"],
-        "includePattern": "\\.(js|mjs)$",
-        "exclude": ["./node_modules/", "./logs/", "./keys/", "./admin/"]
-    },
-    "opts": {
-        "destination": "./docs/",
-        "recurse": true
-    },
-    "plugins": ["plugins/markdown", "jsdoc-route-plugin"],
-    "templates": {
-        "cleverLinks": false,
-        "monospaceLinks": false
-    }
+  "source": {
+    "include": ["./src/routes/"],
+    "includePattern": "\\.(js|mjs)$",
+    "exclude": ["./node_modules/", "./logs/", "./keys/", "./admin/"]
+  },
+  "opts": {
+    "destination": "./docs/",
+    "recurse": true
+  },
+  "plugins": ["plugins/markdown", "jsdoc-route-plugin"],
+  "templates": {
+    "cleverLinks": false,
+    "monospaceLinks": false
+  }
 }

@@ -8,21 +8,21 @@
 import session from "express-session";
 import passport from "passport";
 import {
-    createExpressApp,
-    setupBodyParsing,
-    setupCorsMiddleware,
-    setupErrorHandling,
-    setupLoggingMiddleware,
-    setupSecurityMiddleware,
-    setupTestLoggingMiddleware,
+  createExpressApp,
+  setupBodyParsing,
+  setupCorsMiddleware,
+  setupErrorHandling,
+  setupLoggingMiddleware,
+  setupSecurityMiddleware,
+  setupTestLoggingMiddleware,
 } from "./src/config/app.mjs";
 import {
-    createHttpsServer,
-    setupProcessHandlers,
+  createHttpsServer,
+  setupProcessHandlers,
 } from "./src/config/server.mjs";
 import {
-    closeRedisConnection,
-    getSessionConfig,
+  closeRedisConnection,
+  getSessionConfig,
 } from "./src/config/sessionConfig.mjs";
 import apiRouter from "./src/routes/api/index.mjs";
 
@@ -51,19 +51,19 @@ setupLoggingMiddleware(app);
  * @throws {Error} 세션 설정 실패 시 오류 발생
  */
 const initializeSession = async (app) => {
-    try {
-        const config = await getSessionConfig();
-        app.use(session(config));
+  try {
+    const config = await getSessionConfig();
+    app.use(session(config));
 
-        // Passport 초기화 (세션 설정 후)
-        app.use(passport.initialize());
-        app.use(passport.session());
+    // Passport 초기화 (세션 설정 후)
+    app.use(passport.initialize());
+    app.use(passport.session());
 
-        logger.info("세션 미들웨어가 성공적으로 초기화되었습니다");
-    } catch (error) {
-        logger.error("세션 초기화 실패:", error);
-        throw error;
-    }
+    logger.info("세션 미들웨어가 성공적으로 초기화되었습니다");
+  } catch (error) {
+    logger.error("세션 초기화 실패:", error);
+    throw error;
+  }
 };
 
 /**
@@ -74,25 +74,25 @@ const initializeSession = async (app) => {
  * @throws {Error} 초기화 실패 시 오류 발생
  */
 const initializeApp = async () => {
-    logger.info("애플리케이션 초기화를 시작합니다...");
+  logger.info("애플리케이션 초기화를 시작합니다...");
 
-    try {
-        // 세션 초기화
-        await initializeSession(app);
+  try {
+    // 세션 초기화
+    await initializeSession(app);
 
-        // 라우트 설정
-        app.use("/auth", authRouter);
-        app.use("/api", apiRouter);
+    // 라우트 설정
+    app.use("/auth", authRouter);
+    app.use("/api", apiRouter);
 
-        // 전역 오류 처리 미들웨어 설정
-        setupErrorHandling(app);
+    // 전역 오류 처리 미들웨어 설정
+    setupErrorHandling(app);
 
-        logger.info("애플리케이션 초기화가 완료되었습니다");
-        return app;
-    } catch (error) {
-        logger.error("애플리케이션 초기화 실패:", error);
-        throw error;
-    }
+    logger.info("애플리케이션 초기화가 완료되었습니다");
+    return app;
+  } catch (error) {
+    logger.error("애플리케이션 초기화 실패:", error);
+    throw error;
+  }
 };
 
 /**
@@ -102,25 +102,25 @@ const initializeApp = async () => {
 let server;
 
 (async () => {
-    try {
-        // 애플리케이션 초기화
-        const initializedApp = await initializeApp();
+  try {
+    // 애플리케이션 초기화
+    const initializedApp = await initializeApp();
 
-        // HTTPS 서버 생성 및 시작
-        server = await createHttpsServer(initializedApp);
+    // HTTPS 서버 생성 및 시작
+    server = await createHttpsServer(initializedApp);
 
-        // 프로세스 신호 처리 설정
-        setupProcessHandlers(server, async () => {
-            logger.info("정리 작업을 시작합니다...");
-            await closeRedisConnection();
-            logger.info("정리 작업이 완료되었습니다");
-        });
+    // 프로세스 신호 처리 설정
+    setupProcessHandlers(server, async () => {
+      logger.info("정리 작업을 시작합니다...");
+      await closeRedisConnection();
+      logger.info("정리 작업이 완료되었습니다");
+    });
 
-        logger.info("Dimiplan Backend 서버가 성공적으로 시작되었습니다");
-    } catch (error) {
-        logger.error("서버 시작 실패:", error);
-        process.exit(1);
-    }
+    logger.info("Dimiplan Backend 서버가 성공적으로 시작되었습니다");
+  } catch (error) {
+    logger.error("서버 시작 실패:", error);
+    process.exit(1);
+  }
 })();
 
 export default app;

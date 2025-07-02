@@ -6,12 +6,12 @@
  * @fileoverview 사용자 데이터 보안을 위한 암호화 및 해싱 유틸리티 모듈
  */
 import {
-    createCipheriv,
-    createDecipheriv,
-    createHash,
-    createHmac,
-    randomBytes,
-    timingSafeEqual,
+  createCipheriv,
+  createDecipheriv,
+  createHash,
+  createHmac,
+  randomBytes,
+  timingSafeEqual,
 } from "node:crypto";
 import { formatDateForMySQL } from "./date.mjs";
 import "../config/dotenv.mjs"; // 환경 변수 로드
@@ -41,21 +41,19 @@ const UID_SALT = process.env.UID_SALT;
  * console.log(iv.length); // 16
  */
 const getUserEncryptionKey = (userId) => {
-    // 마스터 키와 사용자 ID로부터 결정론적이지만 안전한 키 파생
-    const keyMaterial = createHmac("sha256", MASTER_KEY)
-        .update(userId)
-        .digest();
+  // 마스터 키와 사용자 ID로부터 결정론적이지만 안전한 키 파생
+  const keyMaterial = createHmac("sha256", MASTER_KEY).update(userId).digest();
 
-    // 키의 첫 32바이트 사용
-    const key = keyMaterial.slice(0, 32);
+  // 키의 첫 32바이트 사용
+  const key = keyMaterial.slice(0, 32);
 
-    // 사용자별 결정론적 초기화 벡터 생성
-    const iv = createHmac("sha256", MASTER_IV)
-        .update(userId)
-        .digest()
-        .slice(0, 16); // AES는 16바이트 IV 필요
+  // 사용자별 결정론적 초기화 벡터 생성
+  const iv = createHmac("sha256", MASTER_IV)
+    .update(userId)
+    .digest()
+    .slice(0, 16); // AES는 16바이트 IV 필요
 
-    return { key, iv };
+  return { key, iv };
 };
 
 /**
@@ -72,10 +70,10 @@ const getUserEncryptionKey = (userId) => {
  * console.log(hashed.length); // 64 (자)
  */
 export const hashUserId = (userId) => {
-    // 레인보우 테이블 공격 방지를 위해 솔트 추가
-    return createHash("sha3-256")
-        .update(userId + UID_SALT)
-        .digest("hex");
+  // 레인보우 테이블 공격 방지를 위해 솔트 추가
+  return createHash("sha3-256")
+    .update(userId + UID_SALT)
+    .digest("hex");
 };
 
 /**
@@ -94,11 +92,11 @@ export const hashUserId = (userId) => {
  * }
  */
 export const verifyUserId = (plainUserId, hashedUserId) => {
-    const computedHash = hashUserId(plainUserId);
-    return timingSafeEqual(
-        Buffer.from(computedHash, "hex"),
-        Buffer.from(hashedUserId, "hex"),
-    );
+  const computedHash = hashUserId(plainUserId);
+  return timingSafeEqual(
+    Buffer.from(computedHash, "hex"),
+    Buffer.from(hashedUserId, "hex"),
+  );
 };
 
 /**
@@ -119,24 +117,24 @@ export const verifyUserId = (plainUserId, hashedUserId) => {
  * const encryptedObj = encryptData('user123', { secret: '비밀', value: 42 });
  */
 export const encryptData = (userId, data) => {
-    try {
-        // 데이터 준비
-        const dataStr =
-            typeof data === "object" ? JSON.stringify(data) : String(data);
+  try {
+    // 데이터 준비
+    const dataStr =
+      typeof data === "object" ? JSON.stringify(data) : String(data);
 
-        // 사용자별 암호화 키 가져오기
-        const { key, iv } = getUserEncryptionKey(userId);
+    // 사용자별 암호화 키 가져오기
+    const { key, iv } = getUserEncryptionKey(userId);
 
-        // 암호화 수행
-        const cipher = createCipheriv("aes-256-cbc", key, iv);
-        let encrypted = cipher.update(dataStr, "utf8", "hex");
-        encrypted += cipher.final("hex");
+    // 암호화 수행
+    const cipher = createCipheriv("aes-256-cbc", key, iv);
+    let encrypted = cipher.update(dataStr, "utf8", "hex");
+    encrypted += cipher.final("hex");
 
-        return encrypted;
-    } catch (error) {
-        console.error("암호화 중 오류:", error);
-        throw new Error("데이터 암호화 실패");
-    }
+    return encrypted;
+  } catch (error) {
+    console.error("암호화 중 오류:", error);
+    throw new Error("데이터 암호화 실패");
+  }
 };
 
 /**
@@ -158,21 +156,21 @@ export const encryptData = (userId, data) => {
  * const decryptedObj = decryptData('user123', encryptedData, true);
  */
 export const decryptData = (userId, encryptedData, parseJson = false) => {
-    try {
-        // 사용자별 암호화 키 가져오기
-        const { key, iv } = getUserEncryptionKey(userId);
+  try {
+    // 사용자별 암호화 키 가져오기
+    const { key, iv } = getUserEncryptionKey(userId);
 
-        // 복호화 수행
-        const decipher = createDecipheriv("aes-256-cbc", key, iv);
-        let decrypted = decipher.update(encryptedData, "hex", "utf8");
-        decrypted += decipher.final("utf8");
+    // 복호화 수행
+    const decipher = createDecipheriv("aes-256-cbc", key, iv);
+    let decrypted = decipher.update(encryptedData, "hex", "utf8");
+    decrypted += decipher.final("utf8");
 
-        // JSON 파싱 옵션에 따라 반환
-        return parseJson ? JSON.parse(decrypted) : decrypted;
-    } catch (error) {
-        console.error("복호화 중 오류:", error);
-        throw new Error("데이터 복호화 실패");
-    }
+    // JSON 파싱 옵션에 따라 반환
+    return parseJson ? JSON.parse(decrypted) : decrypted;
+  } catch (error) {
+    console.error("복호화 중 오류:", error);
+    throw new Error("데이터 복호화 실패");
+  }
 };
 
 /**
@@ -189,12 +187,10 @@ export const decryptData = (userId, encryptedData, parseJson = false) => {
  * console.log(isEncrypted('123')); // false (너무 짧음)
  */
 export const isEncrypted = (data) => {
-    // AES 암호화 데이터의 최소 길이 및 16진수 형식 확인
-    return (
-        typeof data === "string" &&
-        /^[0-9a-f]+$/i.test(data) &&
-        data.length >= 32
-    );
+  // AES 암호화 데이터의 최소 길이 및 16진수 형식 확인
+  return (
+    typeof data === "string" && /^[0-9a-f]+$/i.test(data) && data.length >= 32
+  );
 };
 
 /**
@@ -214,7 +210,7 @@ export const isEncrypted = (data) => {
  * console.log(shortToken.length); // 32
  */
 export const generateSecureToken = (length = 32) => {
-    return randomBytes(length).toString("hex");
+  return randomBytes(length).toString("hex");
 };
 
 /**
@@ -229,5 +225,5 @@ export const generateSecureToken = (length = 32) => {
  * console.log(timestamp); // "2023-12-25 14:30:45"
  */
 export const getTimestamp = () => {
-    return formatDateForMySQL(new Date());
+  return formatDateForMySQL(new Date());
 };

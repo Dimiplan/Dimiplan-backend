@@ -23,18 +23,18 @@
  * console.log(formatDateForMySQL('2023-12-25T14:30:45Z')); // "2023-12-25 14:30:45"
  */
 export function formatDateForMySQL(date) {
-    // 입력값을 Date 객체로 변환
-    const dateObj = date instanceof Date ? date : new Date(date);
+  // 입력값을 Date 객체로 변환
+  const dateObj = date instanceof Date ? date : new Date(date);
 
-    // MySQL datetime 형식으로 정밀하게 변환
-    const year = dateObj.getFullYear();
-    const month = String(dateObj.getMonth() + 1).padStart(2, "0");
-    const day = String(dateObj.getDate()).padStart(2, "0");
-    const hours = String(dateObj.getHours()).padStart(2, "0");
-    const minutes = String(dateObj.getMinutes()).padStart(2, "0");
-    const seconds = String(dateObj.getSeconds()).padStart(2, "0");
+  // MySQL datetime 형식으로 정밀하게 변환
+  const year = dateObj.getFullYear();
+  const month = String(dateObj.getMonth() + 1).padStart(2, "0");
+  const day = String(dateObj.getDate()).padStart(2, "0");
+  const hours = String(dateObj.getHours()).padStart(2, "0");
+  const minutes = String(dateObj.getMinutes()).padStart(2, "0");
+  const seconds = String(dateObj.getSeconds()).padStart(2, "0");
 
-    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 }
 
 /**
@@ -55,7 +55,7 @@ export function formatDateForMySQL(date) {
  * });
  */
 export function getCurrentMySQLDateTime() {
-    return formatDateForMySQL(new Date());
+  return formatDateForMySQL(new Date());
 }
 
 /**
@@ -75,7 +75,7 @@ export function getCurrentMySQLDateTime() {
  * const thisYearStart = getYearStartDate();
  */
 export function getYearStartDate(date = new Date()) {
-    return new Date(date.getFullYear(), 0, 1);
+  return new Date(date.getFullYear(), 0, 1);
 }
 
 /**
@@ -98,5 +98,5 @@ export function getYearStartDate(date = new Date()) {
  *   .whereBetween('created_at', [yearStart, yearEnd]);
  */
 export function getYearEndDate(date = new Date()) {
-    return new Date(date.getFullYear(), 11, 31, 23, 59, 59, 999);
+  return new Date(date.getFullYear(), 11, 31, 23, 59, 59, 999);
 }

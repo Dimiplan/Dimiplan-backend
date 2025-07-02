@@ -22,11 +22,11 @@ import logger from "../utils/logger.mjs";
  * console.log(options.host); // 'localhost'
  */
 export const options = {
-    host: process.env.DB_HOST,
-    port: parseInt(process.env.DB_PORT, 10),
-    user: process.env.DB_USER,
-    password: process.env.DB_PASS,
-    database: process.env.DB_NAME,
+  host: process.env.DB_HOST,
+  port: parseInt(process.env.DB_PORT, 10),
+  user: process.env.DB_USER,
+  password: process.env.DB_PASS,
+  database: process.env.DB_NAME,
 };
 
 /**
@@ -37,8 +37,8 @@ export const options = {
  * @private
  */
 const dbConfig = {
-    client: "mysql",
-    connection: options,
+  client: "mysql",
+  connection: options,
 };
 
 /**
@@ -46,37 +46,37 @@ const dbConfig = {
  * 개발 및 디버깅을 위한 쿼리 로깅을 구성합니다
  */
 if (logger.isTestEnvironment) {
-    dbConfig.log = {
-        /**
-         * @param message
-         * @returns {void}
-         */
-        warn: (message) => logger.warn(message),
-        /**
-         * @param message
-         * @returns {void}
-         */
-        error: (message) => logger.error(message),
-        /**
-         * @param message
-         * @returns {void}
-         */
-        deprecate: (message) => logger.warn(message),
-    };
-
+  dbConfig.log = {
     /**
-     * @param result
-     * @returns {object}
+     * @param message
+     * @returns {void}
      */
-    dbConfig.postProcessResponse = (result) => result;
-
+    warn: (message) => logger.warn(message),
     /**
-     *
-     * @param value
-     * @param origImpl
-     * @returns {string}
+     * @param message
+     * @returns {void}
      */
-    dbConfig.wrapIdentifier = (value, origImpl) => origImpl(value);
+    error: (message) => logger.error(message),
+    /**
+     * @param message
+     * @returns {void}
+     */
+    deprecate: (message) => logger.warn(message),
+  };
+
+  /**
+   * @param result
+   * @returns {object}
+   */
+  dbConfig.postProcessResponse = (result) => result;
+
+  /**
+   *
+   * @param value
+   * @param origImpl
+   * @returns {string}
+   */
+  dbConfig.wrapIdentifier = (value, origImpl) => origImpl(value);
 }
 
 /**
@@ -100,9 +100,9 @@ export const db = knex(dbConfig);
  * 실행되는 모든 SQL 쿼리를 로그에 기록합니다
  */
 if (logger.isTestEnvironment) {
-    db.on("query", (queryData) => {
-        logger.logDbQuery(queryData.sql, queryData.bindings);
-    });
+  db.on("query", (queryData) => {
+    logger.logDbQuery(queryData.sql, queryData.bindings);
+  });
 }
 
 /**
@@ -110,7 +110,7 @@ if (logger.isTestEnvironment) {
  * 연결 실패나 기타 데이터베이스 오류를 로그에 기록합니다
  */
 db.on("error", (error) => {
-    logger.error("데이터베이스 연결 오류:", error);
+  logger.error("데이터베이스 연결 오류:", error);
 });
 
 export default db;

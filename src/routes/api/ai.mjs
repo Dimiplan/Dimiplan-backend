@@ -5,13 +5,13 @@
 import { Router } from "express";
 import { isAuthenticated, isUserRegistered } from "../../middleware/auth.mjs";
 import {
-    createChatRoom,
-    getChatMessages,
-    getChatRooms,
+  createChatRoom,
+  getChatMessages,
+  getChatRooms,
 } from "../../models/chat.mjs";
 import {
-    generateAutoResponse,
-    generateCustomResponse,
+  generateAutoResponse,
+  generateCustomResponse,
 } from "../../services/ai.mjs";
 import logger from "../../utils/logger.mjs";
 
@@ -32,15 +32,15 @@ router.use(isAuthenticated, isUserRegistered);
  * Response: { "roomData": [{"id": 1, "name": "채팅방1", "created_at": "2023-01-01"}] }
  */
 router.get("/getRoomList", async (req, res) => {
-    try {
-        const roomData = await getChatRooms(req.userId);
+  try {
+    const roomData = await getChatRooms(req.userId);
 
-        logger.verbose(`채팅방 목록 조회 성공, 채팅방 수: ${roomData.length}`);
-        res.status(200).json({ roomData });
-    } catch (error) {
-        logger.error(`채팅방 목록 조회 중 오류`, error);
-        res.status(500).json({ message: "서버 내부 오류" });
-    }
+    logger.verbose(`채팅방 목록 조회 성공, 채팅방 수: ${roomData.length}`);
+    res.status(200).json({ roomData });
+  } catch (error) {
+    logger.error(`채팅방 목록 조회 중 오류`, error);
+    res.status(500).json({ message: "서버 내부 오류" });
+  }
 });
 
 /**
@@ -55,31 +55,27 @@ router.get("/getRoomList", async (req, res) => {
  * Response: { "message": "채팅방이 성공적으로 생성되었습니다", "id": 123 }
  */
 router.post("/addRoom", async (req, res) => {
-    try {
-        const { name } = req.body;
+  try {
+    const { name } = req.body;
 
-        // 필수 필드 검증
-        if (!name) {
-            logger.warn(`채팅방 생성 실패: 이름 누락`);
-            return res
-                .status(400)
-                .json({ message: "채팅방 이름은 필수입니다" });
-        }
-
-        // 채팅방 생성
-        const data = await createChatRoom(req.userId, name);
-
-        logger.verbose(
-            `채팅방 생성 성공 - 사용자: ${req.userId}, 이름: ${name}`,
-        );
-        res.status(200).json({
-            message: "채팅방이 성공적으로 생성되었습니다",
-            ...data,
-        });
-    } catch (error) {
-        logger.error(`채팅방 생성 중 오류`, error);
-        res.status(500).json({ message: "서버 내부 오류" });
+    // 필수 필드 검증
+    if (!name) {
+      logger.warn(`채팅방 생성 실패: 이름 누락`);
+      return res.status(400).json({ message: "채팅방 이름은 필수입니다" });
     }
+
+    // 채팅방 생성
+    const data = await createChatRoom(req.userId, name);
+
+    logger.verbose(`채팅방 생성 성공 - 사용자: ${req.userId}, 이름: ${name}`);
+    res.status(200).json({
+      message: "채팅방이 성공적으로 생성되었습니다",
+      ...data,
+    });
+  } catch (error) {
+    logger.error(`채팅방 생성 중 오류`, error);
+    res.status(500).json({ message: "서버 내부 오류" });
+  }
 });
 
 /**
@@ -96,26 +92,26 @@ router.post("/addRoom", async (req, res) => {
  * Response: { "chatData": [{"id": 1, "message": "안녕하세요", "sender": "user"}] }
  */
 router.get("/getChatInRoom", async (req, res) => {
-    try {
-        const { from } = req.query;
+  try {
+    const { from } = req.query;
 
-        // 필수 필드 검증
-        if (!from) {
-            logger.warn(`채팅 메시지 조회 실패: ID 누락`);
-            return res.status(400).json({ message: "채팅방 ID는 필수입니다" });
-        }
-
-        // 채팅 메시지 조회
-        const chatData = await getChatMessages(req.userId, from);
-
-        logger.verbose(
-            `채팅 메시지 조회 성공 - 사용자: ${req.userId}, 채팅방ID: ${from}`,
-        );
-        res.status(200).json({ chatData });
-    } catch (error) {
-        logger.error(`채팅 메시지 조회 중 오류`, error);
-        res.status(500).json({ message: "서버 내부 오류" });
+    // 필수 필드 검증
+    if (!from) {
+      logger.warn(`채팅 메시지 조회 실패: ID 누락`);
+      return res.status(400).json({ message: "채팅방 ID는 필수입니다" });
     }
+
+    // 채팅 메시지 조회
+    const chatData = await getChatMessages(req.userId, from);
+
+    logger.verbose(
+      `채팅 메시지 조회 성공 - 사용자: ${req.userId}, 채팅방ID: ${from}`,
+    );
+    res.status(200).json({ chatData });
+  } catch (error) {
+    logger.error(`채팅 메시지 조회 중 오류`, error);
+    res.status(500).json({ message: "서버 내부 오류" });
+  }
 });
 
 /**
@@ -132,27 +128,27 @@ router.get("/getChatInRoom", async (req, res) => {
  * Response: { "response": { "message": "안녕하세요! 무엇을 도와드릴까요?", "room": "123" } }
  */
 router.post("/auto", async (req, res) => {
-    try {
-        const { prompt, room } = req.body;
+  try {
+    const { prompt, room } = req.body;
 
-        // 필수 필드 검증
-        if (!prompt) {
-            logger.warn(`AI 응답 생성 실패: 프롬프트 누락`);
-            return res.status(400).json({ message: "프롬프트는 필수입니다" });
-        }
-
-        // AI 응답 생성
-        const response = await generateAutoResponse(req.userId, prompt, room);
-
-        logger.verbose(
-            `AI 응답 생성 성공 - 사용자: ${req.userId}, 채팅방ID: ${response.room}`,
-        );
-
-        res.status(200).json({ response });
-    } catch (error) {
-        logger.error(`AI 응답 생성 중 오류`, error);
-        res.status(500).json({ message: "서버 내부 오류" });
+    // 필수 필드 검증
+    if (!prompt) {
+      logger.warn(`AI 응답 생성 실패: 프롬프트 누락`);
+      return res.status(400).json({ message: "프롬프트는 필수입니다" });
     }
+
+    // AI 응답 생성
+    const response = await generateAutoResponse(req.userId, prompt, room);
+
+    logger.verbose(
+      `AI 응답 생성 성공 - 사용자: ${req.userId}, 채팅방ID: ${response.room}`,
+    );
+
+    res.status(200).json({ response });
+  } catch (error) {
+    logger.error(`AI 응답 생성 중 오류`, error);
+    res.status(500).json({ message: "서버 내부 오류" });
+  }
 });
 
 /**
@@ -168,31 +164,31 @@ router.post("/auto", async (req, res) => {
  * Response: { "message": "AI 응답 내용" }
  */
 router.post("/custom", async (req, res) => {
-    try {
-        const { prompt, room, model } = req.body;
+  try {
+    const { prompt, room, model } = req.body;
 
-        // 필수 필드 검증
-        if (!prompt) {
-            logger.warn(`AI 응답 생성 실패: 프롬프트 누락`);
-            return res.status(400).json({ message: "프롬프트는 필수입니다" });
-        }
-
-        // AI 응답 생성
-        const response = await generateCustomResponse(
-            req.userId,
-            prompt,
-            model,
-            room,
-        );
-
-        logger.verbose(
-            `AI 응답 생성 성공 - 사용자: ${req.userId}, 채팅방ID: ${room}`,
-        );
-        res.status(200).json({ message: response });
-    } catch (error) {
-        logger.error(`AI 응답 생성 중 오류`, error);
-        res.status(500).json({ message: "서버 내부 오류" });
+    // 필수 필드 검증
+    if (!prompt) {
+      logger.warn(`AI 응답 생성 실패: 프롬프트 누락`);
+      return res.status(400).json({ message: "프롬프트는 필수입니다" });
     }
+
+    // AI 응답 생성
+    const response = await generateCustomResponse(
+      req.userId,
+      prompt,
+      model,
+      room,
+    );
+
+    logger.verbose(
+      `AI 응답 생성 성공 - 사용자: ${req.userId}, 채팅방ID: ${room}`,
+    );
+    res.status(200).json({ message: response });
+  } catch (error) {
+    logger.error(`AI 응답 생성 중 오류`, error);
+    res.status(500).json({ message: "서버 내부 오류" });
+  }
 });
 
 export default router;

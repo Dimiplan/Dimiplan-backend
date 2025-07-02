@@ -42,41 +42,41 @@ let redisStore;
  * const client = await initRedisClient();
  */
 export const initRedisClient = async () => {
-    if (redisClient) return redisClient;
+  if (redisClient) return redisClient;
 
-    // Redis 연결 설정
-    redisClient = createClient(6379, "127.0.0.1");
+  // Redis 연결 설정
+  redisClient = createClient(6379, "127.0.0.1");
 
-    redisClient.on("error", (err) => {
-        logger.error("Redis 클라이언트 오류:", err);
+  redisClient.on("error", (err) => {
+    logger.error("Redis 클라이언트 오류:", err);
+  });
+
+  redisClient.on("connect", () => {
+    logger.info("Redis 서버에 연결되었습니다");
+  });
+
+  redisClient.getAsync = promisify(redisClient.get).bind(redisClient);
+  redisClient.setAsync = promisify(redisClient.set).bind(redisClient);
+  redisClient.delAsync = promisify(redisClient.del).bind(redisClient);
+
+  // Redis 연결
+  await redisClient
+    .connect()
+    .catch((err) => {
+      logger.error("Redis 연결 실패:", err);
+      throw err;
+    })
+    .then(() => {
+      logger.info("Redis 서버에 연결되었습니다");
+      // Redis 세션 저장소 초기화
+      redisStore = new RedisStore({
+        client: redisClient,
+        ttl: 86400, // Redis에 저장되는 세션의 TTL (초 단위)
+        prefix: "dimiplan:sess:",
+      });
     });
 
-    redisClient.on("connect", () => {
-        logger.info("Redis 서버에 연결되었습니다");
-    });
-
-    redisClient.getAsync = promisify(redisClient.get).bind(redisClient);
-    redisClient.setAsync = promisify(redisClient.set).bind(redisClient);
-    redisClient.delAsync = promisify(redisClient.del).bind(redisClient);
-
-    // Redis 연결
-    await redisClient
-        .connect()
-        .catch((err) => {
-            logger.error("Redis 연결 실패:", err);
-            throw err;
-        })
-        .then(() => {
-            logger.info("Redis 서버에 연결되었습니다");
-            // Redis 세션 저장소 초기화
-            redisStore = new RedisStore({
-                client: redisClient,
-                ttl: 86400, // Redis에 저장되는 세션의 TTL (초 단위)
-                prefix: "dimiplan:sess:",
-            });
-        });
-
-    return redisClient;
+  return redisClient;
 };
 
 // eslint-disable-next-line jsdoc/require-returns
@@ -96,26 +96,26 @@ export const initRedisClient = async () => {
  * const config = await getSessionConfig();
  */
 export const getSessionConfig = async () => {
-    // Redis 클라이언트 초기화
-    await initRedisClient().catch((err) => {
-        logger.error("Redis 초기화 실패, 메모리 세션으로 폴백합니다:", err);
-        // Redis 사용 불가 시 기본 메모리 세션 사용
-        return null;
-    });
+  // Redis 클라이언트 초기화
+  await initRedisClient().catch((err) => {
+    logger.error("Redis 초기화 실패, 메모리 세션으로 폴백합니다:", err);
+    // Redis 사용 불가 시 기본 메모리 세션 사용
+    return null;
+  });
 
-    return {
-        secret: SESSION_SECRET, // 세션 암호화 비밀 키
-        resave: false, // 세션 변경되지 않아도 다시 저장하지 않음
-        saveUninitialized: false, // 초기화되지 않은 세션 저장하지 않음
-        name: "dimiplan.sid", // 세션 쿠키 이름
-        store: redisStore, // Redis 세션 저장소
-        cookie: {
-            httpOnly: true, // 클라이언트 측 JavaScript 접근 방지
-            secure: true, // HTTPS에서만 쿠키 전송
-            sameSite: "none", // 크로스 사이트 요청 허용
-            maxAge: 86400000, // 쿠키 최대 유지 시간
-        },
-    };
+  return {
+    secret: SESSION_SECRET, // 세션 암호화 비밀 키
+    resave: false, // 세션 변경되지 않아도 다시 저장하지 않음
+    saveUninitialized: false, // 초기화되지 않은 세션 저장하지 않음
+    name: "dimiplan.sid", // 세션 쿠키 이름
+    store: redisStore, // Redis 세션 저장소
+    cookie: {
+      httpOnly: true, // 클라이언트 측 JavaScript 접근 방지
+      secure: true, // HTTPS에서만 쿠키 전송
+      sameSite: "none", // 크로스 사이트 요청 허용
+      maxAge: 86400000, // 쿠키 최대 유지 시간
+    },
+  };
 };
 
 /**
@@ -128,11 +128,11 @@ export const getSessionConfig = async () => {
  * storeUserInSession(req.session, 'user123');
  */
 export const storeUserInSession = (session, userId) => {
-    // Passport 형식으로 사용자 ID 저장
-    if (!session.passport) {
-        session.passport = {};
-    }
-    session.passport.user = { id: userId };
+  // Passport 형식으로 사용자 ID 저장
+  if (!session.passport) {
+    session.passport = {};
+  }
+  session.passport.user = { id: userId };
 };
 
 /**
@@ -145,8 +145,8 @@ export const storeUserInSession = (session, userId) => {
  * const userId = getUserFromSession(req.session);
  */
 export const getUserFromSession = (session) => {
-    logger.verbose("세션 정보:", session);
-    return session?.passport?.user?.id || null;
+  logger.verbose("세션 정보:", session);
+  return session?.passport?.user?.id || null;
 };
 
 /**
@@ -159,8 +159,8 @@ export const getUserFromSession = (session) => {
  * await closeRedisConnection();
  */
 export const closeRedisConnection = async () => {
-    if (redisClient) {
-        await redisClient.quit();
-        logger.info("Redis 연결이 종료되었습니다");
-    }
+  if (redisClient) {
+    await redisClient.quit();
+    logger.info("Redis 연결이 종료되었습니다");
+  }
 };

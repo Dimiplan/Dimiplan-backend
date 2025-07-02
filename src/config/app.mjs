@@ -20,12 +20,12 @@ import { getSecurityConfig } from "./security.mjs";
  * const app = createExpressApp();
  */
 export const createExpressApp = () => {
-    const app = express();
+  const app = express();
 
-    // 프록시 신뢰 설정 (로드 밸런서 환경)
-    app.set("trust proxy", true);
+  // 프록시 신뢰 설정 (로드 밸런서 환경)
+  app.set("trust proxy", true);
 
-    return app;
+  return app;
 };
 
 /**
@@ -36,8 +36,8 @@ export const createExpressApp = () => {
  * @returns {void}
  */
 export const setupSecurityMiddleware = (app) => {
-    const securityConfig = getSecurityConfig();
-    app.use(helmet(securityConfig));
+  const securityConfig = getSecurityConfig();
+  app.use(helmet(securityConfig));
 };
 
 /**
@@ -48,8 +48,8 @@ export const setupSecurityMiddleware = (app) => {
  * @returns {void}
  */
 export const setupCorsMiddleware = (app) => {
-    const corsConfig = getCorsConfig();
-    app.use(corsConfig);
+  const corsConfig = getCorsConfig();
+  app.use(corsConfig);
 };
 
 /**
@@ -62,10 +62,10 @@ export const setupCorsMiddleware = (app) => {
  * @returns {void}
  */
 export const setupBodyParsing = (app, options = {}) => {
-    const { limit = "1mb" } = options;
+  const { limit = "1mb" } = options;
 
-    app.use(json({ limit }));
-    app.use(urlencoded({ extended: true, limit }));
+  app.use(json({ limit }));
+  app.use(urlencoded({ extended: true, limit }));
 };
 
 /**
@@ -76,12 +76,10 @@ export const setupBodyParsing = (app, options = {}) => {
  * @returns {void}
  */
 export const setupLoggingMiddleware = (app) => {
-    app.use((req, res, next) => {
-        logger.info(
-            `요청 방식: ${req.method}, 경로: ${req.path}, IP: ${req.ip}`,
-        );
-        next();
-    });
+  app.use((req, res, next) => {
+    logger.info(`요청 방식: ${req.method}, 경로: ${req.path}, IP: ${req.ip}`);
+    next();
+  });
 };
 
 /**
@@ -92,24 +90,24 @@ export const setupLoggingMiddleware = (app) => {
  * @returns {void}
  */
 export const setupTestLoggingMiddleware = (app) => {
-    if (!logger.isTestEnvironment) return;
+  if (!logger.isTestEnvironment) return;
 
-    app.use((req, res, next) => {
-        logger.logRequest(req);
+  app.use((req, res, next) => {
+    logger.logRequest(req);
 
-        const originalSend = res.send;
-        /**
-         * 응답 본문을 로그에 기록하는 send 메서드
-         * @param body
-         * @returns {Response}
-         */
-        res.send = (...args) => {
-            logger.logResponse(req, res, args[0]);
-            return originalSend.apply(res, args);
-        };
+    const originalSend = res.send;
+    /**
+     * 응답 본문을 로그에 기록하는 send 메서드
+     * @param body
+     * @returns {Response}
+     */
+    res.send = (...args) => {
+      logger.logResponse(req, res, args[0]);
+      return originalSend.apply(res, args);
+    };
 
-        next();
-    });
+    next();
+  });
 };
 
 /**
@@ -120,15 +118,15 @@ export const setupTestLoggingMiddleware = (app) => {
  * @returns {void}
  */
 export const setupErrorHandling = (app) => {
-    app.use((err, req, res, next) => {
-        logger.error("애플리케이션 오류:", err);
+  app.use((err, req, res, next) => {
+    logger.error("애플리케이션 오류:", err);
 
-        // 개발 환경에서는 상세 오류 정보 제공
-        const isDevelopment = process.env.NODE_ENV === "test";
+    // 개발 환경에서는 상세 오류 정보 제공
+    const isDevelopment = process.env.NODE_ENV === "test";
 
-        res.status(err.status || 500).json({
-            message: err.message || "내부 서버 오류",
-            ...(isDevelopment && { stack: err.stack }),
-        });
+    res.status(err.status || 500).json({
+      message: err.message || "내부 서버 오류",
+      ...(isDevelopment && { stack: err.stack }),
     });
+  });
 };
