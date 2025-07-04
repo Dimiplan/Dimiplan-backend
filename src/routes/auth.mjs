@@ -6,8 +6,8 @@ import { Router } from "express";
 import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-custom"; // 추가: 커스텀 전략
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
-import "../config/dotenv";
-import { createUser, isRegistered } from "../models/user";
+import "../config/dotenv.mjs";
+import { createUser, isRegistered } from "../models/user.mjs";
 import logger from "../utils/logger.mjs";
 
 const router = Router();
