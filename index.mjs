@@ -84,9 +84,10 @@ const initializeApp = async () => {
 
     // 라우트 설정
     app.use("/auth", authRouter);
+    app.use("/auth/admin", adminAuthRouter);
+
     app.use("/api", apiRouter);
     app.use("/admin", adminRouter);
-    app.use("/admin/auth", adminAuthRouter);
 
     // 전역 오류 처리 미들웨어 설정
     setupErrorHandling(app);

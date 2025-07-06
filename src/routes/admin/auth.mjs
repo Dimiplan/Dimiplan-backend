@@ -42,7 +42,7 @@ passport.use(
 
 /**
  * @name 관리자 구글 OAuth 로그인 초기화
- * @route {GET} /admin/auth/google
+ * @route {GET} /auth/admin/google
  * @returns {Redirect} 구글 OAuth 인증 페이지로 리다이렉트
  */
 router.get(
@@ -55,13 +55,13 @@ router.get(
 
 /**
  * @name 관리자 구글 OAuth 콜백 처리
- * @route {GET} /admin/auth/google/callback
+ * @route {GET} /auth/admin/google/callback
  * @returns {Redirect} 관리자 권한 확인 후 적절한 페이지로 리다이렉트
  */
 router.get(
   "/google/callback",
   passport.authenticate("google-admin", {
-    failureRedirect: "/admin/auth/google/callback/failure",
+    failureRedirect: "/auth/admin/google/callback/failure",
   }),
   async (req, res) => {
     try {
@@ -103,7 +103,7 @@ router.get(
 
 /**
  * @name 관리자 구글 OAuth 인증 실패 처리
- * @route {GET} /admin/auth/google/callback/failure
+ * @route {GET} /auth/admin/google/callback/failure
  * @returns {Redirect} 관리자 로그인 실패 페이지로 리다이렉트
  */
 router.get("/google/callback/failure", (req, res) => {
