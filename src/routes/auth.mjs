@@ -2,16 +2,15 @@
  * 인증 관련 라우터
  * 구글 OAuth를 사용한 로그인 및 사용자 인증 처리
  */
-const express = require("express");
-const passport = require("passport");
-const { Strategy: GoogleStrategy } = require("passport-google-oauth20");
-const LocalStrategy = require("passport-custom").Strategy; // 추가: 커스텀 전략
-require("../config/dotenv");
-const { createUser, isRegistered } = require("../models/userModel");
-const { storeUserInSession } = require("../config/sessionConfig");
-const logger = require("../utils/logger");
+import { Router } from "express";
+import passport from "passport";
+import { Strategy as LocalStrategy } from "passport-custom"; // 추가: 커스텀 전략
+import { Strategy as GoogleStrategy } from "passport-google-oauth20";
+import "../config/dotenv.mjs";
+import { createUser, isRegistered } from "../models/user.mjs";
+import logger from "../utils/logger.mjs";
 
-const router = express.Router();
+const router = Router();
 
 router.use((req, _res, next) => {
   const headerSid = req.get("x-session-id");
@@ -58,7 +57,7 @@ passport.use(
 // 모바일 로그인을 위한 커스텀 전략 설정
 passport.use(
   "mobile",
-  new LocalStrategy(async function (req, done) {
+  new LocalStrategy(async (req, done) => {
     try {
       const { userId, email, photo, name } = req.body;
 
@@ -96,16 +95,20 @@ passport.deserializeUser((user, done) => {
 });
 
 /**
- * @route GET /auth/google
- * @desc 구글 OAuth 로그인 초기화
- * 리다이렉트 도메인 저장 및 구글 인증 페이지로 리다이렉트
+ * @name 구글 OAuth 로그인 초기화
+ * @route {GET} /auth/google
+ * @returns {Redirect} 구글 OAuth 인증 페이지로 리다이렉트
+ * @example
+ * // GET /auth/google
+ * // 브라우저가 구글 로그인 페이지로 리다이렉트됨
  */
 router.get(
   "/google",
   (req, res, next) => {
-    // 원본 도메인 저장 (나중에 리다이렉트에 사용)
-    const originDomain = req.headers.referer || process.env.FRONT_HOST;
-    req.session.originDomain = originDomain;
+    // returnUrl이 있으면 세션에 저장
+    if (req.query.returnUrl) {
+      req.session.returnUrl = req.query.returnUrl;
+    }
 
     // 세션 명시적 저장
     req.session.save((err) => {
@@ -123,9 +126,12 @@ router.get(
 );
 
 /**
- * @route GET /auth/google/callback
- * @desc 구글 OAuth 콜백 처리
- * 사용자 인증 후 적절한 페이지로 리다이렉트
+ * @name 구글 OAuth 콜백 처리
+ * @route {GET} /auth/google/callback
+ * @returns {Redirect} 등록 상태에 따른 리다이렉트 (/signup 또는 /)
+ * @example
+ * // 미등록 사용자: /signup으로 리다이렉트
+ * // 등록된 사용자: /로 리다이렉트
  */
 router.get(
   "/google/callback",
@@ -135,47 +141,78 @@ router.get(
   async (req, res) => {
     try {
       const uid = req.session?.passport?.user?.id;
+      const returnUrl = req.session?.returnUrl;
 
-      // 저장된 원본 도메인 또는 기본 호스트 사용
-      const originDomain = req.session.originDomain || process.env.FRONT_HOST;
-      logger.info("원본 도메인으로 리다이렉트:", originDomain);
+      // 저장된 returnUrl이 있으면 해당 URL로, 없으면 기본 호스트 사용
+      const redirectDomain = returnUrl || process.env.FRONT_HOST;
+      logger.info("리다이렉트 URL:", redirectDomain);
 
       if (!uid) {
-        return res.redirect(`${originDomain}/login/fail`);
+        const failUrl = returnUrl
+          ? `${returnUrl}?login=fail`
+          : `${process.env.FRONT_HOST}/login/fail`;
+        return res.redirect(failUrl);
       }
 
       // 사용자 등록 여부 확인 (이름 설정 기준)
       const registered = await isRegistered(uid);
 
+      // returnUrl 세션에서 제거
+      delete req.session.returnUrl;
+
       // 등록 상태에 따라 리다이렉트
       if (!registered) {
-        return res.redirect(`${originDomain}/signup`);
+        const signupUrl = returnUrl
+          ? `${returnUrl}?signup=required`
+          : `${process.env.FRONT_HOST}/signup`;
+        return res.redirect(signupUrl);
       } else {
-        return res.redirect(`${originDomain}`);
+        // 등록된 사용자는 returnUrl로 또는 기본 페이지로 리다이렉트
+        return res.redirect(redirectDomain);
       }
     } catch (error) {
       logger.error("구글 콜백 라우트 중 오류:", error);
-      const fallbackDomain = req.session.originDomain || process.env.FRONT_HOST;
-      logger.info("실패 시 폴백 도메인으로 리다이렉트:", fallbackDomain);
-      return res.redirect(`${fallbackDomain}/login/fail`);
+      const fallbackUrl = req.session?.returnUrl || process.env.FRONT_HOST;
+      logger.info("실패 시 폴백 URL로 리다이렉트:", fallbackUrl);
+      const failUrl = req.session?.returnUrl
+        ? `${req.session.returnUrl}?login=fail`
+        : `${process.env.FRONT_HOST}/login/fail`;
+      return res.redirect(failUrl);
     }
   },
 );
 
 /**
- * @route GET /auth/google/callback/failure
- * @desc 구글 OAuth 인증 실패 처리
+ * @name 구글 OAuth 인증 실패 처리
+ * @route {GET} /auth/google/callback/failure
+ * @returns {Redirect} 로그인 실패 페이지로 리다이렉트 (/login/fail)
  */
 router.get("/google/callback/failure", (req, res) => {
-  const fallbackDomain = req.session.originDomain || process.env.FRONT_HOST;
-  logger.info("실패 시 폴백 도메인으로 리다이렉트:", fallbackDomain);
-  return res.redirect(`${fallbackDomain}/login/fail`);
+  const returnUrl = req.session?.returnUrl;
+  const failUrl = returnUrl
+    ? `${returnUrl}?login=fail`
+    : `${process.env.FRONT_HOST}/login/fail`;
+  logger.info("실패 시 URL로 리다이렉트:", failUrl);
+
+  // returnUrl 세션에서 제거
+  delete req.session.returnUrl;
+
+  return res.redirect(failUrl);
 });
 
 /**
- * @route POST /auth/login
- * @desc 사용자 ID로 로그인 (모바일 앱용)
- * 사용자 생성 및 세션 관리 (Passport 커스텀 전략 사용)
+ * @name 사용자 ID로 로그인 (모바일 앱용)
+ * @route {POST} /auth/login
+ * @param {string} userId - 사용자 ID
+ * @param {string} [email] - 사용자 이메일
+ * @param {string} [photo] - 프로필 사진 URL
+ * @param {string} [name] - 사용자 이름
+ * @returns {string} message - 로그인 성공 메시지
+ * @returns {string} sessionId - 세션 ID
+ * @example
+ * // POST /auth/login
+ * // Body: { "userId": "123456", "email": "user@example.com" }
+ * // Response: { "message": "로그인 성공", "sessionId": "sess_abc123" }
  */
 router.post("/login", (req, res, next) => {
   passport.authenticate("mobile", (err, user, info) => {
@@ -226,9 +263,12 @@ router.post("/login", (req, res, next) => {
 });
 
 /**
- * @route GET /auth/logout
- * @desc 사용자 로그아웃
- * 세션 제거 및 쿠키 초기화
+ * @name 사용자 로그아웃
+ * @route {GET} /auth/logout
+ * @returns {string} message - 로그아웃 완료 메시지
+ * @example
+ * // GET /auth/logout
+ * // Response: { "message": "로그아웃 완료" }
  */
 router.get("/logout", (req, res) => {
   req.session.destroy((err) => {
@@ -242,4 +282,4 @@ router.get("/logout", (req, res) => {
   });
 });
 
-module.exports = router;
+export default router;

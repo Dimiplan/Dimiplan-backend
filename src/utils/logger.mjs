@@ -1,22 +1,40 @@
 /**
  * 로깅 유틸리티
  * 민감한 데이터 필터링과 구조화된 로깅 기능 제공
+ *
+ * @fileoverview Winston 기반 로깅 시스템 및 보안 필터링
  */
-const winston = require("winston");
-const { format, transports } = winston;
-const fs = require("fs");
-const path = require("path");
-require("../config/dotenv"); // 환경 변수 로드
+import winston, { addColors, createLogger } from "winston";
 
-// 로그 레벨 정의
+const { format, transports } = winston;
+
+import { existsSync, mkdirSync } from "node:fs";
+import { join } from "node:path";
+import "../config/dotenv.mjs"; // 환경 변수 로드
+
+/**
+ * 로그 레벨 정의
+ * Winston 로거에서 사용할 로그 레벨들을 정의합니다
+ *
+ * @type {object}
+ * @property {number} error - 치명적인 오류 (0)
+ * @property {number} warn - 경고성 메시지 (1)
+ * @property {number} info - 일반 정보 (2)
+ * @property {number} verbose - 상세 로깅, 테스트 환경용 (3)
+ */
 const levels = {
-  error: 0, // 치명적인 오류
-  warn: 1, // 경고성 메시지
-  info: 2, // 일반 정보
-  verbose: 3, // 상세 로깅 (테스트 환경용)
+  error: 0,
+  warn: 1,
+  info: 2,
+  verbose: 3,
 };
 
-// 각 레벨별 색상 정의
+/**
+ * 각 로그 레벨별 콘솔 색상 정의
+ * 콘솔 출력 시 가독성을 높이기 위한 색상 설정
+ *
+ * @type {object}
+ */
 const colors = {
   error: "red",
   warn: "yellow",
@@ -24,14 +42,16 @@ const colors = {
   verbose: "cyan",
 };
 
-winston.addColors(colors);
+addColors(colors);
 
 /**
  * 안전한 JSON 직렬화 함수
- * 순환 참조 및 복잡한 객체 처리
+ * 순환 참조 및 복잡한 객체 처리를 위한 안전한 직렬화
  *
- * @param {Object} obj - 직렬화할 객체
+ * @param {any} obj - 직렬화할 객체
  * @returns {string} 직렬화된 JSON 문자열
+ * @example
+ * const result = safeStringify({ circular: obj });
  */
 const safeStringify = (obj) => {
   if (!obj) return String(obj);
@@ -43,6 +63,11 @@ const safeStringify = (obj) => {
   const cache = new Set();
 
   // 순환 참조 및 복잡한 객체 처리를 위한 대체자 함수
+  /**
+   * @param key
+   * @param value
+   * @returns {any}
+   */
   const replacer = (key, value) => {
     if (typeof value === "object" && value !== null) {
       if (cache.has(value)) {
@@ -80,12 +105,12 @@ const safeStringify = (obj) => {
 };
 
 // 로그 디렉토리 정의
-const logDir = path.join(process.cwd(), "logs");
+const logDir = join(process.cwd(), "logs");
 
 // 로그 디렉토리 생성
 try {
-  if (!fs.existsSync(logDir)) {
-    fs.mkdirSync(logDir, { recursive: true, mode: 0o755 });
+  if (!existsSync(logDir)) {
+    mkdirSync(logDir, { recursive: true, mode: 0o755 });
   }
 } catch (err) {
   console.error(`로그 디렉토리 생성 실패: ${err.message}`);
@@ -95,12 +120,10 @@ try {
 const isTestEnvironment = process.env.NODE_ENV === "test";
 
 // 로그 레벨 설정
-const logLevel = isTestEnvironment
-  ? "verbose"
-  : process.env.LOG_LEVEL || "info";
+const logLevel = process.env.LOG_LEVEL;
 
 // 로거 생성
-const logger = winston.createLogger({
+export const logger = createLogger({
   level: logLevel,
   levels,
   format: format.combine(
@@ -127,12 +150,12 @@ const logger = winston.createLogger({
       ),
     }),
     new transports.File({
-      filename: path.join(logDir, "combined.log"),
+      filename: join(logDir, "combined.log"),
       maxsize: 5242880, // 5MB
       maxFiles: 5,
     }),
     new transports.File({
-      filename: path.join(logDir, "errors.log"),
+      filename: join(logDir, "errors.log"),
       level: "error",
       maxsize: 5242880, // 5MB
       maxFiles: 5,
@@ -142,13 +165,41 @@ const logger = winston.createLogger({
 });
 
 // 외부 노출 로깅 함수
-module.exports = {
+export default {
+  /**
+   *
+   * @param message
+   * @param meta
+   * @returns {void}
+   */
   error: (message, meta = {}) => logger.error(message, meta),
+  /**
+   *
+   * @param message
+   * @param meta
+   * @returns {void}
+   */
   warn: (message, meta = {}) => logger.warn(message, meta),
+  /**
+   *
+   * @param message
+   * @param meta
+   * @returns {void}
+   */
   info: (message, meta = {}) => logger.info(message, meta),
+  /**
+   *
+   * @param message
+   * @param meta
+   * @returns {void}
+   */
   verbose: (message, meta = {}) => logger.verbose(message, meta),
 
   // 테스트 환경용 추가 로깅 함수
+  /**
+   *
+   * @param req
+   */
   logRequest: (req) => {
     if (isTestEnvironment) {
       logger.verbose(`요청: ${req.method} ${req.url}`, {
@@ -159,6 +210,12 @@ module.exports = {
       });
     }
   },
+  /**
+   *
+   * @param req
+   * @param res
+   * @param body
+   */
   logResponse: (req, res, body) => {
     if (isTestEnvironment) {
       logger.verbose(`응답: ${req.method} ${req.url} [${res.statusCode}]`, {
@@ -167,6 +224,11 @@ module.exports = {
       });
     }
   },
+  /**
+   *
+   * @param query
+   * @param bindings
+   */
   logDbQuery: (query, bindings) => {
     if (isTestEnvironment) {
       logger.verbose(`DB QUERY`, {
@@ -178,6 +240,11 @@ module.exports = {
   // 기타 유틸리티
   isTestEnvironment,
   stream: {
+    /**
+     *
+     * @param message
+     * @returns {void}
+     */
     write: (message) => logger.verbose(message.trim()),
   },
 };

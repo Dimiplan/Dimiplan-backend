@@ -1,7 +1,7 @@
 /*M!999999\- enable the sandbox mode */ 
 -- MariaDB dump 10.19  Distrib 10.11.11-MariaDB, for debian-linux-gnu (aarch64)
 --
--- Host: localhost    Database: dimiplan
+-- Host: localhost    Database: dimiplan-dev
 -- ------------------------------------------------------
 -- Server version	10.11.11-MariaDB-0+deb12u1
 
@@ -25,12 +25,13 @@ DROP TABLE IF EXISTS `chat`;
 /*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `chat` (
   `from` int(11) DEFAULT NULL,
-  `id` int(11) DEFAULT NULL,
-  `message` longtext DEFAULT NULL,
+  `id` int(11) NOT NULL,
+  `message` varchar(16000) DEFAULT NULL,
   `owner` varchar(128) NOT NULL,
-  `sender` tinytext DEFAULT NULL,
-  `created_at` datetime DEFAULT current_timestamp(),
-  `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp()
+  `sender` varchar(10) NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
+  `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id`,`owner`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -44,10 +45,11 @@ DROP TABLE IF EXISTS `chat_rooms`;
 CREATE TABLE `chat_rooms` (
   `owner` varchar(128) NOT NULL,
   `id` int(11) NOT NULL DEFAULT 0,
-  `name` text DEFAULT NULL,
+  `name` varchar(200) NOT NULL,
   `isProcessing` tinyint(4) NOT NULL DEFAULT 0,
   `created_at` datetime DEFAULT current_timestamp(),
-  `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp()
+  `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id`,`owner`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -62,13 +64,14 @@ CREATE TABLE `plan` (
   `owner` varchar(128) NOT NULL,
   `startDate` date DEFAULT NULL,
   `dueDate` date DEFAULT NULL,
-  `contents` text DEFAULT NULL,
+  `contents` varchar(200) NOT NULL,
   `from` int(11) NOT NULL DEFAULT 0,
   `isCompleted` tinyint(4) NOT NULL DEFAULT 0,
   `id` int(11) NOT NULL,
   `priority` int(11) NOT NULL DEFAULT 1,
-  `created_at` datetime DEFAULT current_timestamp(),
-  `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp()
+  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
+  `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id`,`owner`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -80,12 +83,13 @@ DROP TABLE IF EXISTS `planner`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `planner` (
-  `owner` varchar(128) NOT NULL,
+  `owner` varchar(200) NOT NULL,
   `id` int(11) NOT NULL,
   `isDaily` tinyint(4) NOT NULL DEFAULT 0,
-  `name` text DEFAULT NULL,
+  `name` varchar(200) NOT NULL,
   `created_at` datetime DEFAULT current_timestamp(),
-  `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp()
+  `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id`,`owner`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -103,7 +107,8 @@ CREATE TABLE `userid` (
   `chatId` int(11) NOT NULL DEFAULT 1,
   `roomId` int(11) NOT NULL DEFAULT 1,
   `created_at` datetime DEFAULT current_timestamp(),
-  `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp()
+  `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`owner`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -123,7 +128,9 @@ CREATE TABLE `users` (
   `profile_image` text DEFAULT NULL,
   `created_at` datetime DEFAULT current_timestamp(),
   `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-  PRIMARY KEY (`id`(100))
+  `isAdmin` tinyint(1) NOT NULL DEFAULT 0 COMMENT '관리자 권한 (0: 일반사용자, 1: 관리자)',
+  PRIMARY KEY (`id`(100)),
+  KEY `idx_users_isAdmin` (`isAdmin`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -136,4 +143,4 @@ CREATE TABLE `users` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-05-06  1:14:10
+-- Dump completed on 2025-07-05 11:17:13
