@@ -23,7 +23,7 @@ passport.use(
     async (accessToken, refreshToken, profile, done) => {
       try {
         const userId = profile.id;
-        
+
         // 사용자가 이미 등록되어 있는지 확인
         const registered = await isRegistered(userId);
         if (!registered) {
@@ -73,7 +73,9 @@ router.get(
       }
 
       // 관리자 권한 확인 - 미들웨어 대신 직접 확인
-      const { checkAdminStatus } = await import("../../middleware/adminAuth.mjs");
+      const { checkAdminStatus } = await import(
+        "../../middleware/adminAuth.mjs"
+      );
       const adminStatus = await checkAdminStatus(uid);
 
       if (!adminStatus) {
@@ -89,7 +91,7 @@ router.get(
         adminId: uid,
         ip: req.ip,
       });
-      
+
       return res.redirect(`${adminHost}/admin`);
     } catch (error) {
       logger.error("관리자 구글 콜백 라우트 중 오류:", error);
@@ -106,7 +108,10 @@ router.get(
  */
 router.get("/google/callback/failure", (req, res) => {
   const adminHost = process.env.ADMIN_HOST || process.env.FRONT_HOST;
-  logger.info("관리자 로그인 실패로 리다이렉트:", `${adminHost}/admin/login/fail`);
+  logger.info(
+    "관리자 로그인 실패로 리다이렉트:",
+    `${adminHost}/admin/login/fail`,
+  );
   return res.redirect(`${adminHost}/admin/login/fail`);
 });
 

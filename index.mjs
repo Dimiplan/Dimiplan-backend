@@ -24,9 +24,9 @@ import {
   closeRedisConnection,
   getSessionConfig,
 } from "./src/config/sessionConfig.mjs";
-import apiRouter from "./src/routes/api/index.mjs";
-import adminRouter from "./src/routes/admin/index.mjs";
 import adminAuthRouter from "./src/routes/admin/auth.mjs";
+import adminRouter from "./src/routes/admin/index.mjs";
+import apiRouter from "./src/routes/api/index.mjs";
 
 // 라우터 모듈 불러오기
 import authRouter from "./src/routes/auth.mjs";
