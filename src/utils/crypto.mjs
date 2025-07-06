@@ -188,9 +188,7 @@ export const decryptData = (userId, encryptedData, parseJson = false) => {
  */
 export const isEncrypted = (data) => {
   // AES 암호화 데이터의 최소 길이 및 16진수 형식 확인
-  return (
-    typeof data === "string" && /^[0-9a-f]+$/i.test(data)
-  );
+  return typeof data === "string" && /^[0-9a-f]+$/i.test(data);
 };
 
 /**
