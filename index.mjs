@@ -25,6 +25,8 @@ import {
   getSessionConfig,
 } from "./src/config/sessionConfig.mjs";
 import apiRouter from "./src/routes/api/index.mjs";
+import adminRouter from "./src/routes/admin/index.mjs";
+import adminAuthRouter from "./src/routes/admin/auth.mjs";
 
 // 라우터 모듈 불러오기
 import authRouter from "./src/routes/auth.mjs";
@@ -83,6 +85,8 @@ const initializeApp = async () => {
     // 라우트 설정
     app.use("/auth", authRouter);
     app.use("/api", apiRouter);
+    app.use("/admin", adminRouter);
+    app.use("/admin/auth", adminAuthRouter);
 
     // 전역 오류 처리 미들웨어 설정
     setupErrorHandling(app);

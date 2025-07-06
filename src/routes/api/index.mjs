@@ -5,7 +5,6 @@
  */
 import { Router } from "express";
 import { isAuthenticated } from "../../middleware/auth.mjs";
-import adminRouter from "./admin.mjs";
 import aiRouter from "./ai.mjs";
 import plannerRouter from "./planner.mjs";
 import taskRouter from "./task.mjs";
@@ -32,6 +31,5 @@ router.use("/user", userRouter); // 사용자 관련 API
 router.use("/task", taskRouter); // 작업 관련 API
 router.use("/planner", plannerRouter); // 플래너 관련 API
 router.use("/ai", aiRouter); // AI 관련 API
-router.use("/admin", adminRouter); // 관리자 관련 API
 
 export default router;
