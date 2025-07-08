@@ -29,7 +29,7 @@ router.get("/status", async (req, res) => {
       uptime: os.uptime(),
       totalmem: os.totalmem(),
       freemem: os.freemem(),
-      loadavg: os.loadavg()[0]/4,
+      loadavg: os.loadavg()[0] / 4,
       platform: process.platform,
       nodeVersion: process.version,
       environment: process.env.NODE_ENV,
