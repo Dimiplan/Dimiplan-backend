@@ -3,7 +3,6 @@
  * AI 채팅 기능 및 대화방 관리 API 제공
  */
 import { Router } from "express";
-import { isAuthenticated, isUserRegistered } from "../../middleware/auth.mjs";
 import {
   createChatRoom,
   getChatMessages,
@@ -17,95 +16,92 @@ import logger from "../../utils/logger.mjs";
 
 const router = Router();
 
-// 모든 라우트에 인증 및 등록 확인 미들웨어 적용
-router.use(isAuthenticated, isUserRegistered);
+router.route("/rooms")
+  /**
+   * @name 사용자의 모든 채팅방 목록 조회
+   * @route {GET} /api/ai/rooms
+   * @returns {number} roomData[].id - 채팅방 ID
+   * @returns {string} roomData[].name - 채팅방 이름
+   * @returns {string} roomData[].created_at - 생성 날짜
+   * @returns {string} roomData[].owner - 소유자 ID
+   * @example
+   * GET /api/ai/rooms
+   * Response: { "roomData": [{"id": 1, "name": "채팅방1", "created_at": "2023-01-01"}] }
+   */
+  .get(async (req, res) => {
+    try {
+      const roomData = await getChatRooms(req.userId);
 
-/**
- * @name 사용자의 모든 채팅방 목록 조회
- * @route {GET} /api/ai/getRoomList
- * @returns {number} roomData[].id - 채팅방 ID
- * @returns {string} roomData[].name - 채팅방 이름
- * @returns {string} roomData[].created_at - 생성 날짜
- * @returns {string} roomData[].owner - 소유자 ID
- * @example
- * GET /api/ai/getRoomList
- * Response: { "roomData": [{"id": 1, "name": "채팅방1", "created_at": "2023-01-01"}] }
- */
-router.get("/getRoomList", async (req, res) => {
-  try {
-    const roomData = await getChatRooms(req.userId);
-
-    logger.verbose(`채팅방 목록 조회 성공, 채팅방 수: ${roomData.length}`);
-    res.status(200).json({ roomData });
-  } catch (error) {
-    logger.error(`채팅방 목록 조회 중 오류`, error);
-    res.status(500).json({ message: "서버 내부 오류" });
-  }
-});
-
-/**
- * @name 새로운 채팅방 생성
- * @route {POST} /api/ai/addRoom
- * @bodyparam {string} name - 생성할 채팅방 이름
- * @returns {string} message - 성공 메시지
- * @returns {number} id - 생성된 채팅방 ID
- * @example
- * POST /api/ai/addRoom
- * Body: { "name": "새 채팅방" }
- * Response: { "message": "채팅방이 성공적으로 생성되었습니다", "id": 123 }
- */
-router.post("/addRoom", async (req, res) => {
-  try {
-    const { name } = req.body;
-
-    // 필수 필드 검증
-    if (!name) {
-      logger.warn(`채팅방 생성 실패: 이름 누락`);
-      return res.status(400).json({ message: "채팅방 이름은 필수입니다" });
+      logger.verbose(`채팅방 목록 조회 성공, 채팅방 수: ${roomData.length}`);
+      res.status(200).json({ roomData });
+    } catch (error) {
+      logger.error(`채팅방 목록 조회 중 오류`, error);
+      res.status(500).json({ message: "서버 내부 오류" });
     }
+  })
 
-    // 채팅방 생성
-    const data = await createChatRoom(req.userId, name);
+  /**
+   * @name 새로운 채팅방 생성
+   * @route {POST} /api/ai/rooms
+   * @bodyparam {string} name - 생성할 채팅방 이름
+   * @returns {string} message - 성공 메시지
+   * @returns {number} id - 생성된 채팅방 ID
+   * @example
+   * POST /api/ai/rooms
+   * Body: { "name": "새 채팅방" }
+   * Response: { "message": "채팅방이 성공적으로 생성되었습니다", "id": 123 }
+   */
+  .post(async (req, res) => {
+    try {
+      const { name } = req.body;
 
-    logger.verbose(`채팅방 생성 성공 - 사용자: ${req.userId}, 이름: ${name}`);
-    res.status(200).json({
-      message: "채팅방이 성공적으로 생성되었습니다",
-      ...data,
-    });
-  } catch (error) {
-    logger.error(`채팅방 생성 중 오류`, error);
-    res.status(500).json({ message: "서버 내부 오류" });
-  }
-});
+      // 필수 필드 검증
+      if (!name) {
+        logger.warn(`채팅방 생성 실패: 이름 누락`);
+        return res.status(400).json({ message: "채팅방 이름은 필수입니다" });
+      }
+
+      // 채팅방 생성
+      const data = await createChatRoom(req.userId, name);
+
+      logger.verbose(`채팅방 생성 성공 - 사용자: ${req.userId}, 이름: ${name}`);
+      res.status(200).json({
+        message: "채팅방이 성공적으로 생성되었습니다",
+        ...data,
+      });
+    } catch (error) {
+      logger.error(`채팅방 생성 중 오류`, error);
+      res.status(500).json({ message: "서버 내부 오류" });
+    }
+  });
 
 /**
  * @name 특정 채팅방의 모든 메시지 조회
- * @route {GET} /api/ai/getChatInRoom
- * @queryparam {string} from - 채팅방 ID
+ * @route {GET} /api/ai/rooms/:roomId
  * @returns {number} chatData[].id - 메시지 ID
  * @returns {string} chatData[].message - 메시지 내용
  * @returns {string} chatData[].sender - 보낸이 (user/ai)
  * @returns {string} chatData[].timestamp - 메시지 시간
  * @returns {string} chatData[].room - 채팅방 ID
  * @example
- * GET /api/ai/getChatInRoom?from=123
+ * GET /api/ai/rooms/:roomId
  * Response: { "chatData": [{"id": 1, "message": "안녕하세요", "sender": "user"}] }
  */
-router.get("/getChatInRoom", async (req, res) => {
+router.get("/rooms/:roomId", async (req, res) => {
   try {
-    const { from } = req.query;
+    const { roomId } = req.params;
 
     // 필수 필드 검증
-    if (!from) {
+    if (!roomId) {
       logger.warn(`채팅 메시지 조회 실패: ID 누락`);
       return res.status(400).json({ message: "채팅방 ID는 필수입니다" });
     }
 
     // 채팅 메시지 조회
-    const chatData = await getChatMessages(req.userId, from);
+    const chatData = await getChatMessages(req.userId, roomId);
 
     logger.verbose(
-      `채팅 메시지 조회 성공 - 사용자: ${req.userId}, 채팅방ID: ${from}`,
+      `채팅 메시지 조회 성공 - 사용자: ${req.userId}, 채팅방ID: ${roomId}`,
     );
     res.status(200).json({ chatData });
   } catch (error) {

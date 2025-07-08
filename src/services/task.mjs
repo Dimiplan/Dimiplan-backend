@@ -3,7 +3,6 @@
  * 작업 관련 비즈니스 로직을 담당합니다
  */
 import {
-  completeTask,
   createTask,
   deleteTask,
   getTasks,
@@ -37,13 +36,14 @@ export const addTask = async (userId, requestData) => {
 /**
  * 작업 정보 수정 서비스
  * @param userId
+ * @param taskId
  * @param requestData
  */
-export const updateTaskInfo = async (userId, requestData) => {
-  const { id, contents, priority, from, startDate, dueDate, isCompleted } =
+export const updateTaskInfo = async (userId, taskId, requestData) => {
+  const { contents, priority, from, startDate, dueDate, isCompleted } =
     requestData;
 
-  if (!id) {
+  if (!taskId) {
     throw new Error("REQUIRED_FIELDS_MISSING");
   }
 
@@ -60,8 +60,8 @@ export const updateTaskInfo = async (userId, requestData) => {
   }
 
   try {
-    await updateTask(userId, id, updateData);
-    logger.verbose(`작업 업데이트 성공 - 사용자: ${userId}, 작업ID: ${id}`);
+    await updateTask(userId, taskId, updateData);
+    logger.verbose(`작업 업데이트 성공 - 사용자: ${userId}, 작업ID: ${taskId}`);
   } catch (error) {
     if (error.message === "작업을 찾을 수 없습니다") {
       throw new Error("TASK_NOT_FOUND");
@@ -73,41 +73,16 @@ export const updateTaskInfo = async (userId, requestData) => {
 /**
  * 작업 삭제 서비스
  * @param userId
- * @param requestData
+ * @param taskId
  */
-export const removeTask = async (userId, requestData) => {
-  const { id } = requestData;
-
-  if (!id) {
+export const removeTask = async (userId, taskId) => {
+  if (!taskId) {
     throw new Error("REQUIRED_FIELDS_MISSING");
   }
 
   try {
-    await deleteTask(userId, id);
-    logger.verbose(`작업 삭제 성공 - 사용자: ${userId}, 작업ID: ${id}`);
-  } catch (error) {
-    if (error.message === "작업을 찾을 수 없습니다") {
-      throw new Error("TASK_NOT_FOUND");
-    }
-    throw error;
-  }
-};
-
-/**
- * 작업 완료 처리 서비스
- * @param userId
- * @param requestData
- */
-export const markTaskComplete = async (userId, requestData) => {
-  const { id } = requestData;
-
-  if (!id) {
-    throw new Error("REQUIRED_FIELDS_MISSING");
-  }
-
-  try {
-    await completeTask(userId, id);
-    logger.verbose(`작업 완료 성공 - 사용자: ${userId}, 작업ID: ${id}`);
+    await deleteTask(userId, taskId);
+    logger.verbose(`작업 삭제 성공 - 사용자: ${userId}, 작업ID: ${taskId}`);
   } catch (error) {
     if (error.message === "작업을 찾을 수 없습니다") {
       throw new Error("TASK_NOT_FOUND");

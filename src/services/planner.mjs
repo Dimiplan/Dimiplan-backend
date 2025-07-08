@@ -17,13 +17,13 @@ import logger from "../utils/logger.mjs";
  * @param requestData
  */
 export const addPlanner = async (userId, requestData) => {
-  const { name, isDaily, from } = requestData;
+  const { name, isDaily } = requestData;
 
-  if (name === undefined || from === undefined) {
+  if (name === undefined) {
     throw new Error("REQUIRED_FIELDS_MISSING");
   }
 
-  await createPlanner(userId, name, isDaily, from);
+  await createPlanner(userId, name, isDaily);
   logger.verbose(`플래너 추가 성공 - 사용자: ${userId}`);
 };
 

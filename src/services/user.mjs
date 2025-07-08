@@ -75,12 +75,12 @@ export const updateUserInfo = async (userId, requestData) => {
 /**
  * 사용자 등록 상태 확인 서비스
  * @param userId
- * @returns {Promise<object>} 등록 상태 객체
+ * @returns {Promise<bool>} 등록 상태
  */
 export const checkUserRegistration = async (userId) => {
   const registered = await isRegistered(userId);
   logger.verbose(`사용자 ${userId} 등록 상태: ${registered}`);
-  return { registered };
+  return registered;
 };
 
 /**

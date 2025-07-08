@@ -55,8 +55,7 @@ router.get("/", async (req, res) => {
 /**
  * @name 특정 로그 파일 내용 조회
  * @route {GET} /admin/logs/:filename
- * @param {string} filename - 로그 파일명
- * @param {number} [lines=100] - 조회할 라인 수
+ * @routeparam {string} filename - 로그 파일명
  * @returns {boolean} success - 요청 성공 여부
  * @returns {string} data.filename - 로그 파일명
  * @returns {number} data.lines - 총 라인 수
