@@ -84,9 +84,7 @@ router.patch("/", async (req, res) => {
     res.status(204).send();
   } catch (error) {
     if (error.message === "REQUIRED_FIELDS_MISSING") {
-      return res
-        .status(400)
-        .json({ message: "플래너 ID와 이름은 필수입니다" });
+      return res.status(400).json({ message: "플래너 ID와 이름은 필수입니다" });
     }
     logger.error(`플래너 이름 변경 중 오류`, error);
     res.status(500).json({ message: "서버 내부 오류" });
