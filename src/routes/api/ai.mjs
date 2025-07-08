@@ -16,65 +16,63 @@ import logger from "../../utils/logger.mjs";
 
 const router = Router();
 
-router
-  .route("/rooms")
-  /**
-   * @name 사용자의 모든 채팅방 목록 조회
-   * @route {GET} /api/ai/rooms
-   * @returns {number} roomData[].id - 채팅방 ID
-   * @returns {string} roomData[].name - 채팅방 이름
-   * @returns {string} roomData[].created_at - 생성 날짜
-   * @returns {string} roomData[].owner - 소유자 ID
-   * @example
-   * GET /api/ai/rooms
-   * Response: { "roomData": [{"id": 1, "name": "채팅방1", "created_at": "2023-01-01"}] }
-   */
-  .get(async (req, res) => {
-    try {
-      const roomData = await getChatRooms(req.userId);
+/**
+ * @name 사용자의 모든 채팅방 목록 조회
+ * @route {GET} /api/ai/rooms
+ * @returns {number} roomData[].id - 채팅방 ID
+ * @returns {string} roomData[].name - 채팅방 이름
+ * @returns {string} roomData[].created_at - 생성 날짜
+ * @returns {string} roomData[].owner - 소유자 ID
+ * @example
+ * GET /api/ai/rooms
+ * Response: { "roomData": [{"id": 1, "name": "채팅방1", "created_at": "2023-01-01"}] }
+ */
+router.get("/rooms", async (req, res) => {
+  try {
+    const roomData = await getChatRooms(req.userId);
 
-      logger.verbose(`채팅방 목록 조회 성공, 채팅방 수: ${roomData.length}`);
-      res.status(200).json({ roomData });
-    } catch (error) {
-      logger.error(`채팅방 목록 조회 중 오류`, error);
-      res.status(500).json({ message: "서버 내부 오류" });
+    logger.verbose(`채팅방 목록 조회 성공, 채팅방 수: ${roomData.length}`);
+    res.status(200).json({ roomData });
+  } catch (error) {
+    logger.error(`채팅방 목록 조회 중 오류`, error);
+    res.status(500).json({ message: "서버 내부 오류" });
+  }
+});
+
+/**
+ * @name 새로운 채팅방 생성
+ * @route {POST} /api/ai/rooms
+ * @bodyparam {string} name - 생성할 채팅방 이름
+ * @returns {string} message - 성공 메시지
+ * @returns {number} id - 생성된 채팅방 ID
+ * @example
+ * POST /api/ai/rooms
+ * Body: { "name": "새 채팅방" }
+ * Response: { "message": "채팅방이 성공적으로 생성되었습니다", "id": 123 }
+ */
+router.post("/rooms", async (req, res) => {
+  try {
+    const { name } = req.body;
+
+    // 필수 필드 검증
+    if (!name) {
+      logger.warn(`채팅방 생성 실패: 이름 누락`);
+      return res.status(400).json({ message: "채팅방 이름은 필수입니다" });
     }
-  })
 
-  /**
-   * @name 새로운 채팅방 생성
-   * @route {POST} /api/ai/rooms
-   * @bodyparam {string} name - 생성할 채팅방 이름
-   * @returns {string} message - 성공 메시지
-   * @returns {number} id - 생성된 채팅방 ID
-   * @example
-   * POST /api/ai/rooms
-   * Body: { "name": "새 채팅방" }
-   * Response: { "message": "채팅방이 성공적으로 생성되었습니다", "id": 123 }
-   */
-  .post(async (req, res) => {
-    try {
-      const { name } = req.body;
+    // 채팅방 생성
+    const data = await createChatRoom(req.userId, name);
 
-      // 필수 필드 검증
-      if (!name) {
-        logger.warn(`채팅방 생성 실패: 이름 누락`);
-        return res.status(400).json({ message: "채팅방 이름은 필수입니다" });
-      }
-
-      // 채팅방 생성
-      const data = await createChatRoom(req.userId, name);
-
-      logger.verbose(`채팅방 생성 성공 - 사용자: ${req.userId}, 이름: ${name}`);
-      res.status(200).json({
-        message: "채팅방이 성공적으로 생성되었습니다",
-        ...data,
-      });
-    } catch (error) {
-      logger.error(`채팅방 생성 중 오류`, error);
-      res.status(500).json({ message: "서버 내부 오류" });
-    }
-  });
+    logger.verbose(`채팅방 생성 성공 - 사용자: ${req.userId}, 이름: ${name}`);
+    res.status(200).json({
+      message: "채팅방이 성공적으로 생성되었습니다",
+      ...data,
+    });
+  } catch (error) {
+    logger.error(`채팅방 생성 중 오류`, error);
+    res.status(500).json({ message: "서버 내부 오류" });
+  }
+});
 
 /**
  * @name 특정 채팅방의 모든 메시지 조회
