@@ -14,7 +14,7 @@ import "./dotenv.mjs";
  *
  * @type {string[]}
  */
-const ALLOWED_DOMAINS = [".dimiplan.com", ".dimiplan.workers.dev"];
+const ALLOWED_DOMAINS = ["dimiplan.com", "dimiplan.workers.dev"];
 
 /**
  * Origin 검증 함수
@@ -34,7 +34,7 @@ const validateOrigin = (origin, callback) => {
   }
 
   // 허용된 도메인 확인
-  const isAllowed = ALLOWED_DOMAINS.some((domain) => origin.endsWith(domain));
+  const isAllowed = ALLOWED_DOMAINS.some((domain) => origin.endsWith(`.${domain}`) || origin === `https://${domain}`);
 
   if (isAllowed) {
     callback(null, true);
