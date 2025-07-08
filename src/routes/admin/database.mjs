@@ -180,14 +180,14 @@ router.post("/tables/:tableName", async (req, res) => {
 
 /**
  * @name 특정 테이블 행 수정
- * @route {PUT} /admin/database/tables/:tableName
+ * @route {PATCH} /admin/database/tables/:tableName
  * @routeparam {string} tableName - 테이블명
  * @bodyparam {object} data - 수정할 데이터
  * @bodyparam {object} where - 조건 (키-값 쌍)
  * @returns {boolean} success - 요청 성공 여부
  * @returns {number} data.affectedRows - 수정된 행 수
  */
-router.put("/tables/:tableName", async (req, res) => {
+router.patch("/tables/:tableName", async (req, res) => {
   try {
     const { tableName } = req.params;
     const { data, where } = req.body;
