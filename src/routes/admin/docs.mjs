@@ -50,8 +50,8 @@ router.get("/", async (req, res) => {
     // Remove duplicate routes (keep first occurrence)
     const seen = new Set();
     apiDocs = apiDocs.filter((doc) => {
-      if (seen.has(doc.path)) return false;
-      seen.add(doc.path);
+      if (seen.has(doc.path + doc.method)) return false;
+      seen.add(doc.path + doc.method);
       return true;
     });
 
