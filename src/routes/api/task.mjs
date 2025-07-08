@@ -3,11 +3,7 @@
  * 작업 생성, 조회, 수정, 삭제 API 제공
  */
 import { Router } from "express";
-import {
-  addTask,
-  removeTask,
-  updateTaskInfo,
-} from "../../services/task.mjs";
+import { addTask, removeTask, updateTaskInfo } from "../../services/task.mjs";
 import logger from "../../utils/logger.mjs";
 
 const router = Router();
@@ -41,7 +37,8 @@ router.post("/", async (req, res) => {
   }
 });
 
-router.route("/:taskId")
+router
+  .route("/:taskId")
   /**
    * @name 작업 정보 수정
    * @route {PATCH} /api/tasks/:taskId

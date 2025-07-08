@@ -12,8 +12,9 @@ import logger from "../../utils/logger.mjs";
 
 const router = Router();
 
-router.route("/")
-    /**
+router
+  .route("/")
+  /**
    * @name 현재 사용자 정보 조회
    * @route {GET} /api/user
    * @returns {string} id - 사용자 ID
@@ -30,7 +31,9 @@ router.route("/")
   .get(async (req, res) => {
     try {
       if (checkUserRegistration(req.userId) === false) {
-        return res.status(410).json({ message: "사용자가 등록되지 않았습니다" });
+        return res
+          .status(410)
+          .json({ message: "사용자가 등록되지 않았습니다" });
       }
       const user = await getUserInfo(req.userId);
       res.status(200).json(user);

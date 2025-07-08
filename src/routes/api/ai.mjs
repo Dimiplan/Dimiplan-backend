@@ -16,7 +16,8 @@ import logger from "../../utils/logger.mjs";
 
 const router = Router();
 
-router.route("/rooms")
+router
+  .route("/rooms")
   /**
    * @name 사용자의 모든 채팅방 목록 조회
    * @route {GET} /api/ai/rooms

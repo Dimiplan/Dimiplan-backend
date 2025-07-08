@@ -10,13 +10,14 @@ import {
   removePlanner,
   updatePlannerName,
 } from "../../services/planner.mjs";
-import logger from "../../utils/logger.mjs";
 import { getTaskList } from "../../services/task.mjs";
+import logger from "../../utils/logger.mjs";
 
 const router = Router();
 
-router.route("/")
-    /**
+router
+  .route("/")
+  /**
    * @name 모든 플래너 조회
    * @route {GET} /api/planners
    * @returns {number} [].id - 플래너 ID
@@ -46,7 +47,7 @@ router.route("/")
     }
   })
 
-    /**
+  /**
    * @name 새로운 플래너 생성
    * @route {POST} /api/planners
    * @bodyparam {string} name - 플래너 이름
@@ -62,9 +63,7 @@ router.route("/")
       res.status(201).send();
     } catch (error) {
       if (error.message === "REQUIRED_FIELDS_MISSING") {
-        return res
-          .status(400)
-          .json({ message: "이름은 필수 입력 항목입니다" });
+        return res.status(400).json({ message: "이름은 필수 입력 항목입니다" });
       }
       logger.error(`플래너 추가 중 오류`, error);
       res.status(500).json({ message: "서버 내부 오류" });
@@ -80,14 +79,16 @@ router.route("/")
    * @example
    * PATCH /api/planners
    * Body: { "id": "123", "name": "새로운 이름" }
-   */  
+   */
   .patch(async (req, res) => {
     try {
       await updatePlannerName(req.userId, req.body);
       res.status(204).send();
     } catch (error) {
       if (error.message === "REQUIRED_FIELDS_MISSING") {
-        return res.status(400).json({ message: "플래너 ID와 이름은 필수입니다" });
+        return res
+          .status(400)
+          .json({ message: "플래너 ID와 이름은 필수입니다" });
       }
       logger.error(`플래너 이름 변경 중 오류`, error);
       res.status(500).json({ message: "서버 내부 오류" });
@@ -95,16 +96,16 @@ router.route("/")
   })
 
   /**
- * @name 플래너 삭제
- * @route {DELETE} /api/planners
- * @bodyparam {string} id - 삭제할 플래너 ID
- * @returns {string} message - 성공 메시지
- * @throws {400} 필수 필드가 누락된 경우
- * @throws {404} 플래너를 찾을 수 없는 경우
- * @example
- * POST /api/planners
- * Body: { "id": "123" }
- */
+   * @name 플래너 삭제
+   * @route {DELETE} /api/planners
+   * @bodyparam {string} id - 삭제할 플래너 ID
+   * @returns {string} message - 성공 메시지
+   * @throws {400} 필수 필드가 누락된 경우
+   * @throws {404} 플래너를 찾을 수 없는 경우
+   * @example
+   * POST /api/planners
+   * Body: { "id": "123" }
+   */
   .delete(async (req, res) => {
     try {
       await removePlanner(req.userId, req.body);
