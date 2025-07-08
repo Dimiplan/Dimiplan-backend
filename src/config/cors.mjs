@@ -34,7 +34,9 @@ const validateOrigin = (origin, callback) => {
   }
 
   // 허용된 도메인 확인
-  const isAllowed = ALLOWED_DOMAINS.some((domain) => origin.endsWith(`.${domain}`) || origin === `https://${domain}`);
+  const isAllowed = ALLOWED_DOMAINS.some(
+    (domain) => origin.endsWith(`.${domain}`) || origin === `https://${domain}`,
+  );
 
   if (isAllowed) {
     callback(null, true);
