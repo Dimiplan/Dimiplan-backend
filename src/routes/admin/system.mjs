@@ -26,10 +26,10 @@ const router = Router();
 router.get("/status", async (req, res) => {
   try {
     const systemInfo = {
-      uptime: process.uptime(),
+      uptime: os.uptime(),
       totalmem: os.totalmem(),
       freemem: os.freemem(),
-      loadavg: os.loadavg()[0],
+      loadavg: os.loadavg()[0]/4,
       platform: process.platform,
       nodeVersion: process.version,
       environment: process.env.NODE_ENV,
