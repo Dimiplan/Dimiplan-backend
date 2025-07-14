@@ -181,6 +181,10 @@ router.post("/custom", async (req, res) => {
     );
     res.status(200).json({ message: response });
   } catch (error) {
+    if (error.message === "선택된 모델이 목록에 없습니다") {
+      logger.warn(`AI 응답 생성 실패: ${error.message}`);
+      return res.status(400).json({ message: error.message });
+    }
     logger.error(`AI 응답 생성 중 오류`, error);
     res.status(500).json({ message: "서버 내부 오류" });
   }

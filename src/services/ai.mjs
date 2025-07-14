@@ -32,16 +32,38 @@ const openRouter = new OpenAI({
  *
  * @type {string[]}
  * @constant
- * @example
- * // 모델 인덱스 0: 가장 빠른 모델
- * const quickModel = FREE_MODELS[0]; // "openai/gpt-4.1-nano"
  */
 const FREE_MODELS = [
+  "google/gemini-2.5-flash",
+  "deepseek/deepseek-prover-v2",
+  "openai/o4-mini",
+  "deepseek/deepseek-r1-0528",
+  "microsoft/phi-4-reasoning-plus",
+  "anthropic/claude-3.5-haiku",
+  "openai/gpt-4.1",
+  "moonshotai/kimi-k2"
+];
+
+/**
+ * 자동 AI 모델 목록
+ * 프롬프트의 복잡성에 따라 자동으로 선택되는 모델들의 목록입니다
+ * 인덱스 0-3에 따라 단순한 질문부터 복잡한 추론까지 대응합니다
+ * @type {string[]}
+ * @constant
+ * @example
+ * // 모델 인덱스 0: 가장 빠른 모델
+ * const quickModel = AUTO_MODELS[0]; // "openai/gpt-4
+ */
+const AUTO_MODELS = [
   "openai/gpt-4.1-nano",
   "openai/o4-mini",
   "anthropic/claude-3.5-haiku",
   "openai/gpt-4.1",
 ];
+
+const SUMMARIZER = "openai/gpt-4.1-mini";
+const SELECTOR = "openai/gpt-4.1-nano";
+const TITLER = "openai/gpt-4.1-nano";
 
 /**
  * 유료 AI 모델 목록
@@ -107,7 +129,7 @@ const summarizeMemory = async (userId, room) => {
 
   try {
     const response = await openRouter.chat.completions.create({
-      model: "openai/gpt-4.1-mini",
+      model: SUMMARIZER,
       messages: [
         {
           role: "system",
@@ -177,7 +199,7 @@ export const generateAutoResponse = async (userId, prompt, room) => {
         : "결과는 {model: integer}의 JSON 형식으로 반환");
     const modelSelection = await openRouter.chat.completions
       .create({
-        model: "openai/gpt-4.1-mini",
+        model: SELECTOR,
         messages: [
           {
             role: "system",
@@ -204,7 +226,8 @@ export const generateAutoResponse = async (userId, prompt, room) => {
       logger.verbose(modelSelection.choices[0].message.content);
       throw error;
     }
-    const model = FREE_MODELS[selectedModelIndex];
+
+    const model = AUTO_MODELS[selectedModelIndex];
 
     logger.info(`선택된 모델: ${model}`);
 
@@ -280,7 +303,7 @@ export const generateCustomResponse = async (userId, prompt, model, room) => {
     if (!room) {
       const modelSelection = await openRouter.chat.completions
         .create({
-          model: "openai/gpt-4.1-nano",
+          model: TITLER,
           messages: [
             {
               role: "system",
@@ -321,7 +344,7 @@ export const generateCustomResponse = async (userId, prompt, model, room) => {
     }
     if (model in FREE_MODELS === false) {
       logger.warn(`선택된 모델이 모델 목록에 없습니다: ${model}`);
-      throw new Error("선택된 모델이 모델 목록에 없습니다");
+      throw new Error("선택된 모델이 목록에 없습니다");
     }
     // 선택된 모델로 응답 생성
     const response = await openRouter.chat.completions
