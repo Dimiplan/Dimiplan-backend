@@ -102,32 +102,6 @@ export const getSecurityConfig = () => ({
 });
 
 /**
- * 개발 환경용 완화된 보안 설정을 생성합니다
- * 개발 편의성을 위해 일부 보안 정책을 완화합니다
- *
- * @returns {object} 개발용 Helmet 설정 객체
- */
-export const getDevSecurityConfig = () => {
-  const baseConfig = getSecurityConfig();
-
-  return {
-    ...baseConfig,
-    // 개발 환경에서는 CSP 완화
-    contentSecurityPolicy: {
-      directives: {
-        ...getCSPDirectives(),
-        scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"], // eval 허용
-        connectSrc: ["'self'", "ws:", "wss:"], // WebSocket 허용
-      },
-      reportOnly: true, // 위반 시 차단하지 않고 보고만
-    },
-
-    // HSTS 비활성화 (HTTP 개발 환경)
-    hsts: false,
-  };
-};
-
-/**
  * 환경에 따른 적절한 보안 설정을 반환합니다
  *
  * @returns {object} 환경별 보안 설정 객체
@@ -136,6 +110,5 @@ export const getDevSecurityConfig = () => {
  * app.use(helmet(config));
  */
 export const getEnvironmentSecurityConfig = () => {
-  const isDevelopment = process.env.NODE_ENV === "test";
-  return isDevelopment ? getDevSecurityConfig() : getSecurityConfig();
+  return getSecurityConfig();
 };
