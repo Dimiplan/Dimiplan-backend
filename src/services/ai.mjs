@@ -41,7 +41,7 @@ const FREE_MODELS = [
   "microsoft/phi-4-reasoning-plus",
   "anthropic/claude-3.5-haiku",
   "openai/gpt-4.1",
-  "moonshotai/kimi-k2"
+  "moonshotai/kimi-k2",
 ];
 
 /**
