@@ -153,10 +153,11 @@ router.post("/auto", async (req, res) => {
  * @bodyparam {string} [room] - 채팅방 ID
  * @bodyparam {string} model - 사용자가 선택한 AI 모델
  * @returns {string} message - AI 응답 메시지
+ * @returns {string} room - 채팅방 ID
  * @example
  * POST /api/ai/custom
  * Body: { "prompt": "코딩 질문", "model": "gpt-4", "room": "123" }
- * Response: { "message": "AI 응답 내용" }
+ * Response: { "message": "AI 응답 내용", "room": "123" }
  */
 router.post("/custom", async (req, res) => {
   try {
@@ -177,9 +178,9 @@ router.post("/custom", async (req, res) => {
     );
 
     logger.verbose(
-      `AI 응답 생성 성공 - 사용자: ${req.userId}, 채팅방ID: ${room}`,
+      `AI 응답 생성 성공 - 사용자: ${req.userId}, 채팅방ID: ${response.room}`,
     );
-    res.status(200).json({ message: response });
+    res.status(200).json({ message: response.text, room: response.room });
   } catch (error) {
     if (error.message === "선택된 모델이 목록에 없습니다") {
       logger.warn(`AI 응답 생성 실패: ${error.message}`);

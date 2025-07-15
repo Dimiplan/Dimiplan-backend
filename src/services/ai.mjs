@@ -367,7 +367,7 @@ export const generateCustomResponse = async (userId, prompt, model, room) => {
     // 메시지 데이터베이스에 저장
     await addChatMessages(userId, room, prompt, aiResponseText);
 
-    return aiResponseText;
+    return { text: aiResponseText, room };
   } catch (error) {
     logger.error("AI 응답 생성 중 에러:", error);
     throw error;
