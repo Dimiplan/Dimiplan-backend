@@ -9,10 +9,7 @@
   "scripts": {
     "dev": "bun --watch index.mjs",
     "auto-pull": "bun src/scripts/autoPull.mjs",
-    "lint": "eslint src/ index.mjs --ext .mjs,.js --config eslint.config.mjs",
-    "lint:fix": "eslint src/ index.mjs --ext .mjs,.js --config eslint.config.mjs --fix",
-    "docs": "jsdoc -c .jsdoc.config.json src/routes/",
-    "docs:clean": "rd -R docs/ && bun run docs",
+    "docs": "rd -R docs/ ; jsdoc -c .jsdoc.config.json src/routes/",
     "docs:json": "jsdoc -c .jsdoc.config.json src/routes/ -X > docs/api-docs.json"
   },
   "keywords": [],

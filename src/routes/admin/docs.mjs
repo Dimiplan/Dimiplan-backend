@@ -74,7 +74,7 @@ router.post("/regenerate", async (req, res) => {
 
     await new Promise((resolve, reject) => {
       exec(
-        "npm run docs:clean && npm run docs:json",
+        "rd -R docs/ ; jsdoc -c .jsdoc.config.json src/routes/ ; jsdoc -c .jsdoc.config.json src/routes/ -X > docs/api-docs.json",
         (error, stdout, stderr) => {
           if (error) {
             logger.error("JSDoc 재생성 실패", {
