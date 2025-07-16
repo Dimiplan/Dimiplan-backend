@@ -227,7 +227,7 @@ export const generateCustomResponse = async (userId, prompt, model, room) => {
         { role: "user", content: prompt },
       ];
     }
-    if (model in FREE_MODELS === false) {
+    if (!FREE_MODELS.includes(model)) {
       logger.warn(`선택된 모델이 모델 목록에 없습니다: ${model}`);
       throw new Error("선택된 모델이 목록에 없습니다");
     }
