@@ -62,7 +62,11 @@ router.get("/", async (req, res) => {
     res.json({ success: true, data: apiDocs });
   } catch (error) {
     logger.error("API 문서 조회 실패", { error: error.message });
-    res.status(500).json({ success: false, message: "API 문서 생성 실패" });
+    res.status(500).json({
+      success: false,
+      message: "API 문서 조회 중 오류가 발생했습니다",
+      error: error.message,
+    });
   }
 });
 
@@ -79,7 +83,7 @@ router.post("/regenerate", async (req, res) => {
 
     await new Promise((resolve, reject) => {
       exec(
-        "bun run docs:clean && bun run docs:json",
+        "npm run docs:clean && npm run docs:json",
         (error, stdout, stderr) => {
           if (error) {
             logger.error("JSDoc 재생성 실패", {
