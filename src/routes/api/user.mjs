@@ -22,6 +22,7 @@ const router = Router();
  * @returns {string} email - 이메일 주소
  * @returns {string} profile_image - 프로필 이미지 URL
  * @throws {404} 사용자를 찾을 수 없는 경우
+ * @throws {410} 사용자가 등록되지 않은 경우
  * @example
  * GET /api/user
  * Response: { "id": "123", "name": "홍길동", "grade": 1, "class": 1, "email": "user@example.com" }
@@ -35,7 +36,7 @@ router.get("/", async (req, res) => {
     res.status(200).json(user);
   } catch (error) {
     if (error.message === "USER_NOT_FOUND") {
-      return res.status(410).json({ message: "사용자를 찾을 수 없음" });
+      return res.status(404).json({ message: "사용자를 찾을 수 없음" });
     }
     logger.error("사용자 정보 조회 중 오류:", error);
     res.status(500).json({ message: "서버 내부 오류" });
