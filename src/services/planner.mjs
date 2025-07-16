@@ -24,7 +24,9 @@ export const updatePlannerName = async (userId, plannerId, name) => {
   }
 
   await renamePlanner(userId, plannerId, name);
-  logger.verbose(`플래너 이름 변경 성공 - 사용자: ${userId}, 플래너ID: ${plannerId}`);
+  logger.verbose(
+    `플래너 이름 변경 성공 - 사용자: ${userId}, 플래너ID: ${plannerId}`,
+  );
 };
 
 export const removePlanner = async (userId, plannerId) => {
@@ -34,7 +36,9 @@ export const removePlanner = async (userId, plannerId) => {
 
   try {
     await deletePlanner(userId, plannerId);
-    logger.verbose(`플래너 삭제 성공 - 사용자: ${userId}, 플래너ID: ${plannerId}`);
+    logger.verbose(
+      `플래너 삭제 성공 - 사용자: ${userId}, 플래너ID: ${plannerId}`,
+    );
   } catch (error) {
     if (error.message === "플래너를 찾을 수 없습니다") {
       throw new Error("PLANNER_NOT_FOUND");
