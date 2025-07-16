@@ -1,7 +1,3 @@
-/**
- * 관리자 문서 라우터
- * API 문서 생성 및 관리 관련 라우트
- */
 
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
@@ -27,11 +23,8 @@ router.get("/", async (req, res) => {
   try {
     const docsPath = join(process.cwd(), "docs", "api-docs.json");
 
-    // api-docs.json 파일 읽기
     const jsdocData = JSON.parse(readFileSync(docsPath, "utf8"));
 
-    // 라우터 정보만 필터링
-    // Generate and sort API docs, then dedupe identical routes
     let apiDocs = jsdocData
       .filter((item) => item.route && item.name)
       .map((item) => ({
@@ -47,7 +40,6 @@ router.get("/", async (req, res) => {
         })),
       }))
       .sort((a, b) => a.path.localeCompare(b.path));
-    // Remove duplicate routes (keep first occurrence)
     const seen = new Set();
     apiDocs = apiDocs.filter((doc) => {
       if (seen.has(doc.path + doc.method)) return false;

@@ -1,7 +1,3 @@
-/**
- * 플래너 관리 라우터
- * 플래너 생성, 조회, 수정, 삭제 API 제공
- */
 import { Router } from "express";
 import {
   addPlanner,
@@ -24,10 +20,6 @@ const router = Router();
  * @returns {string} [].from - 플래너 출처
  * @returns {string} [].owner - 소유자 ID
  * @returns {string} [].created_at - 생성 날짜
- * @throws {404} 플래너가 없는 경우
- * @example
- * GET /api/planners
- * Response: [{"id": 1, "name": "플래너1", "isDaily": true}]
  */
 router.get("/", async (req, res) => {
   try {
@@ -51,9 +43,6 @@ router.get("/", async (req, res) => {
  * @bodyparam {string} name - 플래너 이름
  * @bodyparam {boolean} isDaily - 일일 플래너 여부
  * @returns {string} message - 성공 메시지
- * @example
- * POST /api/planners
- * Body: { "name": "일정 플래너", "isDaily": true}
  */
 router.post("/", async (req, res) => {
   try {
@@ -74,9 +63,6 @@ router.post("/", async (req, res) => {
  * @bodyparam {string} id - 플래너 ID
  * @bodyparam {string} name - 새 플래너 이름
  * @returns {string} message - 성공 메시지
- * @example
- * PATCH /api/planners
- * Body: { "id": "123", "name": "새로운 이름" }
  */
 router.patch("/", async (req, res) => {
   try {
@@ -96,11 +82,6 @@ router.patch("/", async (req, res) => {
  * @route {DELETE} /api/planners
  * @bodyparam {string} id - 삭제할 플래너 ID
  * @returns {string} message - 성공 메시지
- * @throws {400} 필수 필드가 누락된 경우
- * @throws {404} 플래너를 찾을 수 없는 경우
- * @example
- * POST /api/planners
- * Body: { "id": "123" }
  */
 router.delete("/", async (req, res) => {
   try {
@@ -131,11 +112,6 @@ router.delete("/", async (req, res) => {
  * @returns {string} from - 플래너 출처
  * @returns {string} owner - 소유자 ID
  * @returns {string} created_at - 생성 날짜
- * @throws {400} 필수 필드가 누락된 경우
- * @throws {404} 플래너를 찾을 수 없는 경우
- * @example
- * GET /api/planners/:plannerId/info
- * Response: { "id": 1, "name": "플래너1", "isDaily": true, "from": "user", "owner": "123", "created_at": "2023-01-01T00:00:00Z" }
  */
 router.get("/:plannerId/info", async (req, res) => {
   try {
@@ -169,9 +145,6 @@ router.get("/:plannerId/info", async (req, res) => {
  * @returns {string} [].dueDate - 마감 날짜
  * @returns {number} [].priority - 우선순위
  * @returns {number} [].isCompleted - 완료 상태
- * @throws {404} 작업이나 플래너를 찾을 수 없는 경우
- * @example
- * GET /api/planners/:plannerId/tasks?isCompleted=false
  */
 router.get("/:plannerId/tasks", async (req, res) => {
   try {

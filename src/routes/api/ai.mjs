@@ -1,7 +1,3 @@
-/**
- * AI 채팅 라우터
- * AI 채팅 기능 및 대화방 관리 API 제공
- */
 import { Router } from "express";
 import {
   createChatRoom,
@@ -23,9 +19,6 @@ const router = Router();
  * @returns {string} roomData[].name - 채팅방 이름
  * @returns {string} roomData[].created_at - 생성 날짜
  * @returns {string} roomData[].owner - 소유자 ID
- * @example
- * GET /api/ai/rooms
- * Response: { "roomData": [{"id": 1, "name": "채팅방1", "created_at": "2023-01-01"}] }
  */
 router.get("/rooms", async (req, res) => {
   try {
@@ -45,22 +38,16 @@ router.get("/rooms", async (req, res) => {
  * @bodyparam {string} name - 생성할 채팅방 이름
  * @returns {string} message - 성공 메시지
  * @returns {number} id - 생성된 채팅방 ID
- * @example
- * POST /api/ai/rooms
- * Body: { "name": "새 채팅방" }
- * Response: { "message": "채팅방이 성공적으로 생성되었습니다", "id": 123 }
  */
 router.post("/rooms", async (req, res) => {
   try {
     const { name } = req.body;
 
-    // 필수 필드 검증
     if (!name) {
       logger.warn(`채팅방 생성 실패: 이름 누락`);
       return res.status(400).json({ message: "채팅방 이름은 필수입니다" });
     }
 
-    // 채팅방 생성
     const data = await createChatRoom(req.userId, name);
 
     logger.verbose(`채팅방 생성 성공 - 사용자: ${req.userId}, 이름: ${name}`);
@@ -82,21 +69,16 @@ router.post("/rooms", async (req, res) => {
  * @returns {string} chatData[].sender - 보낸이 (user/ai)
  * @returns {string} chatData[].timestamp - 메시지 시간
  * @returns {string} chatData[].room - 채팅방 ID
- * @example
- * GET /api/ai/rooms/:roomId
- * Response: { "chatData": [{"id": 1, "message": "안녕하세요", "sender": "user"}] }
  */
 router.get("/rooms/:roomId", async (req, res) => {
   try {
     const { roomId } = req.params;
 
-    // 필수 필드 검증
     if (!roomId) {
       logger.warn(`채팅 메시지 조회 실패: ID 누락`);
       return res.status(400).json({ message: "채팅방 ID는 필수입니다" });
     }
 
-    // 채팅 메시지 조회
     const chatData = await getChatMessages(req.userId, roomId);
 
     logger.verbose(
@@ -117,22 +99,16 @@ router.get("/rooms/:roomId", async (req, res) => {
  * @returns {string} response.message - AI 응답 메시지
  * @returns {string} response.room - 채팅방 ID
  * @returns {string} response.timestamp - 응답 시간
- * @example
- * POST /api/ai/auto
- * Body: { "prompt": "안녕하세요", "room": "123" }
- * Response: { "response": { "message": "안녕하세요! 무엇을 도와드릴까요?", "room": "123" } }
  */
 router.post("/auto", async (req, res) => {
   try {
     const { prompt, room } = req.body;
 
-    // 필수 필드 검증
     if (!prompt) {
       logger.warn(`AI 응답 생성 실패: 프롬프트 누락`);
       return res.status(400).json({ message: "프롬프트는 필수입니다" });
     }
 
-    // AI 응답 생성
     const response = await generateAutoResponse(req.userId, prompt, room);
 
     logger.verbose(
@@ -154,22 +130,16 @@ router.post("/auto", async (req, res) => {
  * @bodyparam {string} model - 사용자가 선택한 AI 모델
  * @returns {string} message - AI 응답 메시지
  * @returns {string} room - 채팅방 ID
- * @example
- * POST /api/ai/custom
- * Body: { "prompt": "코딩 질문", "model": "gpt-4", "room": "123" }
- * Response: { "message": "AI 응답 내용", "room": "123" }
  */
 router.post("/custom", async (req, res) => {
   try {
     const { prompt, room, model } = req.body;
 
-    // 필수 필드 검증
     if (!prompt) {
       logger.warn(`AI 응답 생성 실패: 프롬프트 누락`);
       return res.status(400).json({ message: "프롬프트는 필수입니다" });
     }
 
-    // AI 응답 생성
     const response = await generateCustomResponse(
       req.userId,
       prompt,

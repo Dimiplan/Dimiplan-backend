@@ -1,62 +1,31 @@
-/**
- * 환경 변수 설정 모듈
- * .env 파일에서 환경 변수를 로드하고 기본값을 설정합니다
- *
- * @fileoverview 환경 변수 로드 및 기본값 설정
- */
-
 import { config } from "dotenv";
 
-/**
- * 환경 변수를 로드하고 검증합니다
- *
- * @returns {void}
- * @throws {Error} 필수 환경 변수가 없는 경우 오류 발생
- */
 const loadEnvironmentVariables = () => {
   config();
-  // 기본값 설정
   setDefaultEnvironmentVariables();
-
-  // 필수 환경 변수 검증
   validateRequiredEnvironmentVariables();
 };
 
-/**
- * 기본 환경 변수 값을 설정합니다
- *
- * @returns {void}
- */
 const setDefaultEnvironmentVariables = () => {
-  // 기본 NODE_ENV 설정
   if (!process.env.NODE_ENV) {
     process.env.NODE_ENV = "test";
   }
 
-  // 기본 포트 설정
   if (!process.env.PORT) {
     process.env.PORT = "3000";
   }
 
-  // 기본 로그 레벨 설정
   if (!process.env.LOG_LEVEL) {
     process.env.LOG_LEVEL =
       process.env.NODE_ENV === "production" ? "info" : "verbose";
   }
 
-  // 기본 세션 설정
   if (!process.env.SESSION_SECRET) {
     console.warn("SESSION_SECRET이 설정되지 않았습니다. 임시 값을 사용합니다.");
     process.env.SESSION_SECRET = "temporary-secret-key-change-in-production";
   }
 };
 
-/**
- * 필수 환경 변수가 설정되어 있는지 검증합니다
- *
- * @returns {void}
- * @throws {Error} 필수 환경 변수가 없는 경우 오류 발생
- */
 const validateRequiredEnvironmentVariables = () => {
   const required = ["PORT", "NODE_ENV"];
 
@@ -68,7 +37,6 @@ const validateRequiredEnvironmentVariables = () => {
     );
   }
 
-  // 프로덕션 환경에서 추가 검증
   if (process.env.NODE_ENV === "production") {
     const productionRequired = [
       "CRYPTO_MASTER_KEY",
@@ -90,11 +58,6 @@ const validateRequiredEnvironmentVariables = () => {
   }
 };
 
-/**
- * 현재 환경 설정 정보를 반환합니다
- *
- * @returns {object} 환경 설정 정보 객체
- */
 export const getEnvironmentInfo = () => ({
   nodeEnv: process.env.NODE_ENV,
   port: process.env.PORT,
@@ -103,7 +66,6 @@ export const getEnvironmentInfo = () => ({
   isProduction: process.env.NODE_ENV === "production",
 });
 
-// 환경 변수 로드 실행
 try {
   loadEnvironmentVariables();
   console.log("환경 변수 로드 완료:", getEnvironmentInfo());

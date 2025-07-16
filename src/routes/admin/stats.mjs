@@ -1,8 +1,3 @@
-/**
- * 관리자 통계 라우터
- * 시스템 및 사용자 통계 관련 라우트
- */
-
 import { Router } from "express";
 import { db } from "../../config/db.mjs";
 import logger from "../../utils/logger.mjs";

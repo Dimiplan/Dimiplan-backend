@@ -1,7 +1,3 @@
-/**
- * 사용자 라우터
- * 사용자 정보 관리 및 업데이트 API
- */
 import { Router } from "express";
 import {
   checkUserRegistration,
@@ -21,11 +17,6 @@ const router = Router();
  * @returns {number} class - 반
  * @returns {string} email - 이메일 주소
  * @returns {string} profile_image - 프로필 이미지 URL
- * @throws {404} 사용자를 찾을 수 없는 경우
- * @throws {410} 사용자가 등록되지 않은 경우
- * @example
- * GET /api/user
- * Response: { "id": "123", "name": "홍길동", "grade": 1, "class": 1, "email": "user@example.com" }
  */
 router.get("/", async (req, res) => {
   try {
@@ -52,10 +43,6 @@ router.get("/", async (req, res) => {
  * @bodyparam {string} [email] - 이메일 주소
  * @bodyparam {string} [profile_image] - 프로필 이미지 URL
  * @returns {string} message - 업데이트 성공 메시지
- * @example
- * PATCH /api/user
- * Body: { "name": "홍길동", "grade": 2, "class": 3 }
- * Response: { "message": "업데이트 완료" }
  */
 router.patch("/", async (req, res) => {
   try {

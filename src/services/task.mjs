@@ -1,7 +1,3 @@
-/**
- * 작업 서비스
- * 작업 관련 비즈니스 로직을 담당합니다
- */
 import {
   createTask,
   deleteTask,
@@ -10,11 +6,6 @@ import {
 } from "../models/task.mjs";
 import logger from "../utils/logger.mjs";
 
-/**
- * 작업 생성 서비스
- * @param userId
- * @param requestData
- */
 export const addTask = async (userId, requestData) => {
   const { contents, priority, from, startDate, dueDate } = requestData;
 
@@ -33,12 +24,6 @@ export const addTask = async (userId, requestData) => {
   }
 };
 
-/**
- * 작업 정보 수정 서비스
- * @param userId
- * @param taskId
- * @param requestData
- */
 export const updateTaskInfo = async (userId, taskId, requestData) => {
   const { contents, priority, from, startDate, dueDate, isCompleted } =
     requestData;
@@ -70,11 +55,6 @@ export const updateTaskInfo = async (userId, taskId, requestData) => {
   }
 };
 
-/**
- * 작업 삭제 서비스
- * @param userId
- * @param taskId
- */
 export const removeTask = async (userId, taskId) => {
   if (!taskId) {
     throw new Error("REQUIRED_FIELDS_MISSING");
@@ -91,13 +71,6 @@ export const removeTask = async (userId, taskId) => {
   }
 };
 
-/**
- * 작업 조회 서비스
- * @param userId
- * @param plannerId
- * @param isCompleted
- * @returns {Promise<Array>} 작업 목록
- */
 export const getTaskList = async (userId, plannerId, isCompleted) => {
   try {
     const tasks = await getTasks(userId, plannerId, isCompleted);

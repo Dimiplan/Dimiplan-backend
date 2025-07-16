@@ -1,8 +1,3 @@
-/**
- * 관리자 데이터베이스 라우터
- * 데이터베이스 조회 및 관리 관련 라우트
- */
-
 import { Router } from "express";
 import { db } from "../../config/db.mjs";
 import logger from "../../utils/logger.mjs";
@@ -74,7 +69,6 @@ router.get("/tables/:tableName", async (req, res) => {
     const limit = parseInt(req.query.limit) || 50;
     const offset = (page - 1) * limit;
 
-    // 테이블 존재 확인
     const tableExists = await db.schema.hasTable(tableName);
     if (!tableExists) {
       return res
@@ -82,13 +76,10 @@ router.get("/tables/:tableName", async (req, res) => {
         .json({ success: false, message: "테이블을 찾을 수 없습니다" });
     }
 
-    // 전체 레코드 수 가져오기
     const [{ count: totalCount }] = await db(tableName).count("* as count");
 
-    // 데이터 가져오기
     const data = await db(tableName).select("*").limit(limit).offset(offset);
 
-    // 컬럼 정보 가져오기
     const columns = await db.raw(`DESCRIBE ${tableName}`);
     const columnInfo = columns[0].map((col) => ({
       name: col.Field,

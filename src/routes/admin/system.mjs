@@ -1,8 +1,3 @@
-/**
- * 관리자 시스템 라우터
- * 시스템 상태 및 AI 사용량 관련 라우트
- */
-
 import os from "node:os";
 import { Router } from "express";
 import { getUsage } from "../../services/ai.mjs";

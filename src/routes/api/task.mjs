@@ -1,7 +1,3 @@
-/**
- * 작업(Task) 관련 라우터
- * 작업 생성, 조회, 수정, 삭제 API 제공
- */
 import { Router } from "express";
 import { addTask, removeTask, updateTaskInfo } from "../../services/task.mjs";
 import logger from "../../utils/logger.mjs";
@@ -17,7 +13,6 @@ const router = Router();
  * @bodyparam {string} startDate - 시작 날짜
  * @bodyparam {string} dueDate - 마감 날짜
  * @returns {string} message - 성공 메시지
- * @throws {404} 플래너를 찾을 수 없는 경우
  */
 router.post("/", async (req, res) => {
   try {
@@ -48,7 +43,6 @@ router.post("/", async (req, res) => {
  * @bodyparam {string} [dueDate] - 수정할 마감 날짜
  * @bodyparam {boolean} [isCompleted] - 수정할 완료 상태
  * @returns {string} message - 성공 메시지
- * @throws {404} 작업을 찾을 수 없는 경우
  */
 router.patch("/:taskId", async (req, res) => {
   try {
@@ -77,7 +71,6 @@ router.patch("/:taskId", async (req, res) => {
  * @route {DELETE} /api/tasks/:taskId
  * @routeparam {string} taskId - 삭제할 작업 ID
  * @returns {string} message - 성공 메시지
- * @throws {404} 작업을 찾을 수 없는 경우
  */
 router.delete("/:taskId", async (req, res) => {
   try {

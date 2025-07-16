@@ -1,7 +1,3 @@
-/**
- * 관리자 인증 라우터
- * 관리자 전용 인증 처리 (계정 생성 기능 제외)
- */
 import { Router } from "express";
 import passport from "passport";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
@@ -11,7 +7,6 @@ import logger from "../../utils/logger.mjs";
 
 const router = Router();
 
-// 관리자 전용 구글 OAuth 전략 설정
 passport.use(
   "google-admin",
   new GoogleStrategy(
@@ -24,13 +19,11 @@ passport.use(
       try {
         const userId = profile.id;
 
-        // 사용자가 이미 등록되어 있는지 확인
         const registered = await isRegistered(userId);
         if (!registered) {
           return done(null, false, { message: "등록되지 않은 사용자입니다" });
         }
 
-        // 직렬화를 위해 사용자 ID만 반환
         return done(null, { id: userId });
       } catch (error) {
         logger.error("관리자 구글 OAuth 콜백 중 오류:", error);
@@ -72,7 +65,6 @@ router.get(
         return res.redirect(`${adminHost}/admin/login/fail`);
       }
 
-      // 관리자 권한 확인 - 미들웨어 대신 직접 확인
       const { checkAdminStatus } = await import(
         "../../middleware/adminAuth.mjs"
       );
@@ -86,7 +78,6 @@ router.get(
         return res.redirect(`${adminHost}/admin/login/unauthorized`);
       }
 
-      // 관리자 권한 확인됨 - 관리자 패널로 리다이렉트
       logger.info("관리자 로그인 성공", {
         adminId: uid,
         ip: req.ip,

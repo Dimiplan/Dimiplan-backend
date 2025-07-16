@@ -1,8 +1,3 @@
-/**
- * 관리자 로그 라우터
- * 로그 파일 관리 관련 라우트
- */
-
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { Router } from "express";
@@ -73,7 +68,7 @@ router.get("/:filename", async (req, res) => {
 
     const filePath = join(process.cwd(), "logs", filename);
     const content = readFileSync(filePath, "utf8");
-    const allLines = content.split("\n").reverse(); // 최신 로그가 위에 오도록 역순 정렬
+    const allLines = content.split("\n").reverse();
 
     logger.info("로그 파일 내용 조회", {
       admin: req.user?.email,

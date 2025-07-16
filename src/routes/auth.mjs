@@ -1,10 +1,6 @@
-/**
- * 인증 관련 라우터
- * 구글 OAuth를 사용한 로그인 및 사용자 인증 처리
- */
 import { Router } from "express";
 import passport from "passport";
-import { Strategy as LocalStrategy } from "passport-custom"; // 추가: 커스텀 전략
+import { Strategy as LocalStrategy } from "passport-custom";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import "../config/dotenv.mjs";
 import { createUser, isRegistered } from "../models/user.mjs";
@@ -21,7 +17,6 @@ router.use((req, _res, next) => {
   next();
 });
 
-// 구글 OAuth 전략 설정
 passport.use(
   new GoogleStrategy(
     {
@@ -31,20 +26,17 @@ passport.use(
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
-        // 프로필 정보로부터 사용자 객체 생성
         const user = {
           id: profile.id,
-          name: null, // 회원가입 과정에서 설정됨
+          name: null,
           grade: null,
           class: null,
           email: profile.emails?.[0]?.value ?? null,
           profile_image: profile.photos?.[0]?.value ?? null,
         };
 
-        // 데이터베이스에 사용자 생성 (userModel에서 암호화)
         await createUser(user);
 
-        // 직렬화를 위해 사용자 ID만 반환
         return done(null, { id: user.id });
       } catch (error) {
         logger.error("구글 OAuth 콜백 중 오류:", error);
@@ -54,7 +46,6 @@ passport.use(
   ),
 );
 
-// 모바일 로그인을 위한 커스텀 전략 설정
 passport.use(
   "mobile",
   new LocalStrategy(async (req, done) => {
@@ -65,7 +56,6 @@ passport.use(
         return done(null, false, { message: "사용자 ID 필요" });
       }
 
-      // 사용자 생성 (userModel에서 암호화)
       await createUser({
         id: userId,
         name: name,
@@ -75,7 +65,6 @@ passport.use(
         profile_image: photo,
       });
 
-      // 인증 성공: 사용자 정보 반환
       return done(null, { id: userId });
     } catch (error) {
       logger.error("모바일 인증 전략 오류:", error);
@@ -84,8 +73,6 @@ passport.use(
   }),
 );
 
-// 사용자 세션 직렬화 및 역직렬화
-// 세션에는 사용자 ID만 평문으로 저장
 passport.serializeUser((user, done) => {
   done(null, user);
 });
@@ -98,15 +85,12 @@ passport.deserializeUser((user, done) => {
  * @name 구글 OAuth 로그인 초기화
  * @route {GET} /auth/google
  * @returns {Redirect} 구글 OAuth 인증 페이지로 리다이렉트
- * @example
- * // GET /auth/google
- * // 브라우저가 구글 로그인 페이지로 리다이렉트됨
  */
 router.get(
   "/google",
   passport.authenticate("google", {
     scope: ["profile", "email"],
-    prompt: "select_account", // 계정 선택 강제
+    prompt: "select_account",
   }),
 );
 
@@ -114,9 +98,6 @@ router.get(
  * @name 구글 OAuth 콜백 처리
  * @route {GET} /auth/google/callback
  * @returns {Redirect} 등록 상태에 따른 리다이렉트 (/signup 또는 /)
- * @example
- * // 미등록 사용자: /signup으로 리다이렉트
- * // 등록된 사용자: /로 리다이렉트
  */
 router.get(
   "/google/callback",
@@ -131,14 +112,11 @@ router.get(
         return res.redirect(`${process.env.FRONT_HOST}/login/fail`);
       }
 
-      // 사용자 등록 여부 확인 (이름 설정 기준)
       const registered = await isRegistered(uid);
 
-      // 등록 상태에 따라 리다이렉트
       if (!registered) {
         return res.redirect(`${process.env.FRONT_HOST}/signup`);
       } else {
-        // 등록된 사용자는 기본 페이지로 리다이렉트
         return res.redirect(process.env.FRONT_HOST);
       }
     } catch (error) {
@@ -169,10 +147,6 @@ router.get("/google/callback/failure", (req, res) => {
  * @param {string} [name] - 사용자 이름
  * @returns {string} message - 로그인 성공 메시지
  * @returns {string} sessionId - 세션 ID
- * @example
- * // POST /auth/login
- * // Body: { "userId": "123456", "email": "user@example.com" }
- * // Response: { "message": "로그인 성공", "sessionId": "sess_abc123" }
  */
 router.post("/login", (req, res, next) => {
   passport.authenticate("mobile", (err, user, info) => {
@@ -192,7 +166,6 @@ router.post("/login", (req, res, next) => {
       }
 
       try {
-        // 세션 저장 및 오류 처리
         req.session.save((err) => {
           if (err) {
             logger.error("세션 저장 중 오류:", err);
@@ -206,10 +179,8 @@ router.post("/login", (req, res, next) => {
             return res.status(500).json({ message: "세션 오류" });
           }
         });
-        // 세션 ID를 응답 헤더와 본문에 포함
         res.setHeader("x-session-id", req.sessionID);
 
-        // 모바일 앱을 위한 성공 응답
         return res.status(200).json({
           message: "로그인 성공",
           sessionId: req.sessionID,
@@ -226,9 +197,6 @@ router.post("/login", (req, res, next) => {
  * @name 사용자 로그아웃
  * @route {GET} /auth/logout
  * @returns {string} message - 로그아웃 완료 메시지
- * @example
- * // GET /auth/logout
- * // Response: { "message": "로그아웃 완료" }
  */
 router.get("/logout", (req, res) => {
   req.session.destroy((err) => {
