@@ -59,14 +59,14 @@ router.post("/", async (req, res) => {
 
 /**
  * @name 플래너 이름 변경
- * @route {PATCH} /api/planners
- * @bodyparam {string} id - 플래너 ID
+ * @route {PATCH} /api/planners/:plannerId
+ * @routeparam {string} plannerId - 플래너 ID
  * @bodyparam {string} name - 새 플래너 이름
  * @returns {string} message - 성공 메시지
  */
-router.patch("/", async (req, res) => {
+router.patch("/:plannerId", async (req, res) => {
   try {
-    await updatePlannerName(req.userId, req.body);
+    await updatePlannerName(req.userId, req.params.plannerId, req.body.name);
     res.status(204).send();
   } catch (error) {
     if (error.message === "REQUIRED_FIELDS_MISSING") {
@@ -79,13 +79,13 @@ router.patch("/", async (req, res) => {
 
 /**
  * @name 플래너 삭제
- * @route {DELETE} /api/planners
- * @bodyparam {string} id - 삭제할 플래너 ID
+ * @route {DELETE} /api/planners/:plannerId
+ * @routeparam {string} plannerId - 삭제할 플래너 ID
  * @returns {string} message - 성공 메시지
  */
-router.delete("/", async (req, res) => {
+router.delete("/:plannerId", async (req, res) => {
   try {
-    await removePlanner(req.userId, req.body);
+    await removePlanner(req.userId, req.params.plannerId);
     res.status(204).send();
   } catch (error) {
     if (error.message === "REQUIRED_FIELDS_MISSING") {

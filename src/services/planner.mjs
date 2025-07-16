@@ -18,27 +18,23 @@ export const addPlanner = async (userId, requestData) => {
   logger.verbose(`플래너 추가 성공 - 사용자: ${userId}`);
 };
 
-export const updatePlannerName = async (userId, requestData) => {
-  const { id, name } = requestData;
-
-  if (!id || !name) {
+export const updatePlannerName = async (userId, plannerId, name) => {
+  if (!plannerId || !name) {
     throw new Error("REQUIRED_FIELDS_MISSING");
   }
 
-  await renamePlanner(userId, id, name);
-  logger.verbose(`플래너 이름 변경 성공 - 사용자: ${userId}, 플래너ID: ${id}`);
+  await renamePlanner(userId, plannerId, name);
+  logger.verbose(`플래너 이름 변경 성공 - 사용자: ${userId}, 플래너ID: ${plannerId}`);
 };
 
-export const removePlanner = async (userId, requestData) => {
-  const { id } = requestData;
-
-  if (!id) {
+export const removePlanner = async (userId, plannerId) => {
+  if (!plannerId) {
     throw new Error("REQUIRED_FIELDS_MISSING");
   }
 
   try {
-    await deletePlanner(userId, id);
-    logger.verbose(`플래너 삭제 성공 - 사용자: ${userId}, 플래너ID: ${id}`);
+    await deletePlanner(userId, plannerId);
+    logger.verbose(`플래너 삭제 성공 - 사용자: ${userId}, 플래너ID: ${plannerId}`);
   } catch (error) {
     if (error.message === "플래너를 찾을 수 없습니다") {
       throw new Error("PLANNER_NOT_FOUND");
