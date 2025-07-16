@@ -5,31 +5,7 @@
  * @fileoverview 환경 변수 로드 및 기본값 설정
  */
 
-import { existsSync } from "node:fs";
 import { config } from "dotenv";
-
-/**
- * 환경별 .env 파일 경로를 결정합니다
- *
- * @returns {string[]} 로드할 .env 파일 경로 배열
- */
-const getEnvFilePaths = () => {
-  const nodeEnv = process.env.NODE_ENV || "test";
-  const paths = [];
-
-  // 환경별 파일 우선 로드
-  const envFile = `.env.${nodeEnv}`;
-  if (existsSync(envFile)) {
-    paths.push(envFile);
-  }
-
-  // 기본 .env 파일
-  if (existsSync(".env")) {
-    paths.push(".env");
-  }
-
-  return paths;
-};
 
 /**
  * 환경 변수를 로드하고 검증합니다
@@ -38,18 +14,7 @@ const getEnvFilePaths = () => {
  * @throws {Error} 필수 환경 변수가 없는 경우 오류 발생
  */
 const loadEnvironmentVariables = () => {
-  const envPaths = getEnvFilePaths();
-
-  // 각 .env 파일 로드
-  envPaths.forEach((path) => {
-    const result = config({ path });
-    if (result.error) {
-      console.warn(`환경 변수 파일 로드 실패: ${path}`, result.error.message);
-    } else {
-      console.log(`환경 변수 파일 로드 성공: ${path}`);
-    }
-  });
-
+  config();
   // 기본값 설정
   setDefaultEnvironmentVariables();
 
