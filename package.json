@@ -41,6 +41,6 @@
     "globals": "^16.2.0",
     "jsdoc": "^4.0.4",
     "jsdoc-route-plugin": "^0.1.0",
-    "wrangler": "4.24.3"
+    "wrangler": "4.24.4"
   }
 }
