@@ -153,6 +153,10 @@ export const generateAutoResponse = async (userId, prompt, room) => {
           },
           {
             role: "system",
+            content: "LaTex 수식은 $또는 $$로 감싸서 응답하세요."
+          },
+          {
+            role: "system",
             content: `기존 채팅내용 요약: ${await summarizeMemory(userId, room)}`,
           },
           { role: "user", content: prompt },
@@ -212,6 +216,10 @@ export const generateCustomResponse = async (userId, prompt, model, room) => {
           role: "system",
           content: "불필요한 경우 1000 토큰 이내로 응답하세요",
         },
+        {
+          role: "system",
+          content: "LaTex 수식은 $또는 $$로 감싸서 응답하세요."
+        },
         { role: "user", content: prompt },
       ];
     } else {
@@ -219,6 +227,10 @@ export const generateCustomResponse = async (userId, prompt, model, room) => {
         {
           role: "system",
           content: "불필요한 경우 1000 토큰 이내로 응답하세요",
+        },
+        {
+          role: "system",
+          content: "LaTex 수식은 $또는 $$로 감싸서 응답하세요."
         },
         {
           role: "user",
