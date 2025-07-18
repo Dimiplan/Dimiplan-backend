@@ -153,7 +153,7 @@ export const generateAutoResponse = async (userId, prompt, room) => {
           },
           {
             role: "system",
-            content: "LaTex 수식은 $또는 $$로 감싸서 응답하세요."
+            content: "LaTex 수식은 $또는 $$로 감싸서 응답하세요.",
           },
           {
             role: "system",
@@ -218,7 +218,7 @@ export const generateCustomResponse = async (userId, prompt, model, room) => {
         },
         {
           role: "system",
-          content: "LaTex 수식은 $또는 $$로 감싸서 응답하세요."
+          content: "LaTex 수식은 $또는 $$로 감싸서 응답하세요.",
         },
         { role: "user", content: prompt },
       ];
@@ -230,7 +230,7 @@ export const generateCustomResponse = async (userId, prompt, model, room) => {
         },
         {
           role: "system",
-          content: "LaTex 수식은 $또는 $$로 감싸서 응답하세요."
+          content: "LaTex 수식은 $또는 $$로 감싸서 응답하세요.",
         },
         {
           role: "user",
