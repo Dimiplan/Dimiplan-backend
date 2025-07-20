@@ -97,7 +97,7 @@ const summarizeMemory = async (userId, room) => {
   }
 };
 
-export const generateAutoResponse = async (userId, prompt, room) => {
+export const generateAutoResponse = async (userId, prompt, room, search) => {
   try {
     const systemPrompt =
       (!room
@@ -145,7 +145,7 @@ export const generateAutoResponse = async (userId, prompt, room) => {
 
     const response = await openRouter.chat.completions
       .create({
-        model: model,
+        model: model + search ? ":online" : "",
         messages: [
           {
             role: "system",
@@ -187,7 +187,7 @@ export const generateAutoResponse = async (userId, prompt, room) => {
   }
 };
 
-export const generateCustomResponse = async (userId, prompt, model, room) => {
+export const generateCustomResponse = async (userId, prompt, model, room, search) => {
   try {
     let message_to_ai = [];
     if (!room) {
@@ -245,7 +245,7 @@ export const generateCustomResponse = async (userId, prompt, model, room) => {
     }
     const response = await openRouter.chat.completions
       .create({
-        model: model,
+        model: model + search ? ":online" : "",
         messages: message_to_ai,
       })
       .catch((error) => {

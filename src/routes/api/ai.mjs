@@ -96,20 +96,21 @@ router.get("/rooms/:roomId", async (req, res) => {
  * @route {POST} /api/ai/auto
  * @bodyparam {string} prompt - 사용자가 입력한 프롬프트
  * @bodyparam {string} [room] - 채팅방 ID
+ * @bodyparam {boolean} [search] - 검색 포함 여부
  * @returns {string} response.message - AI 응답 메시지
  * @returns {string} response.room - 채팅방 ID
  * @returns {string} response.timestamp - 응답 시간
  */
 router.post("/auto", async (req, res) => {
   try {
-    const { prompt, room } = req.body;
+    const { prompt, room, search } = req.body;
 
     if (!prompt) {
       logger.warn(`AI 응답 생성 실패: 프롬프트 누락`);
       return res.status(400).json({ message: "프롬프트는 필수입니다" });
     }
 
-    const response = await generateAutoResponse(req.userId, prompt, room);
+    const response = await generateAutoResponse(req.userId, prompt, room, search);
 
     logger.verbose(
       `AI 응답 생성 성공 - 사용자: ${req.userId}, 채팅방ID: ${response.room}`,
@@ -128,12 +129,13 @@ router.post("/auto", async (req, res) => {
  * @bodyparam {string} prompt - 사용자가 입력한 프롬프트
  * @bodyparam {string} [room] - 채팅방 ID
  * @bodyparam {string} model - 사용자가 선택한 AI 모델
+ * @bodyparam {boolean} [search] - 검색 포함 여부
  * @returns {string} message - AI 응답 메시지
  * @returns {string} room - 채팅방 ID
  */
 router.post("/custom", async (req, res) => {
   try {
-    const { prompt, room, model } = req.body;
+    const { prompt, room, model, search } = req.body;
 
     if (!prompt) {
       logger.warn(`AI 응답 생성 실패: 프롬프트 누락`);
@@ -145,6 +147,7 @@ router.post("/custom", async (req, res) => {
       prompt,
       model,
       room,
+      search
     );
 
     logger.verbose(
