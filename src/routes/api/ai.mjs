@@ -110,7 +110,12 @@ router.post("/auto", async (req, res) => {
       return res.status(400).json({ message: "프롬프트는 필수입니다" });
     }
 
-    const response = await generateAutoResponse(req.userId, prompt, room, search);
+    const response = await generateAutoResponse(
+      req.userId,
+      prompt,
+      room,
+      search,
+    );
 
     logger.verbose(
       `AI 응답 생성 성공 - 사용자: ${req.userId}, 채팅방ID: ${response.room}`,
@@ -147,7 +152,7 @@ router.post("/custom", async (req, res) => {
       prompt,
       model,
       room,
-      search
+      search,
     );
 
     logger.verbose(

@@ -187,7 +187,13 @@ export const generateAutoResponse = async (userId, prompt, room, search) => {
   }
 };
 
-export const generateCustomResponse = async (userId, prompt, model, room, search) => {
+export const generateCustomResponse = async (
+  userId,
+  prompt,
+  model,
+  room,
+  search,
+) => {
   try {
     let message_to_ai = [];
     if (!room) {
