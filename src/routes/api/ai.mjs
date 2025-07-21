@@ -118,7 +118,7 @@ router.patch("/rooms/:roomId", async (req, res) => {
     logger.verbose(
       `채팅방 이름 변경 성공 - 사용자: ${req.userId}, 채팅방ID: ${roomId}, 새이름: ${name}`,
     );
-    res.status(204);
+    res.status(204).send();
   } catch (error) {
     logger.error(`채팅방 이름 변경 중 오류`, error);
     res.status(500).json({ message: "서버 내부 오류" });
@@ -144,7 +144,7 @@ router.delete("/rooms/:roomId", async (req, res) => {
     logger.verbose(
       `채팅방 삭제 성공 - 사용자: ${req.userId}, 채팅방ID: ${roomId}`,
     );
-    res.status(204).json();
+    res.status(204).send();
   } catch (error) {
     logger.error(`채팅방 삭제 중 오류`, error);
     res.status(500).json({ message: "서버 내부 오류" });

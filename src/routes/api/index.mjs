@@ -4,8 +4,14 @@ import aiRouter from "./ai.mjs";
 import plannerRouter from "./planner.mjs";
 import taskRouter from "./task.mjs";
 import userRouter from "./user.mjs";
+import { $ } from "bun";
 
 const router = Router();
+
+router.get("/update", async (req, res) => {
+    await $`git pull && bun install`.nothrow();
+    res.status(204).send();
+});
 
 router.use(isAuthenticated, isUserRegistered);
 
