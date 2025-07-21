@@ -119,7 +119,9 @@ router.patch("/rooms/:roomId", async (req, res) => {
     logger.verbose(
       `채팅방 이름 변경 성공 - 사용자: ${req.userId}, 채팅방ID: ${roomId}, 새이름: ${name}`,
     );
-    res.status(200).json({message: "채팅방 이름이 성공적으로 변경되었습니다"});
+    res
+      .status(200)
+      .json({ message: "채팅방 이름이 성공적으로 변경되었습니다" });
   } catch (error) {
     logger.error(`채팅방 이름 변경 중 오류`, error);
     res.status(500).json({ message: "서버 내부 오류" });
