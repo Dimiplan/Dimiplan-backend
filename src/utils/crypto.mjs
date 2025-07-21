@@ -6,7 +6,6 @@ import {
   randomBytes,
   timingSafeEqual,
 } from "node:crypto";
-import { formatDateForMySQL } from "./date.mjs";
 import "../config/dotenv.mjs";
 
 const MASTER_KEY = process.env.CRYPTO_MASTER_KEY;
@@ -77,8 +76,4 @@ export const isEncrypted = (data) => {
 
 export const generateSecureToken = (length = 32) => {
   return randomBytes(length).toString("hex");
-};
-
-export const getTimestamp = () => {
-  return formatDateForMySQL(new Date());
 };

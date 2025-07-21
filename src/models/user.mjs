@@ -1,10 +1,6 @@
 import db from "../config/db.mjs";
-import {
-  decryptData,
-  getTimestamp,
-  hashUserId,
-  isEncrypted,
-} from "../utils/crypto.mjs";
+import { decryptData, hashUserId, isEncrypted } from "../utils/crypto.mjs";
+import { formatDateForMySQL } from "../utils/date.mjs";
 import logger from "../utils/logger.mjs";
 
 export const isUserExists = async (uid) => {
@@ -31,7 +27,7 @@ export const createUser = async (user) => {
         profile_image: user.profile_image,
       };
 
-      const timestamp = getTimestamp();
+      const timestamp = formatDateForMySQL();
       encryptedUser.created_at = timestamp;
       encryptedUser.updated_at = timestamp;
 
@@ -117,7 +113,7 @@ export const updateUser = async (uid, userData) => {
       encryptedData.class = userData.class;
     }
 
-    encryptedData.updated_at = getTimestamp();
+    encryptedData.updated_at = formatDateForMySQL();
 
     return await db("users").where("id", hashedUid).update(encryptedData);
   } catch (error) {
@@ -134,8 +130,4 @@ export const isRegistered = async (uid) => {
     logger.error("사용자 등록 여부 확인 오류:", error);
     throw error;
   }
-};
-
-export const getHashedUserId = (plainUid) => {
-  return hashUserId(plainUid);
 };

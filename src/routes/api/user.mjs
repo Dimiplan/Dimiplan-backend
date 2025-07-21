@@ -1,9 +1,5 @@
 import { Router } from "express";
-import {
-  checkUserRegistration,
-  getUserInfo,
-  updateUserInfo,
-} from "../../services/user.mjs";
+import { getUserInfo, updateUserInfo } from "../../services/user.mjs";
 import logger from "../../utils/logger.mjs";
 
 const router = Router();
@@ -20,9 +16,6 @@ const router = Router();
  */
 router.get("/", async (req, res) => {
   try {
-    if (checkUserRegistration(req.userId) === false) {
-      return res.status(410).json({ message: "사용자가 등록되지 않았습니다" });
-    }
     const user = await getUserInfo(req.userId);
     res.status(200).json(user);
   } catch (error) {

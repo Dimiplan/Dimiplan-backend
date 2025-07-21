@@ -1,10 +1,6 @@
 import db from "../config/db.mjs";
-import {
-  decryptData,
-  encryptData,
-  getTimestamp,
-  hashUserId,
-} from "../utils/crypto.mjs";
+import { decryptData, encryptData, hashUserId } from "../utils/crypto.mjs";
+import { formatDateForMySQL } from "../utils/date.mjs";
 import { getNextId } from "../utils/db.mjs";
 import logger from "../utils/logger.mjs";
 
@@ -48,7 +44,7 @@ export const createTask = async (
       from: plannerId,
       priority: priority || 1,
       isCompleted: 0,
-      created_at: getTimestamp(),
+      created_at: formatDateForMySQL(),
     });
 
     return {
@@ -150,7 +146,7 @@ export const updateTask = async (uid, id, updateData) => {
       formattedData.contents = encryptData(uid, formattedData.contents);
     }
 
-    formattedData.updated_at = getTimestamp();
+    formattedData.updated_at = formatDateForMySQL();
 
     await db("plan").where({ owner: hashedUid, id: id }).update(formattedData);
 

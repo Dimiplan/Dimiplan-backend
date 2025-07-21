@@ -10,15 +10,3 @@ export function formatDateForMySQL(date) {
 
   return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 }
-
-export function getCurrentMySQLDateTime() {
-  return formatDateForMySQL(new Date());
-}
-
-export function getYearStartDate(date = new Date()) {
-  return new Date(date.getFullYear(), 0, 1);
-}
-
-export function getYearEndDate(date = new Date()) {
-  return new Date(date.getFullYear(), 11, 31, 23, 59, 59, 999);
-}

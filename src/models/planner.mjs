@@ -1,10 +1,6 @@
 import db from "../config/db.mjs";
-import {
-  decryptData,
-  encryptData,
-  getTimestamp,
-  hashUserId,
-} from "../utils/crypto.mjs";
+import { decryptData, encryptData, hashUserId } from "../utils/crypto.mjs";
+import { formatDateForMySQL } from "../utils/date.mjs";
 import { executeTransaction, getNextId } from "../utils/db.mjs";
 import logger from "../utils/logger.mjs";
 
@@ -30,8 +26,8 @@ export const createPlanner = async (uid, name, isDaily) => {
       name: encryptData(uid, name),
       id: plannerId,
       isDaily: isDaily ?? 0,
-      created_at: getTimestamp(),
-      updated_at: getTimestamp(),
+      created_at: formatDateForMySQL(),
+      updated_at: formatDateForMySQL(),
     });
 
     return {
@@ -116,7 +112,7 @@ export const renamePlanner = async (uid, id, newName) => {
       .where({ owner: hashedUid, id: id })
       .update({
         name: encryptData(uid, newName),
-        updated_at: getTimestamp(),
+        updated_at: formatDateForMySQL(),
       });
 
     return {

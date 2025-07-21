@@ -150,9 +150,5 @@ export default {
       });
     }
   },
-
   isTestEnvironment,
-  stream: {
-    write: (message) => logger.verbose(message.trim()),
-  },
 };

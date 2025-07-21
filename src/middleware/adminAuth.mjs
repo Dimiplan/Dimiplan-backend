@@ -47,53 +47,6 @@ export const isAdmin = async (req, res, next) => {
     });
   }
 };
-
-export const setAdminUser = async (userId) => {
-  try {
-    const hashedUid = hashUserId(userId);
-    const result = await db("users").where("id", hashedUid).update({
-      isAdmin: 1,
-      updated_at: new Date(),
-    });
-
-    if (result > 0) {
-      logger.info("사용자를 관리자로 설정함", { userId });
-      return true;
-    } else {
-      logger.warn("사용자를 찾을 수 없어 관리자로 설정할 수 없음", {
-        userId,
-      });
-      return false;
-    }
-  } catch (error) {
-    logger.error("관리자 설정 중 오류:", error);
-    throw error;
-  }
-};
-
-export const removeAdminUser = async (userId) => {
-  try {
-    const hashedUid = hashUserId(userId);
-    const result = await db("users").where("id", hashedUid).update({
-      isAdmin: 0,
-      updated_at: new Date(),
-    });
-
-    if (result > 0) {
-      logger.info("사용자의 관리자 권한 제거함", { userId });
-      return true;
-    } else {
-      logger.warn("사용자를 찾을 수 없어 관리자 권한을 제거할 수 없음", {
-        userId,
-      });
-      return false;
-    }
-  } catch (error) {
-    logger.error("관리자 권한 제거 중 오류:", error);
-    throw error;
-  }
-};
-
 export const checkAdminStatus = async (userId) => {
   try {
     const hashedUid = hashUserId(userId);

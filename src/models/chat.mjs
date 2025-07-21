@@ -1,10 +1,6 @@
 import { db } from "../config/db.mjs";
-import {
-  decryptData,
-  encryptData,
-  getTimestamp,
-  hashUserId,
-} from "../utils/crypto.mjs";
+import { decryptData, encryptData, hashUserId } from "../utils/crypto.mjs";
+import { formatDateForMySQL } from "../utils/date.mjs";
 import { getNextId } from "../utils/db.mjs";
 import logger from "../utils/logger.mjs";
 
@@ -20,7 +16,7 @@ export const createChatRoom = async (uid, name) => {
       id: roomId,
       name: encryptedName,
       isProcessing: 0,
-      created_at: getTimestamp(),
+      created_at: formatDateForMySQL(),
     });
 
     return {
@@ -57,7 +53,7 @@ export const addChatMessages = async (uid, roomId, userMessage, aiMessage) => {
     const hashedUid = hashUserId(uid);
 
     const chatId = await getNextId(hashedUid, "chatId");
-    const timestamp = getTimestamp();
+    const timestamp = formatDateForMySQL();
 
     const encryptedUserMessage = encryptData(uid, userMessage);
     const encryptedAiMessage = encryptData(uid, aiMessage);

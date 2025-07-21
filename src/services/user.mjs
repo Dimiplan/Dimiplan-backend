@@ -2,29 +2,21 @@ import { getUser, isRegistered, updateUser } from "../models/user.mjs";
 import logger from "../utils/logger.mjs";
 
 const validateUserData = (userData) => {
-  if (userData.name && userData.name.toString().length > 15) {
+  if (userData.name && userData.name.length > 15) {
     return false;
   }
 
   if (
     userData.grade &&
-    (Number.isNaN(parseInt(userData.grade)) ||
-      parseInt(userData.grade) > 3 ||
-      parseInt(userData.grade) < 1)
+    (Number.isNaN(userData.grade) || userData.grade > 3 || userData.grade < 1)
   ) {
     return false;
   }
 
-  if (
+  return !(
     userData.class &&
-    (Number.isNaN(parseInt(userData.class)) ||
-      parseInt(userData.class) > 6 ||
-      parseInt(userData.class) < 1)
-  ) {
-    return false;
-  }
-
-  return true;
+    (Number.isNaN(userData.class) || userData.class > 6 || userData.class < 1)
+  );
 };
 
 export const updateUserInfo = async (userId, requestData) => {
