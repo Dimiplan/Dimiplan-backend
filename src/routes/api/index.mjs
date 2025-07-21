@@ -9,8 +9,8 @@ import userRouter from "./user.mjs";
 const router = Router();
 
 router.get("/update", async (req, res) => {
-  await $`git pull && bun install`.nothrow();
-  res.status(204).send();
+    await $`git pull`.nothrow();
+    res.status(204).send();
 });
 
 router.use(isAuthenticated, isUserRegistered);
