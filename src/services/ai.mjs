@@ -216,10 +216,12 @@ export const generateCustomResponse = async (
         });
 
       let title = "";
-      try{
-        title  = JSON.parse(modelSelection.choices[0].message.content)['title'];
-      } catch (error){
-        logger.error(`Json 파싱 오류. 원본 문자열: ${modelSelection.choices[0].message.content}`);
+      try {
+        title = JSON.parse(modelSelection.choices[0].message.content).title;
+      } catch (error) {
+        logger.error(
+          `Json 파싱 오류. 원본 문자열: ${modelSelection.choices[0].message.content}`,
+        );
         throw error;
       }
 
