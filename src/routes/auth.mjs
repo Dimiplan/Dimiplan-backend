@@ -6,6 +6,7 @@ import "../config/dotenv.mjs";
 import { createUser, isRegistered } from "../models/user.mjs";
 import { updateUserInfo } from "../services/user.mjs";
 import logger from "../utils/logger.mjs";
+import {isAuthenticated} from "../middleware/auth.mjs";
 
 const router = Router();
 
@@ -202,7 +203,7 @@ router.post("/login", (req, res, next) => {
  * @bodyparam {number} [class] - 반 (1-6)
  * @returns {string} message - 업데이트 성공 메시지
  */
-router.post("/register", async (req, res) => {
+router.post("/register", isAuthenticated, async (req, res) => {
   try {
     if (await isRegistered(req.userId)) {
       return res.status(400).json({ message: "이미 등록된 사용자입니다" });
