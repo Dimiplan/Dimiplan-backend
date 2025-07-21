@@ -215,7 +215,14 @@ export const generateCustomResponse = async (
           throw error;
         });
 
-      const { title } = JSON.parse(modelSelection.choices[0].message.content);
+      let title = "";
+      try{
+        title  = JSON.parse(modelSelection.choices[0].message.content)['title'];
+      } catch (error){
+        logger.error(`Json 파싱 오류. 원본 문자열: ${modelSelection.choices[0].message.content}`);
+        throw error;
+      }
+
       room = await createChatRoom(userId, title).id;
       message_to_ai = [
         {
