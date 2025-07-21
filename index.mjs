@@ -55,7 +55,7 @@ const initializeApp = async () => {
 
     app.get("/", (req, res) => {
       res.send("Dimiplan Backend 서버에 오신 것을 환영합니다!");
-    })
+    });
 
     app.use("/auth", authRouter);
     app.use("/auth/admin", adminAuthRouter);
