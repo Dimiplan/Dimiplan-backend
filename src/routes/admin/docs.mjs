@@ -1,6 +1,5 @@
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
-import { $ } from "bun";
+import { $, file } from "bun";
+
 import { Router } from "express";
 import logger from "../../utils/logger.mjs";
 
@@ -21,9 +20,7 @@ const router = Router();
  */
 router.get("/", async (req, res) => {
   try {
-    const docsPath = join(process.cwd(), "docs", "api-docs.json");
-
-    const jsdocData = JSON.parse(readFileSync(docsPath, "utf8"));
+    const jsdocData = file("docs/api-docs.json").json();
 
     let apiDocs = jsdocData
       .filter((item) => item.route && item.name)

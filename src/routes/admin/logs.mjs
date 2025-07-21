@@ -1,5 +1,6 @@
-import { readdirSync, readFileSync, statSync } from "node:fs";
+import { readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
+import { file } from "bun";
 import { Router } from "express";
 import logger from "../../utils/logger.mjs";
 
@@ -66,8 +67,7 @@ router.get("/:filename", async (req, res) => {
         .json({ success: false, message: "유효하지 않은 로그 파일" });
     }
 
-    const filePath = join(process.cwd(), "logs", filename);
-    const content = readFileSync(filePath, "utf8");
+    const content = file(`logs/${filename}`).text();
     const allLines = content.split("\n").reverse();
 
     logger.info("로그 파일 내용 조회", {
