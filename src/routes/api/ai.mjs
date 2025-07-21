@@ -1,6 +1,7 @@
 import { Router } from "express";
 import {
   createChatRoom,
+  deleteChatRoom,
   getChatMessages,
   getChatRooms,
 } from "../../models/chat.mjs";
@@ -63,15 +64,6 @@ router.post("/rooms", async (req, res) => {
 });
 
 /**
- * @name AI 모델 목록 조회(유료 사용자일 경우 유료 모델도 표시 예정)
- * @route {GET} /api/ai
- * @returns {string} model[] - 모델 이름
- */
-router.get("/", async (req, res) => {
-  res.status(200).json({ model: FREE_MODELS });
-});
-
-/**
  * @name 특정 채팅방의 모든 메시지 조회
  * @route {GET} /api/ai/rooms/:roomId
  * @returns {number} chatData[].id - 메시지 ID
@@ -99,6 +91,73 @@ router.get("/rooms/:roomId", async (req, res) => {
     logger.error(`채팅 메시지 조회 중 오류`, error);
     res.status(500).json({ message: "서버 내부 오류" });
   }
+});
+
+/** @name 채팅방 이름 변경
+ * @route {PATCH} /api/ai/rooms/:roomId
+ * @routeparam {string} roomId - 변경할 채팅방 ID
+ * @bodyparam {string} name - 새 채팅방 이름
+ */
+router.patch("/rooms/:roomId", async (req, res) => {
+  try {
+    const { roomId } = req.params;
+    const { name } = req.body;
+
+    if (!roomId) {
+      logger.warn(`채팅방 이름 변경 실패: ID 누락`);
+      return res.status(400).json({ message: "채팅방 ID는 필수입니다" });
+    }
+
+    if (!name) {
+      logger.warn(`채팅방 이름 변경 실패: 이름 누락`);
+      return res.status(400).json({ message: "새 채팅방 이름은 필수입니다" });
+    }
+
+    await createChatRoom(req.userId, name, roomId);
+
+    logger.verbose(
+      `채팅방 이름 변경 성공 - 사용자: ${req.userId}, 채팅방ID: ${roomId}, 새이름: ${name}`,
+    );
+    res.status(204);
+  } catch (error) {
+    logger.error(`채팅방 이름 변경 중 오류`, error);
+    res.status(500).json({ message: "서버 내부 오류" });
+  }
+});
+
+/** @name 채팅방 삭제
+ * @route {DELETE} /api/ai/rooms/:roomId
+ * @routeparam {string} roomId - 삭제할 채팅방 ID
+ * @returns {string} message - 성공 메시지
+ */
+router.delete("/rooms/:roomId", async (req, res) => {
+  try {
+    const { roomId } = req.params;
+
+    if (!roomId) {
+      logger.warn(`채팅방 삭제 실패: ID 누락`);
+      return res.status(400).json({ message: "채팅방 ID는 필수입니다" });
+    }
+
+    await deleteChatRoom(req.userId, roomId);
+
+    logger.verbose(
+      `채팅방 삭제 성공 - 사용자: ${req.userId}, 채팅방ID: ${roomId}`,
+    );
+    res.status(204).json();
+  } catch (error) {
+    logger.error(`채팅방 삭제 중 오류`, error);
+    res.status(500).json({ message: "서버 내부 오류" });
+  }
+});
+
+/**
+ * @name AI 모델 목록 조회(유료 사용자일 경우 유료 모델도 표시 예정)
+ * @route {GET} /api/ai
+ * @returns {string} model[] - 모델 이름
+ */
+router.get("/", async (req, res) => {
+  res.status(200).json({ model: FREE_MODELS });
 });
 
 /**
