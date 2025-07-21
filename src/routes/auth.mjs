@@ -3,10 +3,10 @@ import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-custom";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import "../config/dotenv.mjs";
+import { isAuthenticated } from "../middleware/auth.mjs";
 import { createUser, isRegistered } from "../models/user.mjs";
 import { updateUserInfo } from "../services/user.mjs";
 import logger from "../utils/logger.mjs";
-import {isAuthenticated} from "../middleware/auth.mjs";
 
 const router = Router();
 
