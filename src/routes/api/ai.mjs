@@ -97,7 +97,7 @@ router.get("/rooms/:roomId", async (req, res) => {
  * @route {PATCH} /api/ai/rooms/:roomId
  * @routeparam {string} roomId - 변경할 채팅방 ID
  * @bodyparam {string} name - 새 채팅방 이름
- * @returns {null} - 성공 시 응답 없음 (204 No Content)
+ * @returns {string} message - 성공 메시지
  */
 router.patch("/rooms/:roomId", async (req, res) => {
   try {
@@ -119,7 +119,7 @@ router.patch("/rooms/:roomId", async (req, res) => {
     logger.verbose(
       `채팅방 이름 변경 성공 - 사용자: ${req.userId}, 채팅방ID: ${roomId}, 새이름: ${name}`,
     );
-    res.status(204).send();
+    res.status(200).json({message: "채팅방 이름이 성공적으로 변경되었습니다"});
   } catch (error) {
     logger.error(`채팅방 이름 변경 중 오류`, error);
     res.status(500).json({ message: "서버 내부 오류" });
@@ -129,7 +129,7 @@ router.patch("/rooms/:roomId", async (req, res) => {
 /** @name 채팅방 삭제
  * @route {DELETE} /api/ai/rooms/:roomId
  * @routeparam {string} roomId - 삭제할 채팅방 ID
- * @returns {null} - 성공 시 응답 없음 (204 No Content)
+ * @returns {string} message - 성공 메시지
  */
 router.delete("/rooms/:roomId", async (req, res) => {
   try {
@@ -145,7 +145,7 @@ router.delete("/rooms/:roomId", async (req, res) => {
     logger.verbose(
       `채팅방 삭제 성공 - 사용자: ${req.userId}, 채팅방ID: ${roomId}`,
     );
-    res.status(204).send();
+    res.status(200).json({ message: "채팅방이 성공적으로 삭제되었습니다" });
   } catch (error) {
     logger.error(`채팅방 삭제 중 오류`, error);
     res.status(500).json({ message: "서버 내부 오류" });
