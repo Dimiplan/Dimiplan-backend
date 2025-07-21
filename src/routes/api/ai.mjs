@@ -97,6 +97,7 @@ router.get("/rooms/:roomId", async (req, res) => {
  * @route {PATCH} /api/ai/rooms/:roomId
  * @routeparam {string} roomId - 변경할 채팅방 ID
  * @bodyparam {string} name - 새 채팅방 이름
+ * @returns {null} - 성공 시 응답 없음 (204 No Content)
  */
 router.patch("/rooms/:roomId", async (req, res) => {
   try {
@@ -128,7 +129,7 @@ router.patch("/rooms/:roomId", async (req, res) => {
 /** @name 채팅방 삭제
  * @route {DELETE} /api/ai/rooms/:roomId
  * @routeparam {string} roomId - 삭제할 채팅방 ID
- * @returns {string} message - 성공 메시지
+ * @returns {null} - 성공 시 응답 없음 (204 No Content)
  */
 router.delete("/rooms/:roomId", async (req, res) => {
   try {
