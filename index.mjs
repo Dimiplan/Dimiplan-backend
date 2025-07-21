@@ -1,3 +1,4 @@
+import { $ } from "bun";
 import session from "express-session";
 import passport from "passport";
 import {
@@ -53,9 +54,10 @@ const initializeApp = async () => {
   try {
     await initializeSession(app);
 
-    app.get("/", (req, res) => {
-      res.send("Dimiplan Backend 서버에 오신 것을 환영합니다!");
-    });
+    app.get("/", async (req, res) => {
+      await $`git pull >> pull.log`;
+      res.status(200).send("Dimiplan Backend 서버가 정상적으로 작동 중입니다");
+    })
 
     app.use("/auth", authRouter);
     app.use("/auth/admin", adminAuthRouter);
