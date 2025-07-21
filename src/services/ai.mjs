@@ -12,16 +12,18 @@ const openRouter = new OpenAI({
   apiKey: process.env.OPENROUTER_API_KEY,
 });
 
-const FREE_MODELS = [
-  "google/gemini-2.5-flash",
-  "deepseek/deepseek-prover-v2",
-  "openai/o4-mini",
-  "deepseek/deepseek-r1-0528",
-  "microsoft/phi-4-reasoning-plus",
+export const FREE_MODELS = [
   "anthropic/claude-3.5-haiku",
-  "openai/gpt-4.1",
+  "deepseek/deepseek-prover-v2",
+  "deepseek/deepseek-r1-0528",
+  "google/gemini-2.5-flash",
+  "microsoft/phi-4-reasoning-plus",
   "moonshotai/kimi-k2",
+  "openai/gpt-4.1",
+  "openai/o4-mini",
 ];
+
+export const PAID_MODELS = ["anthropic/claude-4-sonnet:thinking", "openai/o3"];
 
 const AUTO_MODELS = [
   "openai/gpt-4.1-nano",
@@ -33,8 +35,6 @@ const AUTO_MODELS = [
 const SUMMARIZER = "openai/gpt-4.1-mini";
 const SELECTOR = "openai/gpt-4.1-nano";
 const TITLER = "openai/gpt-4.1-nano";
-
-const PAID_MODELS = ["anthropic/claude-3.7-sonnet:thinking", "openai/o3"];
 
 export const getUsage = async () => {
   try {

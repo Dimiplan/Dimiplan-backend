@@ -7,6 +7,8 @@ import {
 import {
   generateAutoResponse,
   generateCustomResponse,
+  FREE_MODELS,
+  PAID_MODELS
 } from "../../services/ai.mjs";
 import logger from "../../utils/logger.mjs";
 
@@ -59,6 +61,15 @@ router.post("/rooms", async (req, res) => {
     logger.error(`채팅방 생성 중 오류`, error);
     res.status(500).json({ message: "서버 내부 오류" });
   }
+});
+
+/**
+ * @name AI 모델 목록 조회(유료 사용자일 경우 유료 모델도 표시 예정)
+ * @route {GET} /api/ai
+ * @returns {string} model[] - 모델 이름
+ */
+router.get("/", async (req, res) => {
+  res.status(200).json({model: FREE_MODELS});
 });
 
 /**
