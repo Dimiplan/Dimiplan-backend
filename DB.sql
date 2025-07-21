@@ -26,7 +26,7 @@ DROP TABLE IF EXISTS `chat`;
 CREATE TABLE `chat` (
   `from` int(11) DEFAULT NULL,
   `id` int(11) NOT NULL,
-  `message` varchar(16000) DEFAULT NULL,
+  `message` longtext DEFAULT NULL,
   `owner` varchar(128) NOT NULL,
   `sender` varchar(10) NOT NULL,
   `created_at` datetime NOT NULL DEFAULT current_timestamp(),
