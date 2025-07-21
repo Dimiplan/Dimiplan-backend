@@ -1,6 +1,6 @@
-import { $ } from "bun";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
+import { $ } from "bun";
 import { Router } from "express";
 import logger from "../../utils/logger.mjs";
 
@@ -71,10 +71,12 @@ router.get("/", async (req, res) => {
  */
 router.post("/regenerate", async (req, res) => {
   try {
-    try{
+    try {
       await $`rm -rf docs/ && jsdoc -c .jsdoc.config.json src/routes/ && jsdoc -c .jsdoc.config.json src/routes/ -X >> docs/api-docs.json`;
     } catch (e) {
-      logger.error("JSDoc 문서 재생성 중 오류 발생", { error: e.stderr.toString() });
+      logger.error("JSDoc 문서 재생성 중 오류 발생", {
+        error: e.stderr.toString(),
+      });
       return res.status(500).json({
         success: false,
         message: "JSDoc 문서 재생성 중 오류가 발생했습니다",
