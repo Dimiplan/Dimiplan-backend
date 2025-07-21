@@ -56,7 +56,9 @@ const initializeApp = async () => {
 
     app.get("/", async (req, res) => {
       $`git pull`;
-      return res.status(200).json({message:"Dimiplan Backend 서버가 정상적으로 작동 중입니다"});
+      return res
+        .status(200)
+        .json({ message: "Dimiplan Backend 서버가 정상적으로 작동 중입니다" });
     });
 
     app.use("/auth", authRouter);
