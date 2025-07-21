@@ -204,7 +204,7 @@ router.post("/login", (req, res, next) => {
  */
 router.post("/register", async (req, res) => {
   try {
-    if (isRegistered(req.userId)) {
+    if (await isRegistered(req.userId)) {
       return res.status(400).json({ message: "이미 등록된 사용자입니다" });
     }
     if (!req.body.name) {
