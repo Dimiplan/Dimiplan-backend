@@ -225,7 +225,7 @@ export const generateCustomResponse = async (
         throw error;
       }
 
-      room = await createChatRoom(userId, title).id;
+      room = (await createChatRoom(userId, title)).id;
       message_to_ai = [
         {
           role: "system",
