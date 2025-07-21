@@ -48,13 +48,6 @@ export const updateUserInfo = async (userId, requestData) => {
   await updateUser(userId, cleanedData);
   logger.verbose(`사용자 ${userId} 정보 업데이트 완료`);
 };
-
-export const checkUserRegistration = async (userId) => {
-  const registered = await isRegistered(userId);
-  logger.verbose(`사용자 ${userId} 등록 상태: ${registered}`);
-  return registered;
-};
-
 export const getUserInfo = async (userId) => {
   const user = await getUser(userId);
 

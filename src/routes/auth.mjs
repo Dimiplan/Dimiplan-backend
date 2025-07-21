@@ -211,7 +211,7 @@ router.post("/register", async (req, res) => {
       return res.status(400).json({ message: "이름은 필수 입력 항목입니다" });
     }
     await updateUserInfo(req.userId, req.body);
-    return res.status(204);
+    return res.status(204).send();
   } catch (error) {
     if (error.message === "INVALID_DATA") {
       return res.status(400).json({ message: "반/번호에 오류가 있습니다." });
