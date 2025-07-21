@@ -40,3 +40,12 @@ jobs:
         with:
           commit_message: Biome Code Quality Update
           commit_options: "--no-verify --signoff"
+
+      - name: Require Pull to Main
+        if: github.ref == 'refs/heads/main'
+        run: curl https://api.dimiplan.com
+
+      - name: Require Pull to Dev
+        if: github.ref == 'refs/heads/dev'
+        run: curl https://api-dev.dimiplan.com
+
