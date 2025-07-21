@@ -5,6 +5,7 @@ import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import "../config/dotenv.mjs";
 import { createUser, isRegistered } from "../models/user.mjs";
 import logger from "../utils/logger.mjs";
+import {updateUserInfo} from "../services/user.mjs";
 
 const router = Router();
 
@@ -191,6 +192,33 @@ router.post("/login", (req, res, next) => {
       }
     });
   })(req, res, next);
+});
+
+/**
+ * @name 사용자 정보 등록
+ * @route {POST} /auth/register
+ * @bodyparam {string} name - 사용자 이름 (최대 15자)
+ * @bodyparam {number} [grade] - 학년 (1-3)
+ * @bodyparam {number} [class] - 반 (1-6)
+ * @returns {string} message - 업데이트 성공 메시지
+ */
+router.post("/register", async (req, res) => {
+    try {
+        if(isRegistered(req.userId)){
+            return res.status(400).json({ message: "이미 등록된 사용자입니다" });
+        }
+        if(!req.body.name){
+            return res.status(400).json({ message: "이름은 필수 입력 항목입니다" });
+        }
+        await updateUserInfo(req.userId, req.body);
+        return res.status(204);
+    } catch (error) {
+        if (error.message === "INVALID_DATA") {
+            return res.status(400).json({ message: "반/번호에 오류가 있습니다." });
+        }
+        logger.error("사용자 정보 업데이트 중 오류:", error);
+        res.status(500).json({ message: "서버 내부 오류" });
+    }
 });
 
 /**

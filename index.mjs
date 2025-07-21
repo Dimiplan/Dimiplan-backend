@@ -1,4 +1,3 @@
-import { $ } from "bun";
 import session from "express-session";
 import passport from "passport";
 import {
@@ -55,7 +54,6 @@ const initializeApp = async () => {
     await initializeSession(app);
 
     app.get("/", async (req, res) => {
-      await $`git pull >> pull.log`;
       res.status(200).send("Dimiplan Backend 서버가 정상적으로 작동 중입니다");
     });
 
