@@ -6,7 +6,7 @@
     ".": "./index.mjs"
   },
   "scripts": {
-    "dev": "bun --watch index.mjs",
+    "dev": "bun --hot index.mjs",
     "docs": "rd -R docs/ ; jsdoc -c .jsdoc.config.json src/routes/",
     "docs:json": "jsdoc -c .jsdoc.config.json src/routes/ -X > docs/api-docs.json"
   },
