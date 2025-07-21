@@ -1,4 +1,4 @@
-import { getUser, isRegistered, updateUser } from "../models/user.mjs";
+import { getUser, updateUser } from "../models/user.mjs";
 import logger from "../utils/logger.mjs";
 
 const validateUserData = (userData) => {
