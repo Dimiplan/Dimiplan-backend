@@ -31,55 +31,55 @@ export const createChatRoom = async (uid, name) => {
 };
 
 export const renameChatRoom = async (uid, roomId) => {
-    try {
-        const hashedUid = hashUserId(uid);
+  try {
+    const hashedUid = hashUserId(uid);
 
-        const room = await db("chat_rooms")
-        .where({ owner: hashedUid, id: roomId })
-        .first();
+    const room = await db("chat_rooms")
+      .where({ owner: hashedUid, id: roomId })
+      .first();
 
-        if (!room) {
-        throw new Error("채팅방을 찾을 수 없습니다");
-        }
-
-        const newName = encryptData(uid, room.name);
-        await db("chat_rooms")
-        .where({ owner: hashedUid, id: roomId })
-        .update({ name: newName });
-
-        logger.info(
-        `채팅방 이름 변경됨: ${hashedUid.substring(0, 8)}... - 방 ID: ${roomId}`,
-        );
-    } catch (error) {
-        logger.error("채팅방 이름 변경 오류:", error);
-        throw error;
+    if (!room) {
+      throw new Error("채팅방을 찾을 수 없습니다");
     }
-}
+
+    const newName = encryptData(uid, room.name);
+    await db("chat_rooms")
+      .where({ owner: hashedUid, id: roomId })
+      .update({ name: newName });
+
+    logger.info(
+      `채팅방 이름 변경됨: ${hashedUid.substring(0, 8)}... - 방 ID: ${roomId}`,
+    );
+  } catch (error) {
+    logger.error("채팅방 이름 변경 오류:", error);
+    throw error;
+  }
+};
 
 export const deleteChatRoom = async (uid, roomId) => {
-    try {
-        const hashedUid = hashUserId(uid);
+  try {
+    const hashedUid = hashUserId(uid);
 
-        const room = await db("chat_rooms")
-            .where({ owner: hashedUid, id: roomId })
-            .first();
+    const room = await db("chat_rooms")
+      .where({ owner: hashedUid, id: roomId })
+      .first();
 
-        if (!room) {
-            throw new Error("채팅방을 찾을 수 없습니다");
-        }
-
-        await db.transaction(async (trx) => {
-            await trx("chat").where({ owner: hashedUid, from: roomId }).del();
-            await trx("chat_rooms").where({ owner: hashedUid, id: roomId }).del();
-        });
-
-        logger.info(
-            `채팅방 삭제됨: ${hashedUid.substring(0, 8)}... - 방 ID: ${roomId}`,
-        );
-    } catch (error) {
-        logger.error("채팅방 삭제 오류:", error);
-        throw error;
+    if (!room) {
+      throw new Error("채팅방을 찾을 수 없습니다");
     }
+
+    await db.transaction(async (trx) => {
+      await trx("chat").where({ owner: hashedUid, from: roomId }).del();
+      await trx("chat_rooms").where({ owner: hashedUid, id: roomId }).del();
+    });
+
+    logger.info(
+      `채팅방 삭제됨: ${hashedUid.substring(0, 8)}... - 방 ID: ${roomId}`,
+    );
+  } catch (error) {
+    logger.error("채팅방 삭제 오류:", error);
+    throw error;
+  }
 };
 
 export const getChatRooms = async (uid) => {
