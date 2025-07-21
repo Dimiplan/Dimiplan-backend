@@ -20,7 +20,7 @@ const router = Router();
  */
 router.get("/", async (req, res) => {
   try {
-    const jsdocData = file("docs/api-docs.json").json();
+    const jsdocData = await file("docs/api-docs.json").json();
 
     let apiDocs = jsdocData
       .filter((item) => item.route && item.name)

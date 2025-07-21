@@ -67,7 +67,7 @@ router.get("/:filename", async (req, res) => {
         .json({ success: false, message: "유효하지 않은 로그 파일" });
     }
 
-    const content = file(`logs/${filename}`).text();
+    const content = await file(`logs/${filename}`).text();
     const allLines = content.split("\n").reverse();
 
     logger.info("로그 파일 내용 조회", {
