@@ -1,3 +1,4 @@
+import { $ } from "bun";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { Router } from "express";
@@ -70,25 +71,16 @@ router.get("/", async (req, res) => {
  */
 router.post("/regenerate", async (req, res) => {
   try {
-    const { exec } = await import("node:child_process");
-
-    await new Promise((resolve, reject) => {
-      exec(
-        "powershell {rd -R docs/ ; jsdoc -c .jsdoc.config.json src/routes/ ; jsdoc -c .jsdoc.config.json src/routes/ -X > docs/api-docs.json}",
-        (error, stdout, stderr) => {
-          if (error) {
-            logger.error("JSDoc 재생성 실패", {
-              error: error.message,
-              stderr,
-            });
-            reject(error);
-          } else {
-            logger.info("JSDoc 재생성 성공", { stdout });
-            resolve(stdout);
-          }
-        },
-      );
-    });
+    try{
+      await $`rm -rf docs/ && jsdoc -c .jsdoc.config.json src/routes/ && jsdoc -c .jsdoc.config.json src/routes/ -X >> docs/api-docs.json`;
+    } catch (e) {
+      logger.error("JSDoc 문서 재생성 중 오류 발생", { error: e.stderr.toString() });
+      return res.status(500).json({
+        success: false,
+        message: "JSDoc 문서 재생성 중 오류가 발생했습니다",
+        error: e.stderr.toString(),
+      });
+    }
 
     logger.info("JSDoc 문서 재생성 완료", { admin: req.user?.email });
     res.json({

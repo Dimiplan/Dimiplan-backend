@@ -1,3 +1,4 @@
+import { $ } from "bun";
 import session from "express-session";
 import passport from "passport";
 import {
@@ -58,6 +59,14 @@ const initializeApp = async () => {
 
     app.use("/api", apiRouter);
     app.use("/admin", adminRouter);
+
+    app.get("/update", async (req, res) => {
+      await $`git pull && bun install`.nothrow();
+      res.status(200).json({
+        success: true,
+        message: "서버 업데이트가 완료되었습니다. 잠시 후 새로고침 해주세요.",
+      });
+    });
 
     setupErrorHandling(app);
 
