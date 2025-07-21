@@ -78,7 +78,11 @@ router.get("/tables/:tableName", async (req, res) => {
 
     const [{ count: totalCount }] = await db(tableName).count("* as count");
 
-    const data = await db(tableName).select("*").orderBy("updated_at").limit(limit).offset(offset);
+    const data = await db(tableName)
+      .select("*")
+      .orderBy("updated_at")
+      .limit(limit)
+      .offset(offset);
 
     const columns = await db.raw(`DESCRIBE ${tableName}`);
     const columnInfo = columns[0].map((col) => ({
