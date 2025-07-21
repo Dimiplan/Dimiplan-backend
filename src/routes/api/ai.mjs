@@ -5,10 +5,9 @@ import {
   getChatRooms,
 } from "../../models/chat.mjs";
 import {
+  FREE_MODELS,
   generateAutoResponse,
   generateCustomResponse,
-  FREE_MODELS,
-  PAID_MODELS
 } from "../../services/ai.mjs";
 import logger from "../../utils/logger.mjs";
 
@@ -69,7 +68,7 @@ router.post("/rooms", async (req, res) => {
  * @returns {string} model[] - 모델 이름
  */
 router.get("/", async (req, res) => {
-  res.status(200).json({model: FREE_MODELS});
+  res.status(200).json({ model: FREE_MODELS });
 });
 
 /**
