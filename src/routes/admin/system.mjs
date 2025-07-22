@@ -2,6 +2,8 @@ import os from "node:os";
 import { Router } from "express";
 import { getUsage } from "../../services/ai.mjs";
 import logger from "../../utils/logger.mjs";
+import * as si from "systeminformation";
+import { version } from "bun";
 
 const router = Router();
 
@@ -22,11 +24,11 @@ router.get("/status", async (req, res) => {
   try {
     const systemInfo = {
       uptime: os.uptime(),
-      totalmem: os.totalmem(),
-      freemem: os.freemem(),
-      loadavg: os.loadavg()[0] / 4,
-      platform: process.platform,
-      nodeVersion: process.version,
+      totalmem: (await si.mem()).total,
+      freemem: (await si.mem()).free,
+      loadavg: (await si.currentLoad()).currentLoad,
+      platform: (await si.osInfo()).distro,
+      nodeVersion: version,
       environment: process.env.NODE_ENV,
       timestamp: new Date().toISOString(),
     };
