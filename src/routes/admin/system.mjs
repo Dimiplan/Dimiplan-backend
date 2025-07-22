@@ -7,6 +7,9 @@ import logger from "../../utils/logger.mjs";
 
 const router = Router();
 
+const totalmem = (await si.mem()).total;
+const platform = (await si.osInfo()).distro;
+
 /**
  * @name 시스템 상태 조회
  * @route {GET} /admin/system/status
@@ -24,10 +27,10 @@ router.get("/status", async (req, res) => {
   try {
     const systemInfo = {
       uptime: os.uptime(),
-      totalmem: (await si.mem()).total,
+      totalmem: totalmem,
       freemem: (await si.mem()).free,
       loadavg: (await si.currentLoad()).currentLoad,
-      platform: (await si.osInfo()).distro,
+      platform: platform,
       nodeVersion: version,
       environment: process.env.NODE_ENV,
       timestamp: new Date().toISOString(),
