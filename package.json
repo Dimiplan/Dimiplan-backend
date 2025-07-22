@@ -7,6 +7,9 @@
   },
   "scripts": {
     "dev": "bun --hot index.mjs",
+    "build": "bun build ./index.mjs --outdir ./build --target bun --watch",
+    "start": "bun run build/index.js",
+    "auto-pull": "bun build ./src/scripts/auto-pull.js --outdir ./build --target bun && bun ./build/auto-pull.js",
     "docs": "rd -R docs/ ; jsdoc -c .jsdoc.config.json src/routes/",
     "docs:json": "jsdoc -c .jsdoc.config.json src/routes/ -X > docs/api-docs.json"
   },
