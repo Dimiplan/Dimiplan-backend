@@ -1,9 +1,9 @@
 import os from "node:os";
+import { version } from "bun";
 import { Router } from "express";
+import * as si from "systeminformation";
 import { getUsage } from "../../services/ai.mjs";
 import logger from "../../utils/logger.mjs";
-import * as si from "systeminformation";
-import { version } from "bun";
 
 const router = Router();
 
