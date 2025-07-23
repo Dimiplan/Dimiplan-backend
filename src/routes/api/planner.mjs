@@ -154,7 +154,7 @@ router.get("/:plannerId/tasks", async (req, res) => {
     res.status(200).json(tasks);
   } catch (error) {
     if (error.message === "TASKS_NOT_FOUND") {
-      return res.status(404).json({ message: "작업을 찾을 수 없습니다" });
+      return res.status(204).send("작업이 없습니다");
     }
     if (error.message === "PLANNER_NOT_FOUND") {
       return res.status(404).json({ message: "플래너를 찾을 수 없습니다" });
