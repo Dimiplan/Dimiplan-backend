@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { db } from "../../config/db.mjs";
 import logger from "../../utils/logger.mjs";
+import { writeHeapSnapshot } from "v8";
 
 const router = Router();
 
@@ -41,6 +42,25 @@ router.get("/users", async (req, res) => {
       message: "사용자 통계 조회 실패",
     });
   }
+});
+
+/**
+ * @name 메모리 사용량 조회
+ * @route {GET} /admin/stats/memory
+ * @returns {boolean} success - 요청 성공 여부
+ */
+router.get("/memory", async (req, res) => {
+  try {
+    writeHeapSnapshot();
+  }
+  catch (error) {
+    logger.error("메모리 사용량 스냅샷 실패", { error: error.message });
+    return res.status(500).json({
+      success: false,
+      message: "메모리 사용량 스냅샷 실패",
+    });
+  }
+  res.status(204).send();
 });
 
 export default router;
