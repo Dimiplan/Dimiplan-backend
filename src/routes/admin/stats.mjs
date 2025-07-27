@@ -1,7 +1,7 @@
+import { writeHeapSnapshot } from "node:v8";
 import { Router } from "express";
 import { db } from "../../config/db.mjs";
 import logger from "../../utils/logger.mjs";
-import { writeHeapSnapshot } from "v8";
 
 const router = Router();
 
@@ -52,8 +52,7 @@ router.get("/users", async (req, res) => {
 router.get("/memory", async (req, res) => {
   try {
     writeHeapSnapshot();
-  }
-  catch (error) {
+  } catch (error) {
     logger.error("메모리 사용량 스냅샷 실패", { error: error.message });
     return res.status(500).json({
       success: false,
