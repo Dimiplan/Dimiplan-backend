@@ -3,7 +3,6 @@ import helmet from "helmet";
 import "./dotenv.mjs";
 import logger from "../utils/logger.mjs";
 import { getCorsConfig } from "./cors.mjs";
-import { getSecurityConfig } from "./security.mjs";
 
 export const createExpressApp = () => {
   const app = express();
@@ -16,66 +15,66 @@ export const createExpressApp = () => {
 export const setupSecurityMiddleware = (app) => {
   const securityConfig = {
     contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'"],
-      styleSrc: ["'self'", "'unsafe-inline'"],
-      imgSrc: ["'self'", "data:", "https:"],
-      connectSrc: ["'self'"],
-      fontSrc: ["'self'", "data:", "https:"],
-      baseUri: ["'self'"],
-      objectSrc: ["'none'"],
-      frameSrc: ["'none'"],
-      mediaSrc: ["'self'"],
-      manifestSrc: ["'self'"],
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'", "'unsafe-inline'"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        imgSrc: ["'self'", "data:", "https:"],
+        connectSrc: ["'self'"],
+        fontSrc: ["'self'", "data:", "https:"],
+        baseUri: ["'self'"],
+        objectSrc: ["'none'"],
+        frameSrc: ["'none'"],
+        mediaSrc: ["'self'"],
+        manifestSrc: ["'self'"],
+      },
+      reportOnly: false,
     },
-    reportOnly: false,
-  },
 
-  crossOriginEmbedderPolicy: {
-    policy: "require-corp",
-  },
+    crossOriginEmbedderPolicy: {
+      policy: "require-corp",
+    },
 
-  crossOriginOpenerPolicy: {
-    policy: "same-origin",
-  },
+    crossOriginOpenerPolicy: {
+      policy: "same-origin",
+    },
 
-  crossOriginResourcePolicy: {
-    policy: "cross-origin",
-  },
+    crossOriginResourcePolicy: {
+      policy: "cross-origin",
+    },
 
-  dnsPrefetchControl: {
-    allow: false,
-  },
+    dnsPrefetchControl: {
+      allow: false,
+    },
 
-  frameguard: {
-    action: "deny",
-  },
+    frameguard: {
+      action: "deny",
+    },
 
-  hidePoweredBy: true,
+    hidePoweredBy: true,
 
-  hsts: {
-    maxAge: 31536000,
-    includeSubDomains: true,
-    preload: true,
-  },
+    hsts: {
+      maxAge: 31536000,
+      includeSubDomains: true,
+      preload: true,
+    },
 
-  ieNoOpen: true,
+    ieNoOpen: true,
 
-  noSniff: true,
+    noSniff: true,
 
-  originAgentCluster: true,
+    originAgentCluster: true,
 
-  permittedCrossDomainPolicies: {
-    permittedPolicies: "none",
-  },
+    permittedCrossDomainPolicies: {
+      permittedPolicies: "none",
+    },
 
-  referrerPolicy: {
-    policy: ["no-referrer", "strict-origin-when-cross-origin"],
-  },
+    referrerPolicy: {
+      policy: ["no-referrer", "strict-origin-when-cross-origin"],
+    },
 
-  xssFilter: true,
-  }
+    xssFilter: true,
+  };
   app.use(helmet(securityConfig));
 };
 
