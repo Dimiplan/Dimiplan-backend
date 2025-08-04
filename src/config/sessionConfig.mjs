@@ -68,13 +68,6 @@ export const getSessionConfig = async () => {
   };
 };
 
-export const storeUserInSession = (session, userId) => {
-  if (!session.passport) {
-    session.passport = {};
-  }
-  session.passport.user = { id: userId };
-};
-
 export const getUserFromSession = (session) => {
   logger.verbose("세션 정보:", session);
   return session?.passport?.user?.id || null;
