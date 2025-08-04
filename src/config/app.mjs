@@ -16,7 +16,19 @@ export const createExpressApp = () => {
 export const setupSecurityMiddleware = (app) => {
   const securityConfig = {
     contentSecurityPolicy: {
-    directives: getCSPDirectives(),
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", "data:", "https:"],
+      connectSrc: ["'self'"],
+      fontSrc: ["'self'", "data:", "https:"],
+      baseUri: ["'self'"],
+      objectSrc: ["'none'"],
+      frameSrc: ["'none'"],
+      mediaSrc: ["'self'"],
+      manifestSrc: ["'self'"],
+    },
     reportOnly: false,
   },
 
