@@ -237,7 +237,8 @@ export const generateCustomResponse = async (
         },
         {
           role: "system",
-          content: "마크다운 문법으로 사용자의 질문에 대해 확실히 문단 구분을 해서 응답하세요.",
+          content:
+            "마크다운 문법으로 사용자의 질문에 대해 확실히 문단 구분을 해서 응답하세요.",
         },
         { role: "user", content: prompt },
       ];
@@ -253,7 +254,8 @@ export const generateCustomResponse = async (
         },
         {
           role: "system",
-          content: "마크다운 문법으로 사용자의 질문에 대해 확실히 문단 구분을 해서 응답하세요.",
+          content:
+            "마크다운 문법으로 사용자의 질문에 대해 확실히 문단 구분을 해서 응답하세요.",
         },
         {
           role: "user",
