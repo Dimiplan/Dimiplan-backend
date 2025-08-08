@@ -19,22 +19,21 @@ export const FREE_MODELS = [
   "google/gemini-2.5-flash",
   "microsoft/phi-4-reasoning-plus",
   "moonshotai/kimi-k2",
-  "openai/gpt-4.1",
-  "openai/o4-mini",
+  "openai/gpt-5-chat",
+  "openai/gpt-oss-120b",
 ];
 
 export const PAID_MODELS = ["anthropic/claude-4-sonnet:thinking", "openai/o3"];
 
 const AUTO_MODELS = [
-  "openai/gpt-4.1-nano",
-  "openai/o4-mini",
+  "openai/gpt-oss-120b",
   "anthropic/claude-3.5-haiku",
-  "openai/gpt-4.1",
+  "openai/gpt-5-chat",
 ];
 
-const SUMMARIZER = "openai/gpt-4.1-mini";
-const SELECTOR = "openai/gpt-4.1-nano";
-const TITLER = "openai/gpt-4.1-nano";
+const SUMMARIZER = "openai/gpt-oss-120b";
+const SELECTOR = "openai/gpt-oss-120b";
+const TITLER = "openai/gpt-oss-120b";
 
 export const getUsage = async () => {
   try {
@@ -75,19 +74,7 @@ const summarizeMemory = async (userId, room) => {
         { role: "user", content: history },
       ],
     });
-    const raw = response.choices[0].message.content.trim();
-    logger.verbose("메모리 요약 응답:", raw);
-
-    let summaryText;
-    try {
-      summaryText = JSON.parse(raw).summary;
-    } catch (e) {
-      logger.warn(
-        "요약 응답 JSON 파싱 실패, 원본 문자열을 그대로 사용합니다:",
-        e,
-      );
-      summaryText = raw;
-    }
+    const summaryText = response.choices[0].message.content.trim();
 
     logger.verbose("메모리 요약:", summaryText);
     return summaryText;
@@ -102,14 +89,7 @@ export const generateAutoResponse = async (userId, prompt, room, search) => {
     const systemPrompt =
       (!room
         ? "다음 프롬프트의 복잡성을 평가하고 적절한 모델을 선택하며, 프롬프트를 요약하여 채팅방 이름을 작성하세요:\n"
-        : "다음 프롬프트의 복잡성을 평가하고 적절한 모델을 선택하세요:\n") +
-      "- 단순한 질문: 0 (작은 모델)\n" +
-      "- 복잡한 추론 필요: 1 (중간 모델)\n" +
-      "- 프로그래밍 또는 심화 지식 필요: 2 (고급 모델)\n" +
-      "- 광범위한 정보 및 큰 모델 필요: 3 (대규모 모델)\n" +
-      (!room
-        ? '결과는 {"model": "10", "title": "제목"}의 JSON 형식으로 반환'
-        : '결과는 {"model": "10"}의 JSON 형식으로 반환');
+        : "다음 프롬프트의 복잡성을 평가하고 적절한 모델을 선택하세요:\n");
     const modelSelection = await openRouter.chat.completions
       .create({
         model: SELECTOR,
@@ -120,6 +100,33 @@ export const generateAutoResponse = async (userId, prompt, room, search) => {
           },
           { role: "user", content: prompt },
         ],
+        response_format: {
+          type: "json_schema",
+          json_schema: {
+            name: "response",
+            strict: true,
+            schema: {
+              type: "object",
+              properties: !room ? {
+                model: {
+                  type: "number",
+                  description: "Model index based on complexity(0: low, 1: medium, 2: high)"
+                },
+                title: {
+                  type: "string",
+                  description: "Title based on the summary of the prompt"
+                }
+              } : {
+                model: {
+                  type: "number",
+                  description: "Model index based on complexity(0: low, 1: medium, 2: high)"
+                },
+              },
+              required: !room ? ["model", "title"] : ["model"],
+              additionalProperties: false
+            }
+          }
+        }
       })
       .catch((error) => {
         logger.error(`모델 선택 중 오류: ${error.status}, ${error.name}`);
@@ -197,18 +204,31 @@ export const generateCustomResponse = async (
   try {
     let message_to_ai = [];
     if (!room) {
-      const modelSelection = await openRouter.chat.completions
+      const titleGeneration = await openRouter.chat.completions
         .create({
           model: TITLER,
           messages: [
-            {
-              role: "system",
-              content:
-                "다음 프롬프트를 요약하여 적절한 채팅방 이름을 작성하세요:\n" +
-                '결과는 {"title": "제목"의 JSON 형식으로 반환',
-            },
+            { role: "system", content: "다음 프롬프트를 요약하여 적절한 채팅방 이름을 작성하세요" },
             { role: "user", content: prompt },
           ],
+          response_format: {
+            type: "json_schema",
+            json_schema: {
+              name: "response",
+              strict: true,
+              schema: {
+                type: "object",
+                properties: {
+                  title: {
+                    type: "string",
+                    description: "Title based on the summary of the prompt"
+                  },
+                },
+                required: ["title"],
+                additionalProperties: false
+              }
+            }
+          }
         })
         .catch((error) => {
           logger.error(`모델 선택 중 오류: ${error.status}, ${error.name}`);
@@ -217,10 +237,10 @@ export const generateCustomResponse = async (
 
       let title = "";
       try {
-        title = JSON.parse(modelSelection.choices[0].message.content).title;
+        title = JSON.parse(titleGeneration.choices[0].message.content).title;
       } catch (error) {
         logger.error(
-          `Json 파싱 오류. 원본 문자열: ${modelSelection.choices[0].message.content}`,
+          `Json 파싱 오류. 원본 문자열: ${titleGeneration.choices[0].message.content}`,
         );
         throw error;
       }
