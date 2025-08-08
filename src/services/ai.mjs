@@ -86,10 +86,9 @@ const summarizeMemory = async (userId, room) => {
 
 export const generateAutoResponse = async (userId, prompt, room, search) => {
   try {
-    const systemPrompt =
-      (!room
-        ? "다음 프롬프트의 복잡성을 평가하고 적절한 모델을 선택하며, 프롬프트를 요약하여 채팅방 이름을 작성하세요:\n"
-        : "다음 프롬프트의 복잡성을 평가하고 적절한 모델을 선택하세요:\n");
+    const systemPrompt = !room
+      ? "다음 프롬프트의 복잡성을 평가하고 적절한 모델을 선택하며, 프롬프트를 요약하여 채팅방 이름을 작성하세요:\n"
+      : "다음 프롬프트의 복잡성을 평가하고 적절한 모델을 선택하세요:\n";
     const modelSelection = await openRouter.chat.completions
       .create({
         model: SELECTOR,
@@ -107,26 +106,30 @@ export const generateAutoResponse = async (userId, prompt, room, search) => {
             strict: true,
             schema: {
               type: "object",
-              properties: !room ? {
-                model: {
-                  type: "number",
-                  description: "Model index based on complexity(0: low, 1: medium, 2: high)"
-                },
-                title: {
-                  type: "string",
-                  description: "Title based on the summary of the prompt"
-                }
-              } : {
-                model: {
-                  type: "number",
-                  description: "Model index based on complexity(0: low, 1: medium, 2: high)"
-                },
-              },
+              properties: !room
+                ? {
+                    model: {
+                      type: "number",
+                      description:
+                        "Model index based on complexity(0: low, 1: medium, 2: high)",
+                    },
+                    title: {
+                      type: "string",
+                      description: "Title based on the summary of the prompt",
+                    },
+                  }
+                : {
+                    model: {
+                      type: "number",
+                      description:
+                        "Model index based on complexity(0: low, 1: medium, 2: high)",
+                    },
+                  },
               required: !room ? ["model", "title"] : ["model"],
-              additionalProperties: false
-            }
-          }
-        }
+              additionalProperties: false,
+            },
+          },
+        },
       })
       .catch((error) => {
         logger.error(`모델 선택 중 오류: ${error.status}, ${error.name}`);
@@ -208,7 +211,11 @@ export const generateCustomResponse = async (
         .create({
           model: TITLER,
           messages: [
-            { role: "system", content: "다음 프롬프트를 요약하여 적절한 채팅방 이름을 작성하세요" },
+            {
+              role: "system",
+              content:
+                "다음 프롬프트를 요약하여 적절한 채팅방 이름을 작성하세요",
+            },
             { role: "user", content: prompt },
           ],
           response_format: {
@@ -221,14 +228,14 @@ export const generateCustomResponse = async (
                 properties: {
                   title: {
                     type: "string",
-                    description: "Title based on the summary of the prompt"
+                    description: "Title based on the summary of the prompt",
                   },
                 },
                 required: ["title"],
-                additionalProperties: false
-              }
-            }
-          }
+                additionalProperties: false,
+              },
+            },
+          },
         })
         .catch((error) => {
           logger.error(`모델 선택 중 오류: ${error.status}, ${error.name}`);
