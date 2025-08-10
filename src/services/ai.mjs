@@ -78,7 +78,7 @@ const summarizeMemory = async (userId, room) => {
         }),
       },
     );
-    const summaryText = response.choices[0].message.content.trim();
+    const summaryText = (await response.json()).choices[0].message.content.trim();
 
     logger.verbose("메모리 요약:", summaryText);
     return summaryText;
@@ -151,13 +151,13 @@ export const generateAutoResponse = async (userId, prompt, room, search) => {
     let title;
     try {
       const parsedResponse = JSON.parse(
-        modelSelection.choices[0].message.content,
+        (await modelSelection.json()).choices[0].message.content,
       );
       selectedModelIndex = parsedResponse.model;
       title = parsedResponse.title;
     } catch (error) {
       logger.error("모델 선택 중 에러:", error);
-      logger.verbose(modelSelection.choices[0].message.content);
+      logger.verbose((await modelSelection.json()).choices[0].message.content);
       throw error;
     }
 
@@ -200,7 +200,7 @@ export const generateAutoResponse = async (userId, prompt, room, search) => {
     logger.info("AI 응답 생성 완료");
 
     const aiResponseText =
-      response.choices[0].message.content ||
+      (await response.json()).choices[0].message.content ||
       "죄송합니다. 응답을 생성하는 데 문제가 발생했습니다. 다시 시도해 주세요.";
 
     await addChatMessages(
@@ -272,10 +272,10 @@ export const generateCustomResponse = async (
 
       let title = "";
       try {
-        title = JSON.parse(titleGeneration.choices[0].message.content).title;
+        title = JSON.parse((await titleGeneration.json()).choices[0].message.content).title;
       } catch (error) {
         logger.error(
-          `Json 파싱 오류. 원본 문자열: ${titleGeneration.choices[0].message.content}`,
+          `Json 파싱 오류. 원본 문자열: ${(await titleGeneration.json()).choices[0].message.content}`,
         );
         throw error;
       }
@@ -344,7 +344,7 @@ export const generateCustomResponse = async (
     logger.info("AI 응답 생성 완료");
 
     const aiResponseText =
-      response.choices[0].message.content ||
+      (await response.json()).choices[0].message.content ||
       "죄송합니다. 응답을 생성하는 데 문제가 발생했습니다. 다시 시도해 주세요.";
 
     await addChatMessages(userId, room, prompt, aiResponseText);
