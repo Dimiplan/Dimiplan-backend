@@ -1,4 +1,3 @@
-import OpenAI from "openai";
 import "../config/dotenv.mjs";
 import {
   addChatMessages,
@@ -6,11 +5,6 @@ import {
   getChatMessages,
 } from "../models/chat.mjs";
 import logger from "../utils/logger.mjs";
-
-const openRouter = new OpenAI({
-  baseURL: "https://openrouter.ai/api/v1",
-  apiKey: process.env.OPENROUTER_API_KEY,
-});
 
 export const FREE_MODELS = [
   "anthropic/claude-3.5-haiku",
@@ -62,17 +56,24 @@ const summarizeMemory = async (userId, room) => {
     : String(rawMessages);
 
   try {
-    const response = await openRouter.chat.completions.create({
-      model: SUMMARIZER,
-      messages: [
-        {
-          role: "system",
-          content:
-            "다음 대화 내용을 요약하여 이후 AI가 쉽게 이해할 수 있도록 작성하세요. " +
-            "디테일과 구체적 내용을 잃지 말고 요약하세요",
-        },
-        { role: "user", content: history },
-      ],
+    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: SUMMARIZER,
+        messages: [
+          {
+            role: "system",
+            content:
+              "다음 대화 내용을 요약하여 이후 AI가 쉽게 이해할 수 있도록 작성하세요. " +
+              "디테일과 구체적 내용을 잃지 말고 요약하세요",
+          },
+          { role: "user", content: history },
+        ],
+      })
     });
     const summaryText = response.choices[0].message.content.trim();
 
@@ -89,8 +90,13 @@ export const generateAutoResponse = async (userId, prompt, room, search) => {
     const systemPrompt = !room
       ? "다음 프롬프트의 복잡성을 평가하고 적절한 모델을 선택하며, 프롬프트를 요약하여 채팅방 이름을 작성하세요:\n"
       : "다음 프롬프트의 복잡성을 평가하고 적절한 모델을 선택하세요:\n";
-    const modelSelection = await openRouter.chat.completions
-      .create({
+    const modelSelection = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
+      },
+      body: JSON.stringify({
         model: SELECTOR,
         messages: [
           {
@@ -131,10 +137,10 @@ export const generateAutoResponse = async (userId, prompt, room, search) => {
           },
         },
       })
-      .catch((error) => {
-        logger.error(`모델 선택 중 오류: ${error.status}, ${error.name}`);
-        throw error;
-      });
+    }).catch((error) => {
+      logger.error(`모델 선택 중 오류: ${error.status}, ${error.name}`);
+      throw error;
+    });
     let selectedModelIndex = 0;
     let title;
     try {
@@ -153,8 +159,13 @@ export const generateAutoResponse = async (userId, prompt, room, search) => {
 
     logger.info(`선택된 모델: ${model}`);
 
-    const response = await openRouter.chat.completions
-      .create({
+    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
+      },
+      body: JSON.stringify({
         model: model + search ? ":online" : "",
         messages: [
           {
@@ -172,10 +183,10 @@ export const generateAutoResponse = async (userId, prompt, room, search) => {
           { role: "user", content: prompt },
         ],
       })
-      .catch((error) => {
-        logger.error(`응답 생성 중 오류: ${error.status}, ${error.name}`);
-        throw error;
-      });
+    }).catch((error) => {
+      logger.error(`응답 생성 중 오류: ${error.status}, ${error.name}`);
+      throw error;
+    });
 
     logger.info("AI 응답 생성 완료");
 
@@ -207,8 +218,13 @@ export const generateCustomResponse = async (
   try {
     let message_to_ai = [];
     if (!room) {
-      const titleGeneration = await openRouter.chat.completions
-        .create({
+      const titleGeneration = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
+        },
+        body: JSON.stringify({
           model: TITLER,
           messages: [
             {
@@ -237,10 +253,10 @@ export const generateCustomResponse = async (
             },
           },
         })
-        .catch((error) => {
-          logger.error(`모델 선택 중 오류: ${error.status}, ${error.name}`);
-          throw error;
-        });
+      }).catch((error) => {
+        logger.error(`모델 선택 중 오류: ${error.status}, ${error.name}`);
+        throw error;
+      });
 
       let title = "";
       try {
@@ -295,15 +311,20 @@ export const generateCustomResponse = async (
       logger.warn(`선택된 모델이 모델 목록에 없습니다: ${model}`);
       throw new Error("선택된 모델이 목록에 없습니다");
     }
-    const response = await openRouter.chat.completions
-      .create({
+    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
+      },
+      body: JSON.stringify({
         model: model + search ? ":online" : "",
         messages: message_to_ai,
       })
-      .catch((error) => {
-        logger.error(`응답 생성 중 오류: ${error.status}, ${error.name}`);
-        throw error;
-      });
+    }).catch((error) => {
+      logger.error(`응답 생성 중 오류: ${error.status}, ${error.name}`);
+      throw error;
+    });
 
     logger.info("AI 응답 생성 완료");
 
