@@ -1,4 +1,4 @@
-import { $ } from "bun";
+import { spawn } from "bun";
 import session from "express-session";
 import passport from "passport";
 import {
@@ -53,11 +53,6 @@ const initializeApp = async () => {
 
   try {
     await initializeSession(app);
-
-    app.get("/update", async (req, res) => {
-      logger.error((await $`git pull`).stderr);
-      res.send("Changes applied");
-    });
 
     app.use("/auth", authRouter);
     app.use("/auth/admin", adminAuthRouter);
