@@ -78,7 +78,9 @@ const summarizeMemory = async (userId, room) => {
         }),
       },
     );
-    const summaryText = (await response.json()).choices[0].message.content.trim();
+    const summaryText = (
+      await response.json()
+    ).choices[0].message.content.trim();
 
     logger.verbose("메모리 요약:", summaryText);
     return summaryText;
@@ -272,7 +274,9 @@ export const generateCustomResponse = async (
 
       let title = "";
       try {
-        title = JSON.parse((await titleGeneration.json()).choices[0].message.content).title;
+        title = JSON.parse(
+          (await titleGeneration.json()).choices[0].message.content,
+        ).title;
       } catch (error) {
         logger.error(
           `Json 파싱 오류. 원본 문자열: ${(await titleGeneration.json()).choices[0].message.content}`,
