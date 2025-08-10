@@ -95,7 +95,7 @@ export const generateAutoResponse = async (userId, prompt, room, search) => {
     const systemPrompt = !room
       ? "다음 프롬프트의 복잡성을 평가하고 적절한 모델을 선택하며, 프롬프트를 요약하여 채팅방 이름을 작성하세요:\n"
       : "다음 프롬프트의 복잡성을 평가하고 적절한 모델을 선택하세요:\n";
-    const modelSelection = await fetch(
+    const modelSelection = await (await fetch(
       "https://openrouter.ai/api/v1/chat/completions",
       {
         method: "POST",
@@ -148,18 +148,18 @@ export const generateAutoResponse = async (userId, prompt, room, search) => {
     ).catch((error) => {
       logger.error(`모델 선택 중 오류: ${error.status}, ${error.name}`);
       throw error;
-    });
+    })).json();
     let selectedModelIndex = 0;
     let title;
     try {
       const parsedResponse = JSON.parse(
-        (await modelSelection.json()).choices[0].message.content,
+        modelSelection.choices[0].message.content,
       );
       selectedModelIndex = parsedResponse.model;
       title = parsedResponse.title;
     } catch (error) {
       logger.error("모델 선택 중 에러:", error);
-      logger.verbose((await modelSelection.json()).choices[0].message.content);
+      logger.verbose(modelSelection.choices[0].message.content);
       throw error;
     }
 
@@ -229,7 +229,7 @@ export const generateCustomResponse = async (
   try {
     let message_to_ai = [];
     if (!room) {
-      const titleGeneration = await fetch(
+      const titleGeneration = await (await fetch(
         "https://openrouter.ai/api/v1/chat/completions",
         {
           method: "POST",
@@ -270,16 +270,16 @@ export const generateCustomResponse = async (
       ).catch((error) => {
         logger.error(`모델 선택 중 오류: ${error.status}, ${error.name}`);
         throw error;
-      });
+      })).json();
 
       let title = "";
       try {
         title = JSON.parse(
-          (await titleGeneration.json()).choices[0].message.content,
+          await titleGeneration.choices[0].message.content,
         ).title;
       } catch (error) {
         logger.error(
-          `Json 파싱 오류. 원본 문자열: ${(await titleGeneration.json()).choices[0].message.content}`,
+          `Json 파싱 오류. 원본 문자열: ${titleGeneration.choices[0].message.content}`,
         );
         throw error;
       }
