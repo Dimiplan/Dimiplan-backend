@@ -92,9 +92,17 @@ const summarizeMemory = async (userId, room) => {
 
 export const generateAutoResponse = async (userId, prompt, room, search) => {
   try {
-    const systemPrompt = !room
+    const systemPrompt =
+    (!room
       ? "다음 프롬프트의 복잡성을 평가하고 적절한 모델을 선택하며, 프롬프트를 요약하여 채팅방 이름을 작성하세요:\n"
-      : "다음 프롬프트의 복잡성을 평가하고 적절한 모델을 선택하세요:\n";
+      : "다음 프롬프트의 복잡성을 평가하고 적절한 모델을 선택하세요:\n") +
+    "- 단순한 질문: 0 (작은 모델)\n" +
+    "- 복잡한 추론 필요: 1 (중간 모델)\n" +
+    "- 프로그래밍 또는 심화 지식 필요: 2 (고급 모델)\n" +
+    "- 광범위한 정보 및 큰 모델 필요: 3 (대규모 모델)\n" +
+    (!room
+      ? '결과는 {"model": "10", "title": "제목"}의 JSON 형식으로 반환'
+      : '결과는 {"model": "10"}의 JSON 형식으로 반환');
     const modelSelection = await (
       await fetch("https://openrouter.ai/api/v1/chat/completions", {
         method: "POST",
@@ -111,37 +119,6 @@ export const generateAutoResponse = async (userId, prompt, room, search) => {
             },
             { role: "user", content: prompt },
           ],
-          response_format: {
-            type: "json_schema",
-            json_schema: {
-              name: "response",
-              strict: true,
-              schema: {
-                type: "object",
-                properties: !room
-                  ? {
-                      model: {
-                        type: "number",
-                        description:
-                          "Model index based on complexity(0: low, 1: medium, 2: high)",
-                      },
-                      title: {
-                        type: "string",
-                        description: "Title based on the summary of the prompt",
-                      },
-                    }
-                  : {
-                      model: {
-                        type: "number",
-                        description:
-                          "Model index based on complexity(0: low, 1: medium, 2: high)",
-                      },
-                    },
-                required: !room ? ["model", "title"] : ["model"],
-                additionalProperties: false,
-              },
-            },
-          },
         }),
       }).catch((error) => {
         logger.error(`모델 선택 중 오류: ${error.status}, ${error.name}`);
@@ -241,28 +218,10 @@ export const generateCustomResponse = async (
               {
                 role: "system",
                 content:
-                  "다음 프롬프트를 요약하여 적절한 채팅방 이름을 작성하세요",
+                  '다음 프롬프트를 요약하여 적절한 채팅방 이름을 작성하세요:\n 결과는 {"title": "제목"}의 JSON 형식으로 반환',
               },
               { role: "user", content: prompt },
             ],
-            response_format: {
-              type: "json_schema",
-              json_schema: {
-                name: "response",
-                strict: true,
-                schema: {
-                  type: "object",
-                  properties: {
-                    title: {
-                      type: "string",
-                      description: "Title based on the summary of the prompt",
-                    },
-                  },
-                  required: ["title"],
-                  additionalProperties: false,
-                },
-              },
-            },
           }),
         }).catch((error) => {
           logger.error(`모델 선택 중 오류: ${error.status}, ${error.name}`);
