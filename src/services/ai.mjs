@@ -95,9 +95,8 @@ export const generateAutoResponse = async (userId, prompt, room, search) => {
     const systemPrompt = !room
       ? "다음 프롬프트의 복잡성을 평가하고 적절한 모델을 선택하며, 프롬프트를 요약하여 채팅방 이름을 작성하세요:\n"
       : "다음 프롬프트의 복잡성을 평가하고 적절한 모델을 선택하세요:\n";
-    const modelSelection = await (await fetch(
-      "https://openrouter.ai/api/v1/chat/completions",
-      {
+    const modelSelection = await (
+      await fetch("https://openrouter.ai/api/v1/chat/completions", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -144,11 +143,11 @@ export const generateAutoResponse = async (userId, prompt, room, search) => {
             },
           },
         }),
-      },
-    ).catch((error) => {
-      logger.error(`모델 선택 중 오류: ${error.status}, ${error.name}`);
-      throw error;
-    })).json();
+      }).catch((error) => {
+        logger.error(`모델 선택 중 오류: ${error.status}, ${error.name}`);
+        throw error;
+      })
+    ).json();
     let selectedModelIndex = 0;
     let title;
     try {
@@ -229,9 +228,8 @@ export const generateCustomResponse = async (
   try {
     let message_to_ai = [];
     if (!room) {
-      const titleGeneration = await (await fetch(
-        "https://openrouter.ai/api/v1/chat/completions",
-        {
+      const titleGeneration = await (
+        await fetch("https://openrouter.ai/api/v1/chat/completions", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -266,11 +264,11 @@ export const generateCustomResponse = async (
               },
             },
           }),
-        },
-      ).catch((error) => {
-        logger.error(`모델 선택 중 오류: ${error.status}, ${error.name}`);
-        throw error;
-      })).json();
+        }).catch((error) => {
+          logger.error(`모델 선택 중 오류: ${error.status}, ${error.name}`);
+          throw error;
+        })
+      ).json();
 
       let title = "";
       try {
