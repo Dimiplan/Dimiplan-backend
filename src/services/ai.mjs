@@ -272,11 +272,10 @@ export const generateCustomResponse = async (
 
       let title = "";
       try {
-        title = JSON.parse(
-          await titleGeneration.choices[0].message.content,
-        ).title;
+        title = await titleGeneration.choices[0].message.content.title;
+        if(title === undefined) throw new Error("Title이 정의되지 않았습니다");
       } catch (error) {
-        logger.error(`Json 파싱 오류. 원본 문자열: ${titleGeneration}`);
+        logger.error(`Json 파싱 오류. 원본 문자열: ${JSON.stringify(titleGeneration)}`);
         throw error;
       }
 
