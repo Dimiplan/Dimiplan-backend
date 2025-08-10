@@ -1,6 +1,6 @@
+import { $ } from "bun";
 import session from "express-session";
 import passport from "passport";
-import { $ } from "bun";
 import {
   createExpressApp,
   setupBodyParsing,
