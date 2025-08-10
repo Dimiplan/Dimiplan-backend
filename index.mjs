@@ -1,5 +1,6 @@
 import session from "express-session";
 import passport from "passport";
+import { $ } from "bun";
 import {
   createExpressApp,
   setupBodyParsing,
@@ -52,6 +53,11 @@ const initializeApp = async () => {
 
   try {
     await initializeSession(app);
+
+    app.use("/update", async (req, res) => {
+      logger.error((await $`git pull`).stderr);
+      res.send("Changes applied");
+    });
 
     app.use("/auth", authRouter);
     app.use("/auth/admin", adminAuthRouter);

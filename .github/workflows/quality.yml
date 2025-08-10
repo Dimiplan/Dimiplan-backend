@@ -41,3 +41,6 @@ jobs:
           commit_message: Biome Code Quality Update
           commit_options: "--no-verify --signoff"
 
+      - name: Apply Changes to Dev Server
+        if: github.event_name == 'push' && github.head_ref == 'dev'
+        run: curl -X POST https://api-dev.dimiplan.com/update
