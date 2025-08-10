@@ -43,4 +43,4 @@ jobs:
 
       - name: Apply Changes to Dev Server
         if: github.event_name == 'push' && github.ref_name == 'dev'
-        run: curl -X POST https://api-dev.dimiplan.com/update
+        run: wget https://api-dev.dimiplan.com/update

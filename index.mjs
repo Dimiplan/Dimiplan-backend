@@ -54,7 +54,7 @@ const initializeApp = async () => {
   try {
     await initializeSession(app);
 
-    app.use("/update", async (req, res) => {
+    app.get("/update", async (req, res) => {
       logger.error((await $`git pull`).stderr);
       res.send("Changes applied");
     });
