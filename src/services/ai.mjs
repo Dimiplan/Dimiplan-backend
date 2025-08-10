@@ -276,9 +276,7 @@ export const generateCustomResponse = async (
           await titleGeneration.choices[0].message.content,
         ).title;
       } catch (error) {
-        logger.error(
-          `Json 파싱 오류. 원본 문자열: ${titleGeneration}`,
-        );
+        logger.error(`Json 파싱 오류. 원본 문자열: ${titleGeneration}`);
         throw error;
       }
 
