@@ -8,13 +8,23 @@ on:
 
 jobs:
   quality:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
       - name: Install Dependencies
         run: bun install
+
+      - name: Setup Biome
+        uses: biomejs/setup-biome@v2
+        with:
+          version: latest
           
       - name: Run Biome
         if: github.event_name == 'pull_request'
@@ -31,6 +41,10 @@ jobs:
           commit_message: Biome Code Quality Update
           commit_options: "--no-verify --signoff"
 
+  apply:
+    runs-on: self-hosted
+    needs: [quality]
+    steps:
       - name: Apply Changes to Dev Server
         if: github.event_name == 'push' && github.ref_name == 'dev'
         run: curl localhost:10000
