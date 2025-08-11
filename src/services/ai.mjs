@@ -238,7 +238,7 @@ export const generateCustomResponse = async (
         logger.error(
           `Json 파싱 오류. 원본 문자열: ${JSON.stringify(titleGeneration)}`,
         );
-        throw error;
+        title = prompt;
       }
 
       room = (await createChatRoom(userId, title)).id;
