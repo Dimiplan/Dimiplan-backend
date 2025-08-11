@@ -25,3 +25,10 @@ jobs:
         env:
           PR_URL: ${{ github.event.pull_request.html_url }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  apply:
+    runs-on: self-hosted
+    needs: [dependabot]
+    steps:
+      - name: Apply Changes to Dev Server
+        run: curl localhost:10000
