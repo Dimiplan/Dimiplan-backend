@@ -284,7 +284,7 @@ export const generateCustomResponse = async (
       logger.warn(`선택된 모델이 모델 목록에 없습니다: ${model}`);
       throw new Error("선택된 모델이 목록에 없습니다");
     }
-    logger.info(`선택된 모델: ${model}`);
+    logger.info(`선택된 모델: ${model + (search ? ":online" : "")}`);
     const response = await fetch(
       "https://openrouter.ai/api/v1/chat/completions",
       {
@@ -294,7 +294,7 @@ export const generateCustomResponse = async (
           Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
         },
         body: JSON.stringify({
-          model: model + search ? ":online" : "",
+          model: model + (search ? ":online" : ""),
           messages: message_to_ai,
         }),
       },
