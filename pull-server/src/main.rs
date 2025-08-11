@@ -8,10 +8,10 @@ fn index() -> String {
         .output()
         .expect("Failed to execute command");
 
-    if output.status.success() && output.stdout != b"Already up to date." {
-        println!("{}", String::from_utf8_lossy(&output.stdout));
+    if output.status.success() && !String::from_utf8_lossy(&output.stdout).contains("Already up to date.") {
+        println!("{}", String::from_utf8_lossy(&output.stdout).trim());
         String::from("Changes applied")
-    } else if output.stdout == b"Already up to date." {
+    } else if String::from_utf8_lossy(&output.stdout).contains("Already up to date.") {
         String::from("No changes to apply")
     } else {
         String::from("Error applying changes")
