@@ -3,8 +3,6 @@ name: Code Quality
 on:
   push:
     branches: [main, dev]
-  pull_request:
-    branches: [main]
 
 jobs:
   quality:
@@ -25,17 +23,11 @@ jobs:
         uses: biomejs/setup-biome@v2
         with:
           version: latest
-          
-      - name: Run Biome
-        if: github.event_name == 'pull_request'
-        run: biome ci .
         
       - name: Apply Biome
-        if: github.event_name == 'push'
         run: biome check --write --unsafe .
         
       - name: Commit Back
-        if: github.event_name == 'push'
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: Biome Code Quality Update
@@ -44,7 +36,7 @@ jobs:
   apply:
     runs-on: self-hosted
     needs: [quality]
+    if: github.ref_name == 'dev'
     steps:
       - name: Apply Changes to Dev Server
-        if: github.event_name == 'push' && github.ref_name == 'dev'
         run: curl localhost:10000
