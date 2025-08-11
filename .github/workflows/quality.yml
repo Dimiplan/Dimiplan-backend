@@ -3,8 +3,6 @@ name: Code Quality
 on:
   push:
     branches: [main, dev]
-  pull_request:
-    branches: [main]
 
 jobs:
   quality:
@@ -12,32 +10,33 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        
+
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
 
-      - name: Install Dependancies
-        run: bun i
-      
+      - name: Install Dependencies
+        run: bun install
+
       - name: Setup Biome
         uses: biomejs/setup-biome@v2
         with:
           version: latest
-          
-      - name: Run Biome
-        if: github.event_name == 'pull_request'
-        run: biome ci .
         
       - name: Apply Biome
-        if: github.event_name == 'push'
         run: biome check --write --unsafe .
         
       - name: Commit Back
-        if: github.event_name == 'push'
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: Biome Code Quality Update
           commit_options: "--no-verify --signoff"
 
+  apply:
+    runs-on: self-hosted
+    needs: [quality]
+    if: github.ref_name == 'dev'
+    steps:
+      - name: Apply Changes to Dev Server
+        run: curl localhost:10000
