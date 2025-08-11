@@ -1,20 +1,20 @@
 use std::process::Command;
+use rocket::http::Status;
 #[macro_use] extern crate rocket;
 
 #[get("/")]
-fn index() -> String {
+fn index() -> (Status, String) {
     let output = Command::new("git")
         .arg("pull")
         .output()
         .expect("Failed to execute command");
 
     if output.status.success() && !String::from_utf8_lossy(&output.stdout).contains("Already up to date.") {
-        println!("{}", String::from_utf8_lossy(&output.stdout).trim());
-        String::from("Changes applied")
+        (Status::Ok, format!("Changes applied: {}", String::from_utf8_lossy(&output.stdout).trim()))
     } else if String::from_utf8_lossy(&output.stdout).contains("Already up to date.") {
-        String::from("No changes to apply")
+        (Status::NoContent, String::from("No changes to apply"))
     } else {
-        String::from("Error applying changes")
+        (Status::InternalServerError, format!("Error applying changes: {}", String::from_utf8_lossy(&output.stderr).trim()))
     }
 }
 
