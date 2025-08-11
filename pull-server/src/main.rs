@@ -16,10 +16,12 @@ async fn index() -> impl Responder {
         .output()
         .expect("Failed to execute command");
 
-    if output.status.success() && !String::from_utf8_lossy(&output.stdout).contains("Already up to date.") {
-        HttpResponse::Ok().body(format!("Changes applied: {}", String::from_utf8_lossy(&output.stdout).trim()))
-    } else if String::from_utf8_lossy(&output.stdout).contains("Already up to date.") {
-        HttpResponse::NoContent().body("No changes to apply")
+    let output_text = String::from_utf8_lossy(&output.stdout).trim().to_string();
+
+    if output.status.success() && !output_text.contains("Already up to date.") {
+        HttpResponse::Ok().body(format!("Changes applied: {}", output_text))
+    } else if output.status.success() {
+        HttpResponse::AlreadyReported().body("No changes to apply")
     } else {
         HttpResponse::InternalServerError().body(format!("Error applying changes: {}", String::from_utf8_lossy(&output.stderr).trim()))
     }
