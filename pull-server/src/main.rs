@@ -1,24 +1,26 @@
 use std::process::Command;
-use rocket::http::Status;
-#[macro_use] extern crate rocket;
+use actix_web::{get, Responder, App, HttpResponse, HttpServer};
+
+#[actix_web::main]
+async fn main() -> std::io::Result<()> {
+    HttpServer::new(|| App::new().service(index))
+        .bind(("127.0.0.1", 10000))?
+        .run()
+        .await
+}
 
 #[get("/")]
-fn index() -> (Status, String) {
+async fn index() -> impl Responder {
     let output = Command::new("git")
         .arg("pull")
         .output()
         .expect("Failed to execute command");
 
     if output.status.success() && !String::from_utf8_lossy(&output.stdout).contains("Already up to date.") {
-        (Status::Ok, format!("Changes applied: {}", String::from_utf8_lossy(&output.stdout).trim()))
+        HttpResponse::Ok().body(format!("Changes applied: {}", String::from_utf8_lossy(&output.stdout).trim()))
     } else if String::from_utf8_lossy(&output.stdout).contains("Already up to date.") {
-        (Status::NoContent, String::from("No changes to apply"))
+        HttpResponse::NoContent().body("No changes to apply")
     } else {
-        (Status::InternalServerError, format!("Error applying changes: {}", String::from_utf8_lossy(&output.stderr).trim()))
+        HttpResponse::InternalServerError().body(format!("Error applying changes: {}", String::from_utf8_lossy(&output.stderr).trim()))
     }
-}
-
-#[launch]
-fn rocket() -> _ {
-    rocket::build().mount("/", routes![index])
 }
