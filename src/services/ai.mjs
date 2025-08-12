@@ -19,7 +19,7 @@ export const FREE_MODELS = [
   "openai/gpt-5-chat",
   "openai/gpt-oss-120b",
   "qwen/qwen3-coder",
-  "x-ai/grok-3-mini"
+  "x-ai/grok-3-mini",
 ];
 
 export const PAID_MODELS = ["anthropic/claude-4-sonnet:thinking", "openai/o3"];
