@@ -15,7 +15,7 @@ export const FREE_MODELS = [
   "moonshotai/kimi-k2",
   "openai/gpt-5-chat",
   "openai/gpt-oss-120b",
-  "qwen/qwen3-coder"
+  "qwen/qwen3-coder",
 ];
 
 export const PAID_MODELS = ["anthropic/claude-4-sonnet:thinking", "openai/o3"];
