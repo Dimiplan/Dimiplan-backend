@@ -11,11 +11,15 @@ export const FREE_MODELS = [
   "deepseek/deepseek-prover-v2",
   "deepseek/deepseek-r1-0528",
   "google/gemini-2.5-flash",
+  "meta-llama/llama-4-maverick",
   "microsoft/phi-4-reasoning-plus",
+  "mistralai/devstral-medium",
+  "mistralai/magistral-medium-2506:thinking",
   "moonshotai/kimi-k2",
   "openai/gpt-5-chat",
   "openai/gpt-oss-120b",
   "qwen/qwen3-coder",
+  "x-ai/grok-3-mini"
 ];
 
 export const PAID_MODELS = ["anthropic/claude-4-sonnet:thinking", "openai/o3"];
