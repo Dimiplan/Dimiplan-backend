@@ -1,4 +1,5 @@
 import cors from "cors";
+import logger from "../utils/logger.mjs";
 import "./dotenv.mjs";
 
 const ALLOWED_DOMAINS = ["dimiplan.com", "dimiplan.workers.dev"];
@@ -15,10 +16,8 @@ const validateOrigin = (origin, callback) => {
   if (isAllowed) {
     callback(null, true);
   } else {
-    callback(
-      new Error(`CORS 정책에 의해 허용되지 않은 요청: ${origin}`),
-      false,
-    );
+    logger.error(`CORS 정책에 의해 허용되지 않은 요청: ${origin}`);
+    callback(null, false);
   }
 };
 
