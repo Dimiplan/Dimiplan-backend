@@ -65,8 +65,8 @@ router.get("/tables", async (req, res) => {
 router.get("/tables/:tableName", async (req, res) => {
   try {
     const { tableName } = req.params;
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 50;
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 50;
     const offset = (page - 1) * limit;
 
     const tableExists = await db.schema.hasTable(tableName);

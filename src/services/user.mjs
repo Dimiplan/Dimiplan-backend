@@ -24,8 +24,8 @@ export const updateUserInfo = async (userId, requestData) => {
 
   const userData = {
     name: name ? name.toString() : undefined,
-    grade: grade ? parseInt(grade) : undefined,
-    class: classInput ? parseInt(classInput) : undefined,
+    grade: grade ? parseInt(grade, 10) : undefined,
+    class: classInput ? parseInt(classInput, 10) : undefined,
     email: email ? email.toString() : undefined,
     profile_image: profile_image ? profile_image.toString() : undefined,
   };
